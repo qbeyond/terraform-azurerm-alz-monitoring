@@ -1,0 +1,14 @@
+Heartbeat
+    | summarize LH = arg_max(TimeGenerated, *) by Computer
+    | where LH < ago(5m)
+    | where OSType contains_cs "Windows"
+    | extend monitor_package = "AZ_NT_BASEPOLICY"
+    | extend monitor_name = "AZ_NT_HEARTBEAT"
+    | extend monitor_description = "Checks availability of the Host"
+    | extend script_name = "n/a"
+    | extend script_version = "n/a"
+    | extend threshold = "00:05:00"
+    | extend value = LH
+    | extend state = iff(datetime_diff("second", now(), LH) >= 300, "CRITICAL", "OK")
+    | extend additional_information = ""
+    | project TimeGenerated=now(), _ResourceId, state, affected_object=Computer, monitor_package, monitor_name, monitor_description, script_name, script_version, threshold, value, affected_entity=Computer, additional_information
