@@ -1,0 +1,40 @@
+let mountpoints = dynamic(["/", "/var", "/boot", "/tmp", "/home", "/opt", "/backup"]);
+let warning = int(90);
+let critical = int(95);
+let d1='{"volumes": [{"mountpoint":"/SAPINST$","warning":90,"critical":"95"}]}';
+let d2='{"volumes": [{"mountpoint":"^/hana/log/[A-Za-z0-9]{3}","warning":50,"critical":"70"}]}';
+let d3='{"volumes": [{"mountpoint":"^/oracle/[A-Za-z0-9]{3}/oraarch$","warning":50,"critical":"70"}]}';
+let d4='{"volumes": [{"mountpoint":"^/oracle/[A-Za-z0-9]{3}/(orig|mirr)log[A-B]$","warning":90,"critical":"95"}]}';
+let d5='{"volumes": [{"mountpoint":"^/oracle/[A-Za-z0-9]{3}/sapdata","warning":90,"critical":"95"}]}';
+//let d6='{"volumes": [{"mountpoint":"xxx$","warning":xx,"critical":"xx"}]}';
+Perf
+    | where ObjectName contains "Logical Disk"
+    | where CounterName == "% Used Space"
+    | where InstanceName matches regex "/.*"
+    | where InstanceName !in (mountpoints)
+    | where TimeGenerated > ago(5m)
+    | extend VolumeName = InstanceName
+    | extend warning = iff(InstanceName matches regex (tostring(parse_json(d1).volumes[0].mountpoint)), tostring(parse_json(d1).volumes[0].warning), tostring(warning))
+    | extend critical = iff(InstanceName matches regex (tostring(parse_json(d1).volumes[0].mountpoint)), tostring(parse_json(d1).volumes[0].critical), tostring(critical))
+    | extend warning = iff(InstanceName matches regex (tostring(parse_json(d2).volumes[0].mountpoint)), tostring(parse_json(d2).volumes[0].warning), tostring(warning))
+    | extend critical = iff(InstanceName matches regex (tostring(parse_json(d2).volumes[0].mountpoint)), tostring(parse_json(d2).volumes[0].critical), tostring(critical))
+    | extend warning = iff(InstanceName matches regex (tostring(parse_json(d3).volumes[0].mountpoint)), tostring(parse_json(d3).volumes[0].warning), tostring(warning))
+    | extend critical = iff(InstanceName matches regex (tostring(parse_json(d3).volumes[0].mountpoint)), tostring(parse_json(d3).volumes[0].critical), tostring(critical))
+    | extend warning = iff(InstanceName matches regex (tostring(parse_json(d4).volumes[0].mountpoint)), tostring(parse_json(d4).volumes[0].warning), tostring(warning))
+    | extend critical = iff(InstanceName matches regex (tostring(parse_json(d4).volumes[0].mountpoint)), tostring(parse_json(d4).volumes[0].critical), tostring(critical))
+    | extend warning = iff(InstanceName matches regex (tostring(parse_json(d5).volumes[0].mountpoint)), tostring(parse_json(d5).volumes[0].warning), tostring(warning))
+    | extend critical = iff(InstanceName matches regex (tostring(parse_json(d5).volumes[0].mountpoint)), tostring(parse_json(d5).volumes[0].critical), tostring(critical))
+    | extend warning = toint(warning)
+    | extend critical = toint(critical)
+    | where CounterValue >= (warning)
+    | extend threshold = case(CounterValue >= (critical), critical, CounterValue < (critical), warning, warning)
+    | extend state = case(CounterValue >= (critical), "Critical", CounterValue <= (critical), "Warning", "")
+    | extend monitor_package = "AZ_SC_ManagedSAPInstance"
+    | extend monitor_name = "AZ_UNIX_FILESPACE"
+    | extend monitor_description = strcat("Disk threshold reached. More or equal than ", (threshold), "% Diskspace used. Check the Diskspace of the Mountpoint, please.")
+    | extend script_name = "n/a"
+    | extend script_version = "n/a"
+    | extend value = round(CounterValue, 2)
+    | extend additional_information = strcat("more or equal than ", (threshold), "% Diskspace used (Unix)")
+    | extend affected_entity = InstanceName
+    | project TimeGenerated, _ResourceId, state, affected_object = Computer, monitor_package, monitor_name, monitor_description, script_name, script_version, threshold, value, affected_entity, additional_information

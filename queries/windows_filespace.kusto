@@ -1,0 +1,21 @@
+// Disk threshold reached. Less or equal than warning or critical diskspace free (%). (Windows Monitoring)
+let Disks = dynamic(["C:"]);
+let warning = int(10);
+let critical = int(5);
+Perf
+    | where ObjectName contains "LogicalDisk"
+    | where CounterName == "% Free Space"
+    | where InstanceName in (Disks)
+    | where CounterValue <= (warning)
+    | where TimeGenerated > ago(5m)
+    | extend state = case(CounterValue >= (critical), "Warning", CounterValue <= (critical), "Critical", "Warning")
+    | extend threshold = case(CounterValue >= (critical), warning, CounterValue <= (critical), critical, warning)
+    | extend monitor_package = "AZ_NT_BASEPOLICY"
+    | extend monitor_name = "AZ_NT_DISKS"
+    | extend monitor_description = strcat("Disk threshold reached. Less or equal than ", (threshold), "% Diskspace free. Please, check the Diskspace")
+    | extend script_name = "n/a"
+    | extend script_version = "n/a"
+    | extend value = round(CounterValue, 2)
+    | extend additional_information = strcat("Only ", (value), " % Diskspace free.")
+    | extend affected_entity = InstanceName
+    | project TimeGenerated, _ResourceId, state, affected_object = Computer, monitor_package, monitor_name, monitor_description, script_name, script_version, threshold, value, affected_entity, additional_information
