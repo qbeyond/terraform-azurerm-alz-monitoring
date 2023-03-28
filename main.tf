@@ -15,13 +15,13 @@ resource "azurerm_log_analytics_datasource_windows_event" "system" {
 }
 
 module "vm_insights" {
-  source = "qbeyond/log-analytics-VMInsights/azurerm"
+  source  = "qbeyond/log-analytics-VMInsights/azurerm"
   version = "1.0.2"
   log_analytics_workspace = {
-    id = local.law_id
-    name = local.law_name
+    id                  = var.law_id
+    name                = local.law_name
     resource_group_name = local.law_rg
-    location = var.location
+    location            = var.location
   }
 }
 
