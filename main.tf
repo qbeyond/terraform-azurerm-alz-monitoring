@@ -57,7 +57,7 @@ resource "azurerm_monitor_scheduled_query_rules_alert" "rules" {
   query       = file(each.value.query_path)
   severity    = 1
   frequency   = 5
-  time_window = 2880
+  time_window = each.value.time_window
   trigger {
     operator  = "GreaterThan"
     threshold = 0
