@@ -23,12 +23,17 @@ module "vm_insights" {
     resource_group_name = local.law_rg
     location            = var.location
   }
+
+  depends_on = [
+    azurerm_log_analytics_datasource_windows_event.application,
+    azurerm_log_analytics_datasource_windows_event.system
+  ]
 }
 
 resource "azurerm_monitor_action_group" "action_group" {
   name                = "EventPipelineCentral_AG_1"
   resource_group_name = local.law_rg
-  short_name          = lower(replace(var.webhook_name, " ", ""))
+  short_name          = "monitorhook"
 
   webhook_receiver {
     name                    = var.webhook_name
