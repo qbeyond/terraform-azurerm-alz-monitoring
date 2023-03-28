@@ -1,10 +1,10 @@
-# Module
-[![GitHub tag](https://img.shields.io/github/tag/qbeyond/terraform-module-template.svg)](https://registry.terraform.io/modules/qbeyond/terraform-module-template/provider/latest)
-[![License](https://img.shields.io/github/license/qbeyond/terraform-module-template.svg)](https://github.com/qbeyond/terraform-module-template/blob/main/LICENSE)
+# VM Monitoring
+[![GitHub tag](https://img.shields.io/github/v/tag/qbeyond/terraform-azurerm-vm-monitoring.svg)](https://registry.terraform.io/modules/qbeyond/vm-monitoring/azurerm/latest)
+[![License](https://img.shields.io/github/license/qbeyond/terraform-azurerm-vm-monitoring.svg)](https://github.com/qbeyond/terraform-azurerm-vm-monitoring/blob/main/LICENSE)
 
 ----
 
-This is a template module. It just showcases how a module should look. This would be a short description of the module.
+This is a module for creating monitoring rules ontop of a central log analytics workspace. the Query rules and output are compatible with q.beoynds event pipeline for central monitoring.
 
 <!-- BEGIN_TF_DOCS -->
 ## Usage
