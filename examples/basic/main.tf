@@ -1,3 +1,7 @@
+provider "azurerm" {
+  features{}
+}
+
 resource "azurerm_resource_group" "example" {
   name     = "rg-Monitor-dev-01"
   location = "westeurope"

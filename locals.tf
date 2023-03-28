@@ -1,8 +1,8 @@
 locals {
     path = "${path.module}/queries"
 
-    law_name = reverse(split(var.law_id, "/"))[0]
-    law_rg   = split(var.law_id, "/")[3]
+    law_name = reverse(split("/", var.law_id))[0]
+    law_rg   = split("/", var.law_id)[4]
 
     rules = {
         "alr-prd-heartbeat-ux-law-perf-crit-01": {
