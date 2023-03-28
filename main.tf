@@ -28,7 +28,7 @@ module "vm_insights" {
 resource "azurerm_monitor_action_group" "action_group" {
   name                = "EventPipelineCentral_AG_1"
   resource_group_name = local.law_rg
-  short_name          = lower(replace(var.webhook_name, ' ', ''))
+  short_name          = lower(replace(var.webhook_name, " ", ""))
 
   webhook_receiver {
     name                    = var.webhook_name
