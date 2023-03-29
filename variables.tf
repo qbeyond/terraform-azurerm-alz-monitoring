@@ -1,11 +1,11 @@
-variable "location" {
-    type = string
-    description = "Azure resource location"
-}
-
-variable "law_id" {
-    type = string
-    description = "Resource ID of the central log analytics workspace"
+variable "log_analytics_workspace" {
+  type = object({
+    id                  = string
+    name                = string
+    resource_group_name = string
+    location            = string
+  })
+  description = "Log Analytics Worksapce that all VMs are connected to for monitoring"
 }
 
 variable "webhook_name" {

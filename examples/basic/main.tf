@@ -16,9 +16,14 @@ resource "azurerm_log_analytics_workspace" "example" {
 }
 
 module "monitor" {
-  source              = "../.."
-  location            = "westeurope"
-  law_id              = azurerm_log_analytics_workspace.example.id
-  webhook_name        = "QBY EventPipeline"
-  webhook_service_uri = "https://function-app.azurewebsites.net/api/Webhook"
+  source                  = "../.."
+  location                = "westeurope"
+  log_analytics_workspace = {
+    id                  = azurerm_log_analytics_workspace.example.id
+    name                = azurerm_log_analytics_workspace.example.name
+    resource_group_name = azurerm_log_analytics_workspace.example.resource_group_name
+    location            = azurerm_log_analytics_workspace.example.location
+  }
+  webhook_name            = "QBY EventPipeline"
+  webhook_service_uri     = "https://function-app.azurewebsites.net/api/Webhook"
 }
