@@ -9,7 +9,10 @@ This is a module for creating monitoring rules on top of a central log analytics
 <!-- BEGIN_TF_DOCS -->
 ## Usage
 
-It's very easy to use!
+To use this module a resource group and log analytics workspace is required.
+The webhook URL needs to point to a valid receiver for pipeline events.
+If authentication or other options are required they need to be included in the URL as path or query parameters.
+
 ```hcl
 provider "azurerm" {
   features{}
