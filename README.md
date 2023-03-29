@@ -29,11 +29,16 @@ resource "azurerm_log_analytics_workspace" "example" {
 }
 
 module "monitor" {
-  source              = "../.."
-  location            = "westeurope"
-  law_id              = azurerm_log_analytics_workspace.example.id
-  webhook_name        = "QBY EventPipeline"
-  webhook_service_uri = "https://function-app.azurewebsites.net/api/Webhook"
+  source                  = "../.."
+  location                = "westeurope"
+  log_analytics_workspace = {
+    id                  = azurerm_log_analytics_workspace.example.id
+    name                = azurerm_log_analytics_workspace.example.name
+    resource_group_name = azurerm_log_analytics_workspace.example.resource_group_name
+    location            = azurerm_log_analytics_workspace.example.location
+  }
+  webhook_name            = "QBY EventPipeline"
+  webhook_service_uri     = "https://function-app.azurewebsites.net/api/Webhook"
 }
 ```
 
@@ -47,8 +52,7 @@ module "monitor" {
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_law_id"></a> [law\_id](#input\_law\_id) | Resource ID of the central log analytics workspace | `string` | n/a | yes |
-| <a name="input_location"></a> [location](#input\_location) | Azure resource location | `string` | n/a | yes |
+| <a name="input_log_analytics_workspace"></a> [log\_analytics\_workspace](#input\_log\_analytics\_workspace) | Log Analytics Worksapce that all VMs are connected to for monitoring | <pre>object({<br>    id                  = string<br>    name                = string<br>    resource_group_name = string<br>    location            = string<br>  })</pre> | n/a | yes |
 | <a name="input_webhook_name"></a> [webhook\_name](#input\_webhook\_name) | Name of the alert webhook | `string` | n/a | yes |
 | <a name="input_webhook_service_uri"></a> [webhook\_service\_uri](#input\_webhook\_service\_uri) | Link to the webhook receiver URL | `string` | n/a | yes |
 ## Outputs
