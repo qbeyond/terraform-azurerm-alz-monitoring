@@ -4,7 +4,7 @@
 
 ----
 
-This is a module for creating monitoring rules ontop of a central log analytics workspace. the Query rules and output are compatible with q.beoynds event pipeline for central monitoring.
+This is a module for creating monitoring rules on top of a central log analytics workspace. the query rules and output are compatible with the event pipeline for central monitoring of q.beyond AG.
 
 <!-- BEGIN_TF_DOCS -->
 ## Usage
