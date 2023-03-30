@@ -33,7 +33,6 @@ resource "azurerm_log_analytics_workspace" "example" {
 
 module "monitor" {
   source                  = "../.."
-  location                = "westeurope"
   log_analytics_workspace = {
     id                  = azurerm_log_analytics_workspace.example.id
     name                = azurerm_log_analytics_workspace.example.name
@@ -86,7 +85,7 @@ No outputs.
 |------|------|
 | [azurerm_log_analytics_datasource_windows_event.application](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_datasource_windows_event) | resource |
 | [azurerm_log_analytics_datasource_windows_event.system](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_datasource_windows_event) | resource |
-| [azurerm_monitor_action_group.action_group](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_action_group) | resource |
+| [azurerm_monitor_action_group.eventpipeline](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_action_group) | resource |
 | [azurerm_monitor_scheduled_query_rules_alert.rules](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_scheduled_query_rules_alert) | resource |
 <!-- END_TF_DOCS -->
 
