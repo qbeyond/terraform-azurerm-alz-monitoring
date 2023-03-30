@@ -6,12 +6,16 @@
 
 This is a module for creating monitoring rules on top of a central log analytics workspace. the query rules and output are compatible with the event pipeline for central monitoring of q.beyond AG.
 
+WARNING: This module will not work on previously soft deleted LAWs. Either choose a new name or wait for soft deleteion to expire.
+
 <!-- BEGIN_TF_DOCS -->
 ## Usage
 
 To use this module a resource group and log analytics workspace is required.
 The webhook URL needs to point to a valid receiver for pipeline events.
 If authentication or other options are required they need to be included in the URL as path or query parameters.
+
+Optionally you can specify additional kusto queries to monitor. See `examples/extra_queries/main.tf` for details.
 
 ```hcl
 provider "azurerm" {
