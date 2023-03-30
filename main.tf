@@ -30,7 +30,7 @@ module "vm_insights" {
   ]
 }
 
-resource "azurerm_monitor_action_group" "action_group" {
+resource "azurerm_monitor_action_group" "eventpipeline" {
   name                = "EventPipelineCentral_AG_1"
   resource_group_name = var.log_analytics_workspace.resource_group_name
   short_name          = "monitorhook"
