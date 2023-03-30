@@ -42,13 +42,13 @@ resource "azurerm_monitor_action_group" "eventpipeline" {
   }
 }
 
-resource "azurerm_monitor_scheduled_query_rules_alert" "rules" {
+resource "azurerm_monitor_scheduled_query_rules_alert" "this" {
   for_each = local.rules
   name                = each.key
   location            = var.log_analytics_workspace.location
   resource_group_name = var.log_analytics_workspace.resource_group_name
   action {
-    action_group = [azurerm_monitor_action_group.action_group.id]
+    action_group = [azurerm_monitor_action_group.eventpipeline.id]
   }
   data_source_id = var.log_analytics_workspace.id
   description    = each.value.description
