@@ -28,7 +28,7 @@ module "monitor" {
 
   additional_queries    = {
     "alr-prd-diskspace-bkp-law-logsea-warn-01": {
-        query_path  = "${path.module}/queries/failed_jobs-kusto"
+        query_path  = "${path.module}/queries/failed_jobs.kusto"
         description = "Example of monitoring for failed backup jobs"
         time_window = 2280
     }
