@@ -25,5 +25,5 @@ variable "additional_queries" {
     time_window = number
   }))
   description = "List of additional alert rule queries to create with a file path, description and time_window"
-  default = []
+  default = {}
 }
