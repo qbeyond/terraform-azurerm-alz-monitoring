@@ -17,7 +17,6 @@ resource "azurerm_log_analytics_workspace" "example" {
 
 module "monitor" {
   source                  = "../.."
-  location                = "westeurope"
   log_analytics_workspace = {
     id                  = azurerm_log_analytics_workspace.example.id
     name                = azurerm_log_analytics_workspace.example.name
