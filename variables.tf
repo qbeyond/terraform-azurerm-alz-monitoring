@@ -19,11 +19,11 @@ variable "webhook_service_uri" {
 }
 
 variable "additional_queries" {
-  type = map({
+  type = map(object({
     query_path  = string
     description = string
     time_window = number
-  })
+  }))
   description = "List of additional alert rule queries to create with a file path, description and time_window"
   default = []
 }
