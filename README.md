@@ -15,6 +15,8 @@ To use this module a resource group and log analytics workspace is required.
 The webhook URL needs to point to a valid receiver for pipeline events.
 If authentication or other options are required they need to be included in the URL as path or query parameters.
 
+Optionally you can specify additional kusto queries to monitor. See `examples/extra_queries/main.tf` for details.
+
 ```hcl
 provider "azurerm" {
   features{}
