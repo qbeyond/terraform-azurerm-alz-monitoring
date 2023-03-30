@@ -1,0 +1,6 @@
+// Example from Azure:
+// All Failed Jobs 
+// View all failed jobs in the selected time range. 
+AddonAzureBackupJobs
+| summarize arg_max(TimeGenerated,*) by JobUniqueId
+| where JobStatus == "Failed"
