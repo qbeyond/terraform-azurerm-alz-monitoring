@@ -6,16 +6,19 @@ variable "log_analytics_workspace" {
     location            = string
   })
   description = "Log Analytics Worksapce that all VMs are connected to for monitoring"
+  nullable = false
 }
 
 variable "webhook_name" {
   type = string
   description = "Name of the alert webhook"
+  nullable = false
 }
 
 variable "webhook_service_uri" {
   type = string
   description = "Link to the webhook receiver URL"
+  nullable = false
 }
 
 variable "additional_queries" {
@@ -26,4 +29,5 @@ variable "additional_queries" {
   }))
   description = "List of additional alert rule queries to create with a file path, description and time_window"
   default = {}
+  nullable = false
 }
