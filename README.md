@@ -6,7 +6,7 @@
 
 This is a module for creating monitoring rules on top of a central log analytics workspace. the query rules and output are compatible with the event pipeline for central monitoring of q.beyond AG.
 
-*This module will not if LAW with same name is in soft delete state.* You can use a new name or [force delete](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/delete-workspace#permanent-workspace-delete). 
+*This module will not work if LAW with same name is in soft delete state.* You can use a new name or [force delete](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/delete-workspace#permanent-workspace-delete). 
 
 <!-- BEGIN_TF_DOCS -->
 ## Usage
