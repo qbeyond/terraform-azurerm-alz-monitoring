@@ -15,8 +15,6 @@ To use this module a resource group and log analytics workspace is required.
 The webhook URL needs to point to a valid receiver for pipeline events.
 If authentication or other options are required they need to be included in the URL as path or query parameters.
 
-Optionally you can specify additional kusto queries to monitor. See `examples/extra_queries/main.tf` for details.
-
 ```hcl
 provider "azurerm" {
   features{}
@@ -48,6 +46,56 @@ module "monitor" {
 }
 ```
 
+### Extra Queries
+
+You can specify additional kusto queries to monitor.
+```hcl
+provider "azurerm" {
+  features{}
+}
+
+resource "azurerm_resource_group" "example" {
+  name     = "rg-Monitor-dev-01"
+  location = "westeurope"
+}
+
+resource "azurerm_log_analytics_workspace" "example" {
+  name                = "law-cust-Management-Monitor-01"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
+  sku                 = "PerGB2018"
+  retention_in_days   = 30
+}
+
+module "monitor" {
+  source                  = "../.."
+  log_analytics_workspace = {
+    id                  = azurerm_log_analytics_workspace.example.id
+    name                = azurerm_log_analytics_workspace.example.name
+    resource_group_name = azurerm_log_analytics_workspace.example.resource_group_name
+    location            = azurerm_log_analytics_workspace.example.location
+  }
+  webhook_name            = "QBY EventPipeline"
+  webhook_service_uri     = "https://function-app.azurewebsites.net/api/Webhook"
+
+  additional_queries    = {
+    "alr-prd-diskspace-bkp-law-logsea-warn-01": {
+        query_path  = "${path.module}/queries/failed_jobs.kusto"
+        description = "Example of monitoring for failed backup jobs"
+        time_window = 2280
+    }
+  }
+}
+```
+`queries/failed_jobs.kusto`
+```kusto
+// Example from Azure:
+// All Failed Jobs 
+// View all failed jobs in the selected time range. 
+AddonAzureBackupJobs
+| summarize arg_max(TimeGenerated,*) by JobUniqueId
+| where JobStatus == "Failed"
+```
 ## Requirements
 
 | Name | Version |
