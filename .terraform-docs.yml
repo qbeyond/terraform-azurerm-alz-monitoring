@@ -49,13 +49,13 @@ content: |-
   {{ include "examples/basic/main.tf" }}
   ```
 
-{{ indent 1 "#" }} Extra Queries
-
-You can specify additional kusto queries to monitor. 
+  {{ indent 1 "#" }} Extra Queries
+  
+  You can specify additional kusto queries to monitor.
   ```hcl
   {{ include "examples/extra_queries/main.tf" }}
   ```
-`queries/failed_jobs.kusto`
+  `queries/failed_jobs.kusto`
   ```kusto
   {{ include "examples/extra_queries/queries/failed_jobs.kusto" }}
   ```  
