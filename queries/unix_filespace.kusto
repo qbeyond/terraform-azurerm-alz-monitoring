@@ -1,0 +1,21 @@
+// more or equal than 90% Diskspace used (Unix)
+let mountpoints = dynamic(["/", "/var", "/boot", "/tmp", "/home", "/opt", "/backup"]);
+let warning = int(80);
+let critical = int(90);
+Perf
+    | where ObjectName contains "Logical Disk"
+    | where CounterName == "% Used Space"
+    | where InstanceName in (mountpoints)
+    | where CounterValue >= (warning)
+    | where TimeGenerated > ago(5m)
+    | extend state = case(CounterValue >= (critical), "Critical", CounterValue <= (critical), "Warning", "")
+    | extend threshold = case(CounterValue >= (critical), critical, CounterValue < (critical), warning, warning)
+    | extend monitor_package = "AZ_UX_SC_ManagedOSUnix"
+    | extend monitor_name = "AZ_UNIX_FILESPACE"
+    | extend monitor_description = strcat("Disk threshold reached. More or equal than ", (threshold), "% Diskspace used. Check the Diskspace of the Mountpoint, please.")
+    | extend script_name = "n/a"
+    | extend script_version = "n/a"
+    | extend value = round(CounterValue, 2)
+    | extend additional_information = strcat("more or equal than ", (threshold), "% Diskspace used (Unix)")
+    | extend affected_entity = InstanceName
+    | project TimeGenerated, _ResourceId, state, affected_object = Computer, monitor_package, monitor_name, monitor_description, script_name, script_version, threshold, value, affected_entity, additional_information
