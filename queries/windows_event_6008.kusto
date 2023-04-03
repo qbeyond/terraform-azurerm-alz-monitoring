@@ -1,0 +1,19 @@
+//Search the Windows event log for specific entries.
+let WinEventLog = "System";
+let WinSource = "EventLog";
+let WinEventID = 6008;
+Event
+    | where EventLog == WinEventLog and Source == WinSource and EventID == WinEventID
+    | extend vm = toupper(tostring(split(_ResourceId, "/") [-1]))
+    | extend state = "Critical"
+    | extend affected_object = vm
+    | extend monitor_package = "AZ_SC_ManagedOSWindows"
+    | extend monitor_name = "AZ_NT_EVENTLOG_6008"
+    | extend monitor_description = "Search the Windows event log for specific entries."
+    | extend script_name = "n/a"
+    | extend script_version = "n/a"
+    | extend threshold = "n/a"
+    | extend value = "n/a"
+    | extend affected_entity = vm
+    | extend additional_information = strcat("Windows log entry has been found. EventLogType: ", EventLog, "; Source: ", Source, "; EventID: ", EventID, "; Description: ", RenderedDescription, "; Check the System, please." )
+    | project TimeGenerated=now(), _ResourceId, state, affected_object, monitor_package, monitor_name, monitor_description, script_name, script_version, threshold, value, affected_entity, additional_information
