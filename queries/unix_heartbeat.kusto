@@ -1,10 +1,10 @@
 // Track VM availability 
 // Display the VM's reported availability during the last 5 minutes.
 Heartbeat
-| summarize LH = arg_max(TimeGenerated, *) by Computer
+| extend affected_object = toupper(tostring(split(_ResourceId, "/") [-1]))
+| summarize LH = arg_max(TimeGenerated, *) by affected_object
 | where LH < ago(5m)
 | where OSType contains_cs "Linux"
-| extend affected_object = tostring(split(_ResourceId, "/") [-1])
 | extend monitor_package = "AZ_UNIX_BASEPOLICY"
 | extend monitor_name = "AZ_UNIX_HEARTBEAT"
 | extend monitor_description = "Checks availability of the Host"
