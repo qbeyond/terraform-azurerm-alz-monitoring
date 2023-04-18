@@ -1,5 +1,8 @@
+// Track VM availability 
+// Display the VM's reported availability during the last 5 minutes.
 Heartbeat
-    | summarize LH = arg_max(TimeGenerated, *) by Computer
+    | extend affected_object = toupper(tostring(split(_ResourceId, "/") [-1]))
+    | summarize LH = arg_max(TimeGenerated, *) by affected_object
     | where LH < ago(5m)
     | where OSType contains_cs "Windows"
     | extend monitor_package = "AZ_NT_BASEPOLICY"
@@ -11,4 +14,5 @@ Heartbeat
     | extend value = LH
     | extend state = iff(datetime_diff("second", now(), LH) >= 300, "CRITICAL", "OK")
     | extend additional_information = ""
-    | project TimeGenerated=now(), _ResourceId, state, affected_object=Computer, monitor_package, monitor_name, monitor_description, script_name, script_version, threshold, value, affected_entity=Computer, additional_information
+    | project TimeGenerated=now(), _ResourceId, state, affected_object, monitor_package, monitor_name, monitor_description, script_name, script_version, threshold, value, affected_entity=Computer, additional_information
+
