@@ -1,5 +1,6 @@
 provider "azurerm" {
   features{}
+  skip_provider_registration = true
 }
 
 data "azurerm_subscription" "current" {
@@ -32,6 +33,6 @@ module "monitor" {
   webhook_service_uri     = "https://function-app.azurewebsites.net/api/Webhook"
   resource_group          = azurerm_resource_group.example
   automation_account      = azurerm_automation_account.example
-  subscription            = data.azurerm_subscription.current
+  subscription_id            = data.azurerm_subscription.current.id
   event_pipeline_key      = "key"
   }

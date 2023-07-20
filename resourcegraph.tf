@@ -5,7 +5,7 @@ resource "azurerm_automation_module" "az_accounts" {
 
   module_link {
     uri = "https://devopsgallerystorage.blob.core.windows.net:443/packages/az.accounts.2.12.1.nupkg"
-  } # version variable?
+  } 
 }
 
 resource "azurerm_automation_module" "az_resourcegraph" {
@@ -42,7 +42,7 @@ resource "azurerm_automation_variable_string" "default_subscription" {
   name                    = "default_subscription"
   resource_group_name     = var.resource_group.name
   automation_account_name = var.automation_account.name
-  value                   = var.subscription.id
+  value                   = var.subscription_id
 }
 
 resource "time_static" "automation_schedule_tomorrow_5am" {
