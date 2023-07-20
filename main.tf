@@ -1,3 +1,6 @@
+data "azurerm_subscription" "current" {
+}
+
 resource "azurerm_log_analytics_datasource_windows_event" "application" {
   name                = "lad-application"
   resource_group_name = var.log_analytics_workspace.resource_group_name

@@ -1,6 +1,6 @@
 resources
 | where isnotempty(tags)
-| where type in (
+| where type in~ (
 	"microsoft.Network/applicationGateways",
 	"microsoft.Network/azureFirewalls,"
 	"microsoft.Network/dnsResolvers",
