@@ -59,9 +59,6 @@ variable "automation_account" {
   nullable = false
 }
 
-variable "subscription" {
-  type = object({
-    display_name = string
-    id = string
-  })
+variable "subscription_id" {
+    type = string
 }
