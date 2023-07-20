@@ -4,9 +4,9 @@
 
 ----
 
-This is a module for creating monitoring rules on top of a central log analytics workspace. the query rules and output are compatible with the event pipeline for central monitoring of q.beyond AG.
+This is a module for creating monitoring rules on top of a central log analytics workspace. The query rules and output are compatible with the event pipeline for central monitoring of the q.beyond AG.
 
-It also creates a resourcegraph with an automation account.
+To enable usage of tags and resource properties in monitoring queries an existing automation account is used to import resource metadata into the central log analytics workspace.
 
 *This module will not work if LAW with same name is in soft delete state.* You can use a new name or [force delete](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/delete-workspace#permanent-workspace-delete). 
 
