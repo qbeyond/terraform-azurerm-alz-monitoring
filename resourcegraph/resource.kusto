@@ -1,0 +1,18 @@
+resources
+| where isnotempty(tags)
+| where type in (
+	"microsoft.Network/applicationGateways",
+	"microsoft.Network/azureFirewalls,"
+	"microsoft.Network/dnsResolvers",
+	"microsoft.KeyVault/vaults",
+	"microsoft.Network/loadBalancers",
+	"microsoft.Sql/servers",
+	"microsoft.Sql/servers/databases",
+	"microsoft.Sql/managedInstances",
+	"microsoft.Sql/managedInstances/databases",
+	"microsoft.Storage/storageaccounts",
+	"microsoft.Compute/virtualmachines",
+	"microsoft.Network/virtualWans",
+	"microsoft.Network/vpngateways"
+)
+| project id, name, type, tenantId, location, resourceGroup, subscriptionId, tags, properties
