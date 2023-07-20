@@ -45,7 +45,6 @@ resource "time_static" "automation_schedule_tomorrow_5am" {
     aac_name  = var.automation_account.name
     aac_id    = var.automation_account.id
     rg_name   = var.automation_account.resource_group_name
-    rg_id     = var.resource_group.id
     frequency = "Day"
     interval  = 1
     timezone  = "Europe/Berlin"
