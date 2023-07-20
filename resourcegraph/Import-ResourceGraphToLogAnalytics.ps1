@@ -16,10 +16,9 @@ param (
 $ErrorActionPreference = "Stop"
 
 $sharedKey = Get-AutomationVariable law_sharedkey
-$default_subscription  = Get-AutomationVariable default_subscription
 
 try{
-	Connect-AzAccount -Identity -Subscription $default_subscription | Out-Null
+	Connect-AzAccount -Identity | Out-Null
 }catch{
 	throw "The script execution failed with Error `n`t $($($_.Exception).Message)"
 }

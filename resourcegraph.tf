@@ -38,12 +38,6 @@ resource "azurerm_automation_variable_string" "law_sharedkey" {
   encrypted               = true
 }
 
-resource "azurerm_automation_variable_string" "default_subscription" {
-  name                    = "default_subscription"
-  resource_group_name     = var.automation_account.resource_group_name
-  automation_account_name = var.automation_account.name
-  value                   = data.azurerm_subscription.current.subscription_id
-}
 
 resource "time_static" "automation_schedule_tomorrow_5am" {
   rfc3339 = timeadd(formatdate("YYYY-MM-DD'T'05:00:00Z", timestamp()), "24h")

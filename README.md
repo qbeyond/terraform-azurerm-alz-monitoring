@@ -4,7 +4,7 @@
 
 ----
 
-This is a module for creating monitoring rules on top of a central log analytics workspace. The query rules and output are compatible with the event pipeline for central monitoring of the q.beyond AG.
+This module deploys all resources to enable the monitoring of a Log Analytics Workspace for all managed resources by the managed services provider. This includes Action group to send alerts to event pipeline of MSP, alerts for specific resources and a automation to add information (especially tags) to the LAW.
 
 To enable usage of tags and resource properties in monitoring queries an existing automation account is used to import resource metadata into the central log analytics workspace.
 
@@ -173,7 +173,6 @@ No outputs.
 | [azurerm_automation_module.az_resourcegraph](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_module) | resource |
 | [azurerm_automation_runbook.resourcegraph_query](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_runbook) | resource |
 | [azurerm_automation_schedule.daily](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_schedule) | resource |
-| [azurerm_automation_variable_string.default_subscription](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_variable_string) | resource |
 | [azurerm_automation_variable_string.law_sharedkey](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_variable_string) | resource |
 | [time_static.automation_schedule_tomorrow_5am](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/static) | resource |
 <!-- END_TF_DOCS -->
