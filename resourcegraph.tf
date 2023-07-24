@@ -34,7 +34,7 @@ resource "azurerm_automation_variable_string" "law_sharedkey" {
   name                    = "law_sharedkey"
   resource_group_name     = var.automation_account.resource_group_name
   automation_account_name = var.automation_account.name
-  value                   = var.primary_shared_key
+  value                   = var.law_shared_key
   encrypted               = true
 }
 
