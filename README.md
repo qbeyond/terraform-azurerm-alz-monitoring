@@ -1,4 +1,4 @@
-# VM Monitoring
+# ALZ Monitoring
 [![GitHub tag](https://img.shields.io/github/v/tag/qbeyond/terraform-azurerm-vm-monitoring.svg)](https://registry.terraform.io/modules/qbeyond/vm-monitoring/azurerm/latest)
 [![License](https://img.shields.io/github/license/qbeyond/terraform-azurerm-vm-monitoring.svg)](https://github.com/qbeyond/terraform-azurerm-vm-monitoring/blob/main/LICENSE)
 
@@ -7,8 +7,6 @@
 This module deploys all resources to enable the monitoring of a Log Analytics Workspace for all managed resources by the managed services provider. This includes Action group to send alerts to event pipeline of MSP, alerts for specific resources and a automation to add information (especially tags) to the LAW.
 
 To enable usage of tags and resource properties in monitoring queries an existing automation account is used to import resource metadata into the central log analytics workspace.
-
-*This module will not work if LAW with same name is in soft delete state.* You can use a new name or [force delete](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/delete-workspace#permanent-workspace-delete). 
 
 <!-- BEGIN_TF_DOCS -->
 ## Usage
