@@ -50,7 +50,7 @@ variable "automation_account" {
   nullable    = false
 }
 
-variable "primary_shared_key" {
+variable "law_shared_key" {
   type        = string
   description = "Primary shared key of the central monitoring LAW."
   sensitive   = true
