@@ -49,9 +49,3 @@ variable "automation_account" {
   description = "Automation account where the resource graph script will be deployed."
   nullable    = false
 }
-
-variable "law_shared_key" {
-  type        = string
-  description = "Primary shared key of the central monitoring LAW."
-  sensitive   = true
-}
