@@ -1,8 +1,3 @@
-data "azurerm_log_analytics_workspace" "management"{
-    name = var.log_analytics_workspace.name
-    resource_group_name = var.log_analytics_workspace.resource_group_name
-}
-
 resource "azurerm_automation_module" "az_accounts" {
   name                    = "Az.Accounts"
   resource_group_name     = var.automation_account.resource_group_name
@@ -39,7 +34,7 @@ resource "azurerm_automation_variable_string" "law_sharedkey" {
   name                    = "law_sharedkey"
   resource_group_name     = var.automation_account.resource_group_name
   automation_account_name = var.automation_account.name
-  value                   = data.azurerm_log_analytics_workspace.management.primary_shared_key
+  value                   = var.log_analytics_workspace.primary_shared_key
   encrypted               = true
 }
 

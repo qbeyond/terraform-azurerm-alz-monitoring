@@ -119,7 +119,7 @@ AddonAzureBackupJobs
 |------|-------------|------|---------|:--------:|
 | <a name="input_automation_account"></a> [automation\_account](#input\_automation\_account) | Automation account where the resource graph script will be deployed. | <pre>object({<br>    name                = string<br>    id                  = string<br>    location            = string<br>    resource_group_name = string<br>  })</pre> | n/a | yes |
 | <a name="input_event_pipeline_key"></a> [event\_pipeline\_key](#input\_event\_pipeline\_key) | Function key provided by monitoring team. | `string` | n/a | yes |
-| <a name="input_log_analytics_workspace"></a> [log\_analytics\_workspace](#input\_log\_analytics\_workspace) | Log Analytics Worksapce that all VMs are connected to for monitoring. | <pre>object({<br>    id                  = string<br>    name                = string<br>    resource_group_name = string<br>    location            = string<br>    workspace_id        = string<br>  })</pre> | n/a | yes |
+| <a name="input_log_analytics_workspace"></a> [log\_analytics\_workspace](#input\_log\_analytics\_workspace) | Log Analytics Worksapce that all VMs are connected to for monitoring. | <pre>object({<br>    id                  = string<br>    name                = string<br>    resource_group_name = string<br>    location            = string<br>    workspace_id        = string<br>    primary_shared_key  = string<br>  })</pre> | n/a | yes |
 | <a name="input_webhook_name"></a> [webhook\_name](#input\_webhook\_name) | Name of the alert webhook. | `string` | n/a | yes |
 | <a name="input_webhook_service_uri"></a> [webhook\_service\_uri](#input\_webhook\_service\_uri) | Link to the webhook receiver URL. | `string` | n/a | yes |
 | <a name="input_additional_queries"></a> [additional\_queries](#input\_additional\_queries) | List of additional alert rule queries to create with a file path, description and time\_window. | <pre>map(object({<br>    query_path  = string<br>    description = string<br>    time_window = number<br>  }))</pre> | `{}` | no |
@@ -172,7 +172,6 @@ No outputs.
 | [azurerm_automation_schedule.daily](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_schedule) | resource |
 | [azurerm_automation_variable_string.law_sharedkey](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_variable_string) | resource |
 | [time_static.automation_schedule_tomorrow_5am](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/static) | resource |
-| [azurerm_log_analytics_workspace.management](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/log_analytics_workspace) | data source |
 <!-- END_TF_DOCS -->
 
 ## Contribute
