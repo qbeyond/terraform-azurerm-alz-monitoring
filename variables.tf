@@ -5,6 +5,7 @@ variable "log_analytics_workspace" {
     resource_group_name = string
     location            = string
     workspace_id        = string
+    primary_shared_key  = string
   })
   description = "Log Analytics Worksapce that all VMs are connected to for monitoring."
   nullable    = false
