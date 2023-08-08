@@ -29,5 +29,4 @@ module "monitor" {
   webhook_service_uri     = "https://function-app.azurewebsites.net/api/Webhook"
   automation_account      = azurerm_automation_account.example
   event_pipeline_key      = "key"
-  primary_shared_key      = azurerm_log_analytics_workspace.example.primary_shared_key
 }
