@@ -6,7 +6,6 @@ AddonAzureBackupJobs
 | where JobStatus == "Failed"
 | where JobOperation =="Backup"
 | extend vm = extract("(iaasvmcontainerv2;.+?;)(.+)", 2, BackupItemUniqueId)
-| where isnotempty(vm)
 | extend vault = extract("(microsoft.recoveryservices/vaults/)(.+)$", 2, tostring(_ResourceId))
 | project TimeGenerated, JobFailureCode, vm, vault, _ResourceId, JobOperationSubType, JobStartDateTime, BackupItemUniqueId, AdHocOrScheduledJob
 | join kind = leftouter(VMs) on $left.vm == $right.name
