@@ -73,5 +73,9 @@ resource "azurerm_automation_job_schedule" "resourcegraph_query" {
     logtype                  = "MonitoringResources"
     customerid               = var.log_analytics_workspace.workspace_id
   }
+
+  lifecycle {
+    replace_triggered_by = [azurerm_automation_runbook.resourcegraph_query]
+  }
 }
 
