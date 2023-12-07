@@ -42,7 +42,7 @@ locals {
         "alr-prd-VMBackup-bkp-law-log-warn-01": {
             description = "Alert when a VM backup job fails"
             query_path  = "${local.path}/vm_backup.kusto"
-            time_window = 
+            time_window = 2280
         }
     }, var.additional_queries)
 }
