@@ -16,6 +16,17 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 ### Removed
 
 ### Fixed
+
+## [2.0.3] - 2023-12-07
+
+### Added
+ 
+### Changed
+ 
+### Removed
+
+### Fixed
+ - Parameters disappearing from the job schedule on updates of the runbook
  
 ## [2.0.2] - 2023-08-08
  
