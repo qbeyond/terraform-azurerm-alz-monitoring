@@ -12,6 +12,7 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
  
 ### Changed
  - Naming of existing rules
+ - Schedule of Resource Graph query to twice daily as intended
    
 ### Removed
 
