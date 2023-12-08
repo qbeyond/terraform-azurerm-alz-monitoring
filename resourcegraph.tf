@@ -61,6 +61,7 @@ resource "azurerm_automation_schedule" "daily" {
   start_time              = time_static.automation_schedule_tomorrow_5am.rfc3339
 }
 
+# Will allways be recreated to fix: https://github.com/hashicorp/terraform-provider-azurerm/issues/17970
 resource "azurerm_automation_job_schedule" "resourcegraph_query" {
   resource_group_name     = var.automation_account.resource_group_name
   automation_account_name = var.automation_account.name
@@ -72,6 +73,10 @@ resource "azurerm_automation_job_schedule" "resourcegraph_query" {
     managementgroupidtocheck = "alz"
     logtype                  = "MonitoringResources"
     customerid               = var.log_analytics_workspace.workspace_id
+  }
+
+  lifecycle {
+    replace_triggered_by = [azurerm_automation_runbook.resourcegraph_query]
   }
 }
 
