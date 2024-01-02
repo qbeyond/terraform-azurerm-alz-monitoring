@@ -41,7 +41,7 @@ resource "azurerm_monitor_action_group" "eventpipeline" {
 
   webhook_receiver {
     name                    = var.event_pipeline_config.name
-    service_uri             = replace(var.event_pipeline_config.service_uri, "{{pipeline_key}}", var.event_pipeline_key)
+    service_uri             = replace(var.event_pipeline_config.service_uri, "{{secret}}", var.event_pipeline_key)
     use_common_alert_schema = true
   }
 }

@@ -52,7 +52,7 @@ variable "event_pipeline_config" {
   {
     enabled       = Enable the action group if you want to send data to a monitoring service.
     name          = Name of the alert webhook.
-    service_uri   = Link to the webhook receiver URL. Must contain the placeholder \"{{pipeline_key}}\" which will be replaced with the secret from var.event_pipeline_key.
+    service_uri   = Link to the webhook receiver URL. Must contain the placeholder \"{{secret}}\". This placeholder will be replaced by the secret value from var.event_pipeline_key. This is used to add authentication to the webhook URL as a query parameter.
 }
   ```
   DOC
@@ -66,7 +66,7 @@ variable "event_pipeline_config" {
   }
   
   validation {
-    condition     = var.event_pipeline_config.enabled ? strcontains(var.event_pipeline_config.service_uri, "{{pipeline_key}}") : true
-    error_message = "If the config is enabled the service_uri must contain the {{pipeline_key}} placeholder."
+    condition     = var.event_pipeline_config.enabled ? strcontains(var.event_pipeline_config.service_uri, "{{secret}}") : true
+    error_message = "If the config is enabled the service_uri must contain the {{secret}} placeholder."
   }
 }

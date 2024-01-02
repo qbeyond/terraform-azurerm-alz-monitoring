@@ -28,7 +28,7 @@ module "monitor" {
   event_pipeline_config   = {
     enabled = true
     name = "QBY EventPipeline"
-    service_uri = "https://my-webhook.azurewebsites.net/api/GenericWebhookJS1?code={{pipeline_key}}&clientid=some-fct-key"
+    service_uri = "https://my-webhook.azurewebsites.net/api/GenericWebhookJS1?code={{secret}}&clientid=some-fct-key"
   }
   automation_account      = azurerm_automation_account.example
   event_pipeline_key      = "key"
