@@ -55,6 +55,9 @@ variable "event_pipeline_config" {
    }
   ```
   DOC
+  default = {
+    enabled = false
+  }
 
   validation {
     condition     = var.event_pipeline_config.enabled ? (var.event_pipeline_config.name != null && var.event_pipeline_config.service_uri != null) : true
