@@ -48,11 +48,24 @@ variable "event_pipeline_config" {
   })
   description = <<-DOC
   ```
-   {
-    enabled       = enable the event pipeline if you want to send data to our monitoring service.
+  "<group_name>" = {
+    azuread_role_assignable = optional(string)    (if you want to assign Azure AD roles to the group) 
+    role_assignments = {
+      "<role_assignment>" = [                 (must be a role_definition_name or role_definition_id from azure)
+        "<scope>"                             (every element must be a scope: "mg:<mg_id>", "sub:<subscription_id>", "root" for Tenant Root Group or a full scope ID)
+      ]
+    }
+}
+  ```
+  DOC
+
+  description = <<-DOC
+  ```
+  {
+    enabled       = Enable the action group if you want to send data to a monitoring service.
     name          = Name of the alert webhook.
     service_uri   = Link to the webhook receiver URL. Must contain the placeholder \"{{pipeline_key}}\" which will be replaced with the secret from var.event_pipeline_key.
-   }
+}
   ```
   DOC
   default = {
