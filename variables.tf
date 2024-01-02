@@ -43,7 +43,7 @@ variable "automation_account" {
 variable "event_pipeline_config" {
   type = object({
     enabled     = bool
-    name        = optional(string)
+    name        = optional(string, "QBY EventPipeline")
     service_uri = optional(string)
   })
 
@@ -61,8 +61,8 @@ variable "event_pipeline_config" {
   }
 
   validation {
-    condition     = var.event_pipeline_config.enabled ? (var.event_pipeline_config.name != null && var.event_pipeline_config.service_uri != null) : true
-    error_message = "If the config is enabled the name and service_uri must be set."
+    condition     = var.event_pipeline_config.enabled ? var.event_pipeline_config.service_uri != null : true
+    error_message = "If the config is enabled the service_uri must be set."
   }
   
   validation {
