@@ -49,7 +49,7 @@ module "monitor" {
     service_uri = "https://my-webhook.azurewebsites.net/api/GenericWebhookJS1?code={{secret}}&clientid=some-fct-key"
   }
   automation_account      = azurerm_automation_account.example
-  event_pipeline_key      = "key"
+  secret                  = "key"
 }
 ```
 
@@ -90,7 +90,7 @@ module "monitor" {
     service_uri = "https://my-webhook.azurewebsites.net/api/GenericWebhookJS1?code={{secret}}&clientid=some-fct-key"
   }
   automation_account      = azurerm_automation_account.example
-  event_pipeline_key      = "key"
+  secret                  = "key"
 
   additional_queries    = {
     "alr-prd-diskspace-bkp-law-logsea-warn-01": {
