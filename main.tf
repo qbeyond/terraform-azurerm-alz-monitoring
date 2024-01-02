@@ -52,7 +52,7 @@ resource "azurerm_monitor_scheduled_query_rules_alert" "this" {
   location            = var.log_analytics_workspace.location
   resource_group_name = var.log_analytics_workspace.resource_group_name
   action {
-    action_group = [one(azurerm_monitor_action_group.eventpipeline[*].id)]
+    action_group = local.action_group
   }
   data_source_id = var.log_analytics_workspace.id
   description    = each.value.description
