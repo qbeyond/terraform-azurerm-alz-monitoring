@@ -1,4 +1,6 @@
 locals {
+    action_group = one(azurerm_monitor_action_group.eventpipeline[*].id) != null ? [one(azurerm_monitor_action_group.eventpipeline[*].id)] : []
+
     path = "${path.module}/queries"
 
     rules = merge({
