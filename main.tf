@@ -34,7 +34,7 @@ module "vm_insights" {
 }
 
 resource "azurerm_monitor_action_group" "eventpipeline" {
-  count = event_pipeline_config.enabled ? 1 : 0
+  count = var.event_pipeline_config.enabled ? 1 : 0
   name                = "EventPipelineCentral_AG_1"
   resource_group_name = var.log_analytics_workspace.resource_group_name
   short_name          = "monitorhook"
@@ -51,13 +51,8 @@ resource "azurerm_monitor_scheduled_query_rules_alert" "this" {
   name                = each.key
   location            = var.log_analytics_workspace.location
   resource_group_name = var.log_analytics_workspace.resource_group_name
-  dynamic "event_pipeline" {
-    for_each = azurerm_monitor_action_group.eventpipeline
-    content {
-      action {
-        action_group = [event_pipeline.id]
-      }
-    }
+  action {
+    action_group = [one(azurerm_monitor_action_group.eventpipeline[*].id)]
   }
   data_source_id = var.log_analytics_workspace.id
   description    = each.value.description
