@@ -22,9 +22,9 @@ variable "additional_queries" {
   nullable    = false
 }
 
-variable "event_pipeline_key" {
+variable "secret" {
   type        = string
-  description = "Function key provided by monitoring team."
+  description = "Secret value that will be placed in the webhook URI."
   sensitive   = true
   default     = ""
 }
@@ -52,7 +52,7 @@ variable "event_pipeline_config" {
   {
     enabled       = Enable the action group if you want to send data to a monitoring service.
     name          = Name of the alert webhook.
-    service_uri   = Link to the webhook receiver URL. Must contain the placeholder \"{{secret}}\". This placeholder will be replaced by the secret value from var.event_pipeline_key. This is used to add authentication to the webhook URL as a query parameter.
+    service_uri   = Link to the webhook receiver URL. Must contain the placeholder \"{{secret}}\". This placeholder will be replaced by the secret value from var.secret. This is used to add authentication to the webhook URL as a query parameter.
 }
   ```
   DOC
