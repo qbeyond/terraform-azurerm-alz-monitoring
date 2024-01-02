@@ -11,18 +11,6 @@ variable "log_analytics_workspace" {
   nullable    = false
 }
 
-variable "webhook_name" {
-  type        = string
-  description = "Name of the alert webhook."
-  nullable    = false
-}
-
-variable "webhook_service_uri" {
-  type        = string
-  description = "Link to the webhook receiver URL."
-  nullable    = false
-}
-
 variable "additional_queries" {
   type = map(object({
     query_path  = string
@@ -38,6 +26,7 @@ variable "event_pipeline_key" {
   type        = string
   description = "Function key provided by monitoring team."
   sensitive   = true
+  default     = ""
 }
 
 variable "automation_account" {
@@ -49,4 +38,31 @@ variable "automation_account" {
   })
   description = "Automation account where the resource graph script will be deployed."
   nullable    = false
+}
+
+variable "event_pipeline_config" {
+  type = object({
+    enabled     = bool
+    name        = optional(string)
+    service_uri = optional(string)
+  })
+  description = <<-DOC
+  ```
+   {
+    enabled       = enable the event pipeline if you want to send data to our monitoring service.
+    name          = Name of the alert webhook.
+    service_uri   = Link to the webhook receiver URL. Must contain the placeholder \"{{pipeline_key}}\" which will be replaced with the secret from var.event_pipeline_key.
+   }
+  ```
+  DOC
+
+  validation {
+    condition     = var.event_pipeline_config.enabled ? (var.event_pipeline_config.name != null && var.event_pipeline_config.service_uri != null) : true
+    error_message = "If the config is enabled the name and service_uri must be set."
+  }
+  
+  validation {
+    condition     = var.event_pipeline_config.enabled ? strcontains(var.event_pipeline_config.service_uri, "{{pipeline_key}}") : true
+    error_message = "If the config is enabled the service_uri must contain the {{pipeline_key}} placeholder."
+  }
 }
