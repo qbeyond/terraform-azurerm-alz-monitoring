@@ -25,8 +25,5 @@ resource "azurerm_automation_account" "example" {
 module "monitor" {
   source                  = "../.."
   log_analytics_workspace = azurerm_log_analytics_workspace.example
-  event_pipeline_config   = {
-    enabled = false
-  }
   automation_account      = azurerm_automation_account.example
 }
