@@ -24,7 +24,7 @@ variable "additional_queries" {
 
 variable "secret" {
   type        = string
-  description = "Secret value that will be placed in the webhook URI."
+  description = "Value that will replace the placeholder `{{secret}}` in `event_pipeline_config.service_uri`."
   sensitive   = true
   default     = ""
 }
