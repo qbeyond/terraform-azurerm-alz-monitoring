@@ -45,14 +45,14 @@ resource "time_static" "automation_schedule_tomorrow_5am" {
     aac_name  = var.automation_account.name
     aac_id    = var.automation_account.id
     rg_name   = var.automation_account.resource_group_name
-    frequency = "Day"
-    interval  = 1
+    frequency = "Hour"
+    interval  = 12
     timezone  = "Europe/Berlin"
   }
 }
 
-resource "azurerm_automation_schedule" "daily" {
-  name                    = "aas-Import-ResourceGraphToLogAnalytics-Once-Daily"
+resource "azurerm_automation_schedule" "twice_daily" {
+  name                    = "aas-Import-ResourceGraphToLogAnalytics-Twice-Daily"
   resource_group_name     = var.automation_account.resource_group_name
   automation_account_name = var.automation_account.name
   frequency               = time_static.automation_schedule_tomorrow_5am.triggers.frequency
@@ -65,7 +65,7 @@ resource "azurerm_automation_schedule" "daily" {
 resource "azurerm_automation_job_schedule" "resourcegraph_query" {
   resource_group_name     = var.automation_account.resource_group_name
   automation_account_name = var.automation_account.name
-  schedule_name           = azurerm_automation_schedule.daily.name
+  schedule_name           = azurerm_automation_schedule.twice_daily.name
   runbook_name            = azurerm_automation_runbook.resourcegraph_query.name
 
   parameters = {
@@ -79,4 +79,3 @@ resource "azurerm_automation_job_schedule" "resourcegraph_query" {
     replace_triggered_by = [azurerm_automation_runbook.resourcegraph_query]
   }
 }
-
