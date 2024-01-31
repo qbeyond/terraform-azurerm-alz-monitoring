@@ -70,7 +70,7 @@ resource "azurerm_automation_job_schedule" "resourcegraph_query" {
 
   parameters = {
     query                    = file("${path.module}/resourcegraph/resource.kusto")
-    managementgroupidtocheck = "alz"
+    managementgroupidtocheck = var.root_management_group_id
     logtype                  = "MonitoringResources"
     customerid               = var.log_analytics_workspace.workspace_id
   }
