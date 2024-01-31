@@ -73,6 +73,6 @@ variable "event_pipeline_config" {
 
 variable "root_management_group_id" {
   type        = string
-  description = "The management group ID that will be scanned by the Import-ResourceGraphToLogAnalytics runbook."
+  description = "The management group that will be scanned by the Import-ResourceGraphToLogAnalytics runbook."
   default     = "alz"
 }
