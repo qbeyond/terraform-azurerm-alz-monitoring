@@ -2,16 +2,18 @@
 // Display the VM's reported availability during the last 5 minutes.
 Heartbeat
 | extend affected_object = toupper(tostring(split(_ResourceId, "/") [-1]))
+| summarize LH = arg_max(TimeGenerated, *) by affected_object
+| where LH < ago(5m)
+| extend _ResourceId = toupper(_ResourceId)
+| project _ResourceId, affected_object, OSType, LH
 | join kind= leftouter (MonitoringResources_CL 
 | where TimeGenerated > ago(13h)
 | where type_s == "microsoft.compute/virtualmachines" 
-| extend vm_MonitoringResources = toupper(tostring(split(id_s, "/") [-1])) 
-| project TimeGenerated,vm_MonitoringResources, id_s, name_s, tags_managedby_s
-| summarize arg_max(TimeGenerated,*) by vm_MonitoringResources)
-on $left.affected_object == $right.vm_MonitoringResources
-| where tolower(tags_managedby_s) == "q.beyond"
-| summarize LH = arg_max(TimeGenerated, *) by affected_object
-| where LH < ago(5m)
+| extend id_s = toupper(id_s)
+| project TimeGenerated, id_s, name_s, tags_managedby_s
+| summarize arg_max(TimeGenerated,*) by id_s)
+on $left._ResourceId == $right.id_s
+| where tags_managedby_s =~ "q.beyond" or isempty(tags_managedby_s) 
 | where OSType contains_cs "Linux"
 | extend monitor_package = "AZ_UNIX_BASEPOLICY"
 | extend monitor_name = "AZ_UNIX_HEARTBEAT"
@@ -22,4 +24,4 @@ on $left.affected_object == $right.vm_MonitoringResources
 | extend value = LH
 | extend state = iff(datetime_diff("second", now(), LH) >= 300, "CRITICAL", "OK")
 | extend additional_information = strcat("The Host did not send Heartbeats anymore. Managed by ",(tags_managedby_s),".")
-| project TimeGenerated=now(), _ResourceId, state, affected_object, monitor_package, monitor_name, monitor_description, script_name, script_version, threshold, value, affected_entity=Computer, additional_information
+| project TimeGenerated=now(), _ResourceId, state, affected_object, monitor_package, monitor_name, monitor_description, script_name, script_version, threshold, value, affected_entity=affected_object, additional_information
