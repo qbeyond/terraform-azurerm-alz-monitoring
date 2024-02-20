@@ -1,4 +1,10 @@
 // less or equal than 10% Diskspace free (Windows)
+let VMs = (MonitoringResources_CL 
+| where TimeGenerated > ago(13h)
+| where type_s == "microsoft.compute/virtualmachines"
+| extend id_s = toupper(id_s) 
+| summarize arg_max(TimeGenerated,*) by id_s)
+| project TimeGenerated, id_s, name_s, tags_managedby_s;
 let Disks = dynamic(["C:"]);
 let warning = int(10);
 let critical = int(5);
@@ -17,12 +23,7 @@ Perf
 | where not(affected_groups matches regex appl_groups)
 | summarize arg_max(TimeGenerated, *) by affected_object, InstanceName
 | project _ResourceId, affected_groups, affected_object, CounterValue, threshold, InstanceName, state
-| join kind= leftouter (MonitoringResources_CL | where TimeGenerated > ago(13h)
-| where type_s == "microsoft.compute/virtualmachines" 
-| extend MonitoringResources = toupper(tostring(split(id_s, "/") [-1])) 
-| extend id_s = toupper(id_s)
-| project TimeGenerated,MonitoringResources, id_s, name_s, tags_managedby_s
-| summarize arg_max(TimeGenerated,*) by MonitoringResources)
+| join kind= leftouter VMs
 on $left._ResourceId == $right.id_s
 | where tags_managedby_s =~ "q.beyond" or isempty(tags_managedby_s) 
 | extend monitor_package = "AZ_NT_BASEPOLICY"
