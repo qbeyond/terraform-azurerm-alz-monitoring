@@ -1,7 +1,13 @@
 //Search the Windows event log for specific entries.
+let VMs = (MonitoringResources_CL 
+| where TimeGenerated > ago(13h)
+| where type_s == "microsoft.compute/virtualmachines"
+| extend id_s = toupper(id_s) 
+| summarize arg_max(TimeGenerated,*) by id_s)
+| project TimeGenerated, id_s, name_s, tags_managedby_s;
 let WinEventLog = "System";
 let WinSource = "EventLog";
-let WinEventID = 6008;
+let WinEventID = "6008";
 let appl_groups = ("RG.*AV*");  // excluding a list of ResourceGroups
 Event
 | where EventLog == WinEventLog and Source == WinSource and EventID == WinEventID
@@ -12,11 +18,7 @@ Event
 | extend _ResourceId = toupper(_ResourceId)
 | summarize arg_max(TimeGenerated, *) by affected_object
 | project _ResourceId, affected_object, EventLog, Source, EventID, RenderedDescription
-| join kind= leftouter (MonitoringResources_CL | where TimeGenerated > ago(13h)
-| where type_s == "microsoft.compute/virtualmachines" 
-| extend id_s = toupper(id_s)
-| project TimeGenerated, id_s, name_s, tags_managedby_s
-| summarize arg_max(TimeGenerated,*) by id_s)
+| join kind= leftouter VMs
 on $left._ResourceId == $right.id_s
 | where tags_managedby_s =~ "q.beyond" or isempty(tags_managedby_s)
 | extend state = "Critical"
