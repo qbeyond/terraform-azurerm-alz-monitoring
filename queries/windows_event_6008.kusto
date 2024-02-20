@@ -8,7 +8,7 @@ let VMs = (MonitoringResources_CL
 let WinEventLog = "System";
 let WinSource = "EventLog";
 let WinEventID = "6008";
-let appl_groups = ("RG.*AV*");  // excluding a list of ResourceGroups
+let appl_groups = ("RG.*AVD*");  // excluding a list of ResourceGroups
 Event
 | where EventLog == WinEventLog and Source == WinSource and EventID == WinEventID
 | where TimeGenerated > ago(10m)
