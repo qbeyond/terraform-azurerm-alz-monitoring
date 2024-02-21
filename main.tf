@@ -1,37 +1,84 @@
 data "azurerm_subscription" "current" {
 }
 
-resource "azurerm_log_analytics_datasource_windows_event" "application" {
-  name                = "lad-application"
-  resource_group_name = var.log_analytics_workspace.resource_group_name
-  workspace_name      = var.log_analytics_workspace.name
-  event_log_name      = "Application"
-  event_types         = ["Error", "Warning", "Information"]
-}
+resource "azurerm_monitor_data_collection_rule" "event_log" {
+  name                        = "dcr-prd-EventLogBasic-01"
+  resource_group_name         = var.log_analytics_workspace.resource_group_name
+  location                    = var.log_analytics_workspace.location
+  kind                        = "Windows"
 
-resource "azurerm_log_analytics_datasource_windows_event" "system" {
-  name                = "lad-system"
-  resource_group_name = var.log_analytics_workspace.resource_group_name
-  workspace_name      = var.log_analytics_workspace.name
-  event_log_name      = "System"
-  event_types         = ["Error", "Warning", "Information"]
-}
-
-module "vm_insights" {
-  source  = "qbeyond/log-analytics-VMInsights/azurerm"
-  version = "1.0.2"
-  log_analytics_workspace = {
-    id                  = var.log_analytics_workspace.id
-    name                = var.log_analytics_workspace.name
-    resource_group_name = var.log_analytics_workspace.resource_group_name
-    location            = var.log_analytics_workspace.location
+  destinations {
+    log_analytics {
+      workspace_resource_id = var.log_analytics_workspace.id
+      name                  = var.log_analytics_workspace.name
+    }
   }
 
-  depends_on = [
-    azurerm_log_analytics_datasource_windows_event.application,
-    azurerm_log_analytics_datasource_windows_event.system
-  ]
+  data_flow {
+    streams      = ["Microsoft-Event"]
+    destinations = [var.log_analytics_workspace.name]
+  }
+  
+  data_sources {
+    windows_event_log {
+      name     = "EventLog"
+      streams  = ["Microsoft-Event"]
+      x_path_queries = ["Application!*[System[EventID=55]]", "Application!*[System[EventID=6008]]"]
+    }
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  description = "Collects EventIDs 55 and 6008 from the EventLog"
 }
+
+resource "azurerm_monitor_data_collection_rule" "vm_insight" {
+  name                        = "dcr-prd-VmInsights-01"
+  resource_group_name         = var.log_analytics_workspace.resource_group_name
+  location                    = var.log_analytics_workspace.location
+
+  destinations {
+    log_analytics {
+      workspace_resource_id = var.log_analytics_workspace.id
+      name                  = var.log_analytics_workspace.name
+    }
+  }
+
+  data_flow {
+    streams      = ["Microsoft-ServiceMap"]
+    destinations = [var.log_analytics_workspace.name]
+  }
+
+  data_flow { 
+    streams      = ["Microsoft-InsightsMetrics"]
+    destinations = [var.log_analytics_workspace.name]
+  }
+
+  data_sources {
+    extension {
+      extension_name     = "DependencyAgent"
+      input_data_sources = []
+      name               = "DependencyAgent"
+      streams            = ["Microsoft-ServiceMap"]
+    }
+
+    performance_counter {
+        counter_specifiers            = ["\\VmInsights\\DetailedMetrics"]
+        name                          = "VMInsightsPerfCounters"
+        sampling_frequency_in_seconds = 60
+        streams                       = ["Microsoft-InsightsMetrics"]
+    }
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+  description = "Central DCR to collect performance counter metrics and dependency agent data for azure monitor"
+}
+
 
 resource "azurerm_monitor_action_group" "eventpipeline" {
   count = var.event_pipeline_config.enabled ? 1 : 0
