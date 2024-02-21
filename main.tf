@@ -2,7 +2,7 @@ data "azurerm_subscription" "current" {
 }
 
 resource "azurerm_monitor_data_collection_rule" "event_log" {
-  name                        = "dcr-prd-EventLogBasic-01"
+  name                        = "dcr-prd-all-EventLogBasic-01"
   resource_group_name         = var.log_analytics_workspace.resource_group_name
   location                    = var.log_analytics_workspace.location
   kind                        = "Windows"
@@ -35,7 +35,7 @@ resource "azurerm_monitor_data_collection_rule" "event_log" {
 }
 
 resource "azurerm_monitor_data_collection_rule" "vm_insight" {
-  name                        = "dcr-prd-VmInsights-01"
+  name                        = "dcr-prd-all-VmInsights-01"
   resource_group_name         = var.log_analytics_workspace.resource_group_name
   location                    = var.log_analytics_workspace.location
 
