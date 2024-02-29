@@ -2,7 +2,7 @@ let VMs = MonitoringResources_CL
 | where TimeGenerated > ago(13h)
 | where type_s == "microsoft.compute/virtualmachines"
 | summarize arg_max(TimeGenerated, *) by name_s
-| project vmResourceID = ResourceId, name = tolower(name_s), managedby = tags_managedby_s, osType = properties_storageProfile_osDisk_osType_s;
+| project vmResourceID = ResourceId, name = tolower(name_s), managedby = tags_managedby_s, alerting = tags_alerting_s, osType = properties_storageProfile_osDisk_osType_s;
 AddonAzureBackupJobs
 | where JobStatus == "Failed"
 | where JobOperation =="Backup"
@@ -10,7 +10,8 @@ AddonAzureBackupJobs
 | extend vault = extract("(microsoft.recoveryservices/vaults/)(.+)$", 2, tostring(_ResourceId))
 | project TimeGenerated, JobFailureCode, vm, vault, _ResourceId, JobOperationSubType, JobStartDateTime, BackupItemUniqueId, AdHocOrScheduledJob
 | join kind = leftouter(VMs) on $left.vm == $right.name
-| where managedby =~ "q.beyond"
+| where managedby =~ "q.beyond" or isempty(managedby)
+| where alerting =~ "enabled" or isempty(alerting)
 | extend state = "Warning"
 | extend monitor_package = iff(osType == "Windows","AZ_SC_ManagedOSWindows","AZ_SC_ManagedOSUnix")
 | extend monitor_name = "AZ_BACKUP_FAILED"
