@@ -3,7 +3,7 @@ let VMs = (MonitoringResources_CL
 | where type_s == "microsoft.compute/virtualmachines"
 | extend id_s = toupper(id_s) 
 | summarize arg_max(TimeGenerated,*) by id_s)
-| project TimeGenerated, id_s, name_s, tags_managedby_s;
+| project TimeGenerated, id_s, name_s, tags_managedby_s, tags_alerting_s;
 let mountpoints = dynamic(["/", "/var", "/boot", "/tmp", "/home", "/opt", "/backup"]);
 let warning = int(90);
 let critical = int(95);
@@ -38,6 +38,7 @@ Perf
 | join kind= leftouter VMs
 on $left._ResourceId == $right.id_s
 | where tags_managedby_s =~ "q.beyond" or isempty(tags_managedby_s)
+| where tags_alerting_s =~ "enabled" or isempty(tags_alerting_s)
 | extend threshold = case(CounterValue >= (critical), critical, CounterValue < (critical), warning, warning)
 | extend state = case(CounterValue >= (critical), "Critical", CounterValue <= (critical), "Warning", "")
 | extend monitor_package = "AZ_SC_ManagedSAPInstance"

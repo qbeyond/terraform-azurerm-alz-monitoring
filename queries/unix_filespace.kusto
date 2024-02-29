@@ -4,7 +4,7 @@ let VMs = (MonitoringResources_CL
 | where type_s == "microsoft.compute/virtualmachines"
 | extend id_s = toupper(id_s) 
 | summarize arg_max(TimeGenerated,*) by id_s)
-| project TimeGenerated, id_s, name_s, tags_managedby_s;
+| project TimeGenerated, id_s, name_s, tags_managedby_s, tags_alerting_s;
 let mountpoints = dynamic(["/", "/var", "/boot", "/tmp", "/home", "/opt", "/backup", "/boot/efi"]);
 let warning = int(80);
 let critical = int(90);
@@ -20,7 +20,8 @@ Perf
 | project _ResourceId, affected_object, CounterValue, InstanceName
 | join kind= leftouter VMs
 on $left._ResourceId == $right.id_s
-| where tags_managedby_s =~ "q.beyond" or isempty(tags_managedby_s) 
+| where tags_managedby_s =~ "q.beyond" or isempty(tags_managedby_s)
+| where tags_alerting_s =~ "enabled" or isempty(tags_alerting_s)
 | where CounterValue >= (warning)
 | extend state = case(CounterValue >= (critical), "Critical", CounterValue <= (critical), "Warning", "")
 | extend threshold = case(CounterValue >= (critical), critical, CounterValue < (critical), warning, warning)

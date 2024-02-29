@@ -5,7 +5,7 @@ let VMs = (MonitoringResources_CL
 | where type_s == "microsoft.compute/virtualmachines"
 | extend id_s = toupper(id_s) 
 | summarize arg_max(TimeGenerated,*) by id_s)
-| project TimeGenerated, id_s, name_s, tags_managedby_s;
+| project TimeGenerated, id_s, name_s, tags_managedby_s, tags_alerting_s;
 Heartbeat
 | extend affected_object = toupper(tostring(split(_ResourceId, "/") [-1]))
 | summarize LH = arg_max(TimeGenerated, *) by affected_object
@@ -15,6 +15,7 @@ Heartbeat
 | join kind= leftouter VMs
 on $left._ResourceId == $right.id_s
 | where tags_managedby_s =~ "q.beyond" or isempty(tags_managedby_s) 
+| where tags_alerting_s =~ "enabled" or isempty(tags_alerting_s)
 | where OSType contains_cs "Linux"
 | extend monitor_package = "AZ_UNIX_BASEPOLICY"
 | extend monitor_name = "AZ_UNIX_HEARTBEAT"
