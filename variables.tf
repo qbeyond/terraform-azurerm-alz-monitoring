@@ -70,3 +70,9 @@ variable "event_pipeline_config" {
     error_message = "If the config is enabled the service_uri must contain the {{secret}} placeholder."
   }
 }
+
+variable "root_management_group_id" {
+  type        = string
+  description = "The management group that will be scanned by the Import-ResourceGraphToLogAnalytics runbook."
+  default     = "alz"
+}

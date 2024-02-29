@@ -1,18 +1,31 @@
 // Track VM availability 
 // Display the VM's reported availability during the last 5 minutes.
+let VMs = (MonitoringResources_CL 
+| where TimeGenerated > ago(13h)
+| where type_s == "microsoft.compute/virtualmachines"
+| extend id_s = toupper(id_s) 
+| summarize arg_max(TimeGenerated,*) by id_s)
+| project TimeGenerated, id_s, name_s, tags_managedby_s;
+let appl_groups = ("RG.*AVD*");  // excluding a list of ResourceGroups. In this case AVD.
 Heartbeat
-    | extend affected_object = toupper(tostring(split(_ResourceId, "/") [-1]))
-    | summarize LH = arg_max(TimeGenerated, *) by affected_object
-    | where LH < ago(5m)
-    | where OSType contains_cs "Windows"
-    | extend monitor_package = "AZ_NT_BASEPOLICY"
-    | extend monitor_name = "AZ_NT_HEARTBEAT"
-    | extend monitor_description = "Checks availability of the Host"
-    | extend script_name = "n/a"
-    | extend script_version = "n/a"
-    | extend threshold = "00:05:00"
-    | extend value = LH
-    | extend state = iff(datetime_diff("second", now(), LH) >= 300, "CRITICAL", "OK")
-    | extend additional_information = ""
-    | project TimeGenerated=now(), _ResourceId, state, affected_object, monitor_package, monitor_name, monitor_description, script_name, script_version, threshold, value, affected_entity=Computer, additional_information
-
+| extend affected_object = toupper(tostring(split(_ResourceId, "/") [-1]))
+| extend affected_groups = toupper(extract(@"/resourcegroups/(.+)/providers", 1, _ResourceId)) // find groups
+| where not(affected_groups matches regex appl_groups)
+| summarize LH = arg_max(TimeGenerated, *) by affected_object
+| where LH < ago(5m)
+| extend _ResourceId = toupper(_ResourceId)
+| project _ResourceId, affected_groups, affected_object, OSType, LH
+| join kind= leftouter VMs
+on $left._ResourceId == $right.id_s
+| where tags_managedby_s =~ "q.beyond" or isempty(tags_managedby_s) 
+| where OSType contains_cs "Windows"
+| extend monitor_package = "AZ_NT_BASEPOLICY"
+| extend monitor_name = "AZ_NT_HEARTBEAT"
+| extend monitor_description = "Checks availability of the Host"
+| extend script_name = "n/a"
+| extend script_version = "n/a"
+| extend threshold = "00:05:00"
+| extend value = LH
+| extend state = iff(datetime_diff("second", now(), LH) >= 300, "CRITICAL", "OK")
+| extend additional_information = strcat("The Host did not send Heartbeats anymore. Managed by ",(tags_managedby_s),".")
+| project TimeGenerated=now(), _ResourceId, state, affected_object, monitor_package, monitor_name, monitor_description, script_name, script_version, threshold, value, affected_entity=affected_object, additional_information
