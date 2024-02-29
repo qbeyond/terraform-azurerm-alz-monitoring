@@ -1,19 +1,34 @@
 //Search the Windows event log for specific entries.
+let VMs = (MonitoringResources_CL 
+| where TimeGenerated > ago(13h)
+| where type_s == "microsoft.compute/virtualmachines"
+| extend id_s = toupper(id_s) 
+| summarize arg_max(TimeGenerated,*) by id_s)
+| project TimeGenerated, id_s, name_s, tags_managedby_s;
 let WinEventLog = "System";
 let WinSource = "Ntfs";
 let WinEventID = 55;
+let appl_groups = ("RG.*AVD*");  // excluding a list of ResourceGroups
 Event
-    | where EventLog == WinEventLog and WinSource == WinSource and EventID == WinEventID
-    | extend vm = toupper(tostring(split(_ResourceId, "/") [-1]))
-    | extend state = "Critical"
-    | extend affected_object = vm
-    | extend monitor_package = "AZ_SC_ManagedOSWindows"
-    | extend monitor_name = "AZ_NT_EVENTLOG_55"
-    | extend monitor_description = "Search the Windows event log for specific entries."
-    | extend script_name = "n/a"
-    | extend script_version = "n/a"
-    | extend threshold = "n/a"
-    | extend value = "n/a"
-    | extend affected_entity = vm
-    | extend additional_information = strcat("Windows log entry has been found. EventLogType: ", EventLog, "; Source: ", Source, "; EventID: ", EventID, "; Description: ", RenderedDescription, "; Check the System, please." )
-    | project TimeGenerated=now(), _ResourceId, state, affected_object, monitor_package, monitor_name, monitor_description, script_name, script_version, threshold, value, affected_entity, additional_information
+| where EventLog == WinEventLog and Source == WinSource and EventID == WinEventID
+| where TimeGenerated > ago(10m)
+| extend affected_object = toupper(tostring(split(_ResourceId, "/") [-1]))
+| extend affected_groups = toupper(extract(@"/resourcegroups/(.+)/providers", 1, _ResourceId)) // find groups
+| where not(affected_groups matches regex appl_groups)
+| extend _ResourceId = toupper(_ResourceId)
+| summarize arg_max(TimeGenerated, *) by affected_object
+| project _ResourceId, affected_object, EventLog, Source, EventID, RenderedDescription
+| join kind= leftouter VMs
+on $left._ResourceId == $right.id_s
+| where tags_managedby_s =~ "q.beyond" or isempty(tags_managedby_s)
+| extend state = "Critical"
+| extend monitor_package = "AZ_SC_ManagedOSWindows"
+| extend monitor_name = "AZ_NT_EVENTLOG_55"
+| extend monitor_description = "Search the Windows event log for specific entries."
+| extend script_name = "n/a"
+| extend script_version = "n/a"
+| extend threshold = "n/a"
+| extend value = "n/a"
+| extend affected_entity = affected_object
+| extend additional_information = strcat("Windows log entry has been found. EventLogType: ", EventLog, "; Source: ", Source, "; EventID: ", EventID, "; Description: ", RenderedDescription, "; Check the System, please. Managed by: ",(tags_managedby_s),"." )
+| project TimeGenerated=now(), _ResourceId, state, affected_object, monitor_package, monitor_name, monitor_description, script_name, script_version, threshold, value, affected_entity, additional_information
