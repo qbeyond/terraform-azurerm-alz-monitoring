@@ -1,52 +1,44 @@
-let VMs = (MonitoringResources_CL 
+let config = dynamic([
+    {"mountpoint": "/SAPINST$", "warning": 90, "critical": 95},
+    {"mountpoint": "^/hana/log/[A-Za-z0-9]{3}", "warning": 50, "critical": 70},
+    {"mountpoint": "^/oracle/[A-Za-z0-9]{3}/oraarch$", "warning": 50, "critical": 70},
+    {"mountpoint": "^/oracle/[A-Za-z0-9]{3}/(orig|mirr)log[A-B]$", "warning": 50, "critical": 70},
+    {"mountpoint": "^/oracle/[A-Za-z0-9]{3}/sapdata", "warning": 50, "critical": 70}
+]);
+let excludes = dynamic(["/", "/var", "/boot", "/tmp", "/home", "/opt", "/backup"]);
+let VMs = MonitoringResources_CL 
 | where TimeGenerated > ago(13h)
 | where type_s == "microsoft.compute/virtualmachines"
-| extend id_s = toupper(id_s) 
-| summarize arg_max(TimeGenerated,*) by id_s)
-| project TimeGenerated, id_s, name_s, tags_managedby_s, tags_alerting_s;
-let mountpoints = dynamic(["/", "/var", "/boot", "/tmp", "/home", "/opt", "/backup"]);
-let warning = int(90);
-let critical = int(95);
-let d1='{"volumes": [{"mountpoint":"/SAPINST$","warning":90,"critical":"95"}]}';
-let d2='{"volumes": [{"mountpoint":"^/hana/log/[A-Za-z0-9]{3}","warning":50,"critical":"70"}]}';
-let d3='{"volumes": [{"mountpoint":"^/oracle/[A-Za-z0-9]{3}/oraarch$","warning":50,"critical":"70"}]}';
-let d4='{"volumes": [{"mountpoint":"^/oracle/[A-Za-z0-9]{3}/(orig|mirr)log[A-B]$","warning":90,"critical":"95"}]}';
-let d5='{"volumes": [{"mountpoint":"^/oracle/[A-Za-z0-9]{3}/sapdata","warning":90,"critical":"95"}]}';
-//let d6='{"volumes": [{"mountpoint":"xxx$","warning":xx,"critical":"xx"}]}';
-Perf
-| extend affected_object = toupper(tostring(split(_ResourceId, "/") [-1]))
-| where ObjectName contains "Logical Disk"
-| where CounterName == "% Used Space"
-| where InstanceName matches regex "/.*"
-| where InstanceName !in (mountpoints)
-| where TimeGenerated > ago(5m)
-| where CounterValue >= (warning)
-| extend _ResourceId = toupper(_ResourceId)
-| extend VolumeName = InstanceName
-| extend warning = iff(InstanceName matches regex (tostring(parse_json(d1).volumes[0].mountpoint)), tostring(parse_json(d1).volumes[0].warning), tostring(warning))
-| extend critical = iff(InstanceName matches regex (tostring(parse_json(d1).volumes[0].mountpoint)), tostring(parse_json(d1).volumes[0].critical), tostring(critical))
-| extend warning = iff(InstanceName matches regex (tostring(parse_json(d2).volumes[0].mountpoint)), tostring(parse_json(d2).volumes[0].warning), tostring(warning))
-| extend critical = iff(InstanceName matches regex (tostring(parse_json(d2).volumes[0].mountpoint)), tostring(parse_json(d2).volumes[0].critical), tostring(critical))
-| extend warning = iff(InstanceName matches regex (tostring(parse_json(d3).volumes[0].mountpoint)), tostring(parse_json(d3).volumes[0].warning), tostring(warning))
-| extend critical = iff(InstanceName matches regex (tostring(parse_json(d3).volumes[0].mountpoint)), tostring(parse_json(d3).volumes[0].critical), tostring(critical))
-| extend warning = iff(InstanceName matches regex (tostring(parse_json(d4).volumes[0].mountpoint)), tostring(parse_json(d4).volumes[0].warning), tostring(warning))
-| extend critical = iff(InstanceName matches regex (tostring(parse_json(d4).volumes[0].mountpoint)), tostring(parse_json(d4).volumes[0].critical), tostring(critical))
-| extend warning = iff(InstanceName matches regex (tostring(parse_json(d5).volumes[0].mountpoint)), tostring(parse_json(d5).volumes[0].warning), tostring(warning))
-| extend critical = iff(InstanceName matches regex (tostring(parse_json(d5).volumes[0].mountpoint)), tostring(parse_json(d5).volumes[0].critical), tostring(critical))
-| extend warning = toint(warning)
-| extend critical = toint(critical)
-| join kind= leftouter VMs
-on $left._ResourceId == $right.id_s
-| where tags_managedby_s =~ "q.beyond" or isempty(tags_managedby_s)
-| where tags_alerting_s =~ "enabled" or isempty(tags_alerting_s)
-| extend threshold = case(CounterValue >= (critical), critical, CounterValue < (critical), warning, warning)
-| extend state = case(CounterValue >= (critical), "Critical", CounterValue <= (critical), "Warning", "")
+| summarize arg_max(TimeGenerated,*) by id_s
+| project TimeGenerated, vm_resource_id = tolower(id_s), name = name_s, managed_by = tags_managedby_s, alerting = tags_alerting_s;
+InsightsMetrics
+| where Namespace == "LogicalDisk"
+| where Name == "FreeSpacePercentage"
+| extend InverseVal = (100 - Val)
+| extend Mountpoint = tostring(parse_json(Tags)["vm.azm.ms/mountId"])
+| where Mountpoint !in (excludes)
+// 2 iff statements are needed for each monitored path due to a kusto constriant that the regex must be a constant
+| extend warning = iff(Mountpoint matches regex tostring(config[0]["mountpoint"]), config[0]["warning"], -1)
+| extend warning = iff(Mountpoint matches regex tostring(config[1]["mountpoint"]), config[1]["warning"], warning)
+| extend warning = iff(Mountpoint matches regex tostring(config[2]["mountpoint"]), config[2]["warning"], warning)
+| extend warning = iff(Mountpoint matches regex tostring(config[3]["mountpoint"]), config[3]["warning"], warning)
+| extend warning = iff(Mountpoint matches regex tostring(config[4]["mountpoint"]), config[4]["warning"], warning)
+| extend critical = iff(Mountpoint matches regex tostring(config[0]["mountpoint"]), config[0]["critical"], -1)
+| extend critical = iff(Mountpoint matches regex tostring(config[1]["mountpoint"]), config[1]["critical"], critical)
+| extend critical = iff(Mountpoint matches regex tostring(config[2]["mountpoint"]), config[2]["critical"], critical)
+| extend critical = iff(Mountpoint matches regex tostring(config[3]["mountpoint"]), config[3]["critical"], critical)
+| extend critical = iff(Mountpoint matches regex tostring(config[4]["mountpoint"]), config[4]["critical"], critical)
+| extend threshold = case(InverseVal >= critical, critical, InverseVal >= warning, warning, -1)
+| where threshold != -1
+| extend _ResourceId = tolower(_ResourceId)
+| join kind = leftouter VMs on $left._ResourceId == $right.vm_resource_id
+| extend state = case(InverseVal >= critical, "Critical", InverseVal >= warning, "Warning", "")
+| where managed_by =~ "q.beyond"
+| where alerting =~ "enabled"
 | extend monitor_package = "AZ_SC_ManagedSAPInstance"
 | extend monitor_name = "AZ_UNIX_FILESPACE"
 | extend monitor_description = strcat("Disk threshold reached. More or equal than ", (threshold), "% Diskspace used. Check the Diskspace of the Mountpoint, please.")
 | extend script_name = "n/a"
 | extend script_version = "n/a"
-| extend value = round(CounterValue, 2)
-| extend additional_information = strcat("More or equal than ", (threshold), "% Diskspace used (Unix). Managed by: ",(tags_managedby_s),".")
-| extend affected_entity = InstanceName
-| project TimeGenerated=now(), _ResourceId, state, affected_object, monitor_package, monitor_name, monitor_description, script_name, script_version, threshold, value, affected_entity, additional_information
+| extend additional_information = strcat("More or equal than ", (threshold), "% Diskspace used (Unix). Managed by: ",(managed_by),".")
+| project TimeGenerated=now(), _ResourceId, state, affected_object = name, monitor_package, monitor_name, monitor_description, script_name, script_version, threshold, value = round(InverseVal, 2), affected_entity = Mountpoint, additional_information
