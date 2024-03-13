@@ -33,8 +33,8 @@ InsightsMetrics
 | extend _ResourceId = tolower(_ResourceId)
 | join kind = leftouter VMs on $left._ResourceId == $right.vm_resource_id
 | extend state = case(InverseVal >= critical, "Critical", InverseVal >= warning, "Warning", "")
-| where managed_by =~ "q.beyond"
-| where alerting =~ "enabled"
+| where managed_by =~ "q.beyond" or isempty(managed_by)
+| where alerting =~ "enabled" or isempty(alerting)
 | extend monitor_package = "AZ_SC_ManagedSAPInstance"
 | extend monitor_name = "AZ_UNIX_FILESPACE"
 | extend monitor_description = strcat("Disk threshold reached. More or equal than ", (threshold), "% Diskspace used. Check the Diskspace of the Mountpoint, please.")
