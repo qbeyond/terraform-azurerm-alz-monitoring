@@ -23,8 +23,7 @@ Perf
 | where not(affected_groups matches regex appl_groups)
 | summarize arg_max(TimeGenerated, *) by affected_object, InstanceName
 | project _ResourceId, affected_groups, affected_object, CounterValue, threshold, InstanceName, state
-| join kind= leftouter VMs
-on $left._ResourceId == $right.id_s
+| join kind= leftouter VMs on $left._ResourceId == $right.id_s
 | where tags_managedby_s =~ "q.beyond" or isempty(tags_managedby_s) 
 | where tags_alerting_s =~ "enabled" or isempty(tags_alerting_s)
 | extend monitor_package = "AZ_NT_BASEPOLICY"
