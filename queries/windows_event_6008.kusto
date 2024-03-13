@@ -18,8 +18,7 @@ Event
 | extend _ResourceId = toupper(_ResourceId)
 | summarize arg_max(TimeGenerated, *) by affected_object
 | project _ResourceId, affected_object, EventLog, Source, EventID, RenderedDescription
-| join kind= leftouter VMs
-on $left._ResourceId == $right.id_s
+| join kind= leftouter VMs on $left._ResourceId == $right.id_s
 | where tags_managedby_s =~ "q.beyond" or isempty(tags_managedby_s)
 | where tags_alerting_s =~ "enabled" or isempty(tags_alerting_s)
 | extend state = "Critical"
