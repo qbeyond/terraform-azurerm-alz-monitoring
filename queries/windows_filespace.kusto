@@ -4,34 +4,36 @@ let VMs = (MonitoringResources_CL
 | where type_s == "microsoft.compute/virtualmachines"
 | extend id_s = toupper(id_s) 
 | summarize arg_max(TimeGenerated,*) by id_s)
-| project TimeGenerated, id_s, name_s, tags_managedby_s, tags_alerting_s;
+| project TimeGenerated, id_s, name_s, tags_managedby_s;
 let Disks = dynamic(["C:"]);
 let warning = int(10);
 let critical = int(5);
 let appl_groups = ("RG.*AVD*");  // excluding a list of ResourceGroups
-Perf
+InsightsMetrics
 | where TimeGenerated > ago(5m)
-| where ObjectName contains "LogicalDisk"
-| where CounterName == "% Free Space"
-| where InstanceName in (Disks)
-| where CounterValue <= (warning)
-| extend state = case(CounterValue >= (critical), "Warning", CounterValue <= (critical), "Critical", "Warning")
-| extend threshold = case(CounterValue >= (critical), warning, CounterValue <= (critical), critical, warning)
+| where Namespace == "LogicalDisk"
+| where Name == "FreeSpacePercentage"
+| extend Mountpoint = tostring(parse_json(Tags)["vm.azm.ms/mountId"])
+| where Mountpoint in (Disks)
+| extend InverseVal = (100 - Val)
+| where InverseVal <= (warning)
+| extend state = case(InverseVal >= (critical), "Warning", InverseVal <= (critical), "Critical", "Warning")
+| extend threshold = case(InverseVal >= (critical), warning, InverseVal <= (critical), critical, warning)
 | extend affected_object = toupper(tostring(split(_ResourceId, "/") [-1]))
 | extend affected_groups = toupper(extract(@"/resourcegroups/(.+)/providers", 1, _ResourceId)) // find groups
 | extend _ResourceId = toupper(_ResourceId)
 | where not(affected_groups matches regex appl_groups)
-| summarize arg_max(TimeGenerated, *) by affected_object, InstanceName
-| project _ResourceId, affected_groups, affected_object, CounterValue, threshold, InstanceName, state
-| join kind= leftouter VMs on $left._ResourceId == $right.id_s
+| summarize arg_max(TimeGenerated, *) by affected_object, Mountpoint
+| project _ResourceId, affected_groups, affected_object, InverseVal, threshold, Mountpoint, state
+| join kind= leftouter VMs
+on $left._ResourceId == $right.id_s
 | where tags_managedby_s =~ "q.beyond" or isempty(tags_managedby_s) 
-| where tags_alerting_s =~ "enabled" or isempty(tags_alerting_s)
 | extend monitor_package = "AZ_NT_BASEPOLICY"
 | extend monitor_name = "AZ_NT_DISKS"
 | extend monitor_description = strcat("Disk threshold has been reached. Less or equal than ", (threshold), "% Diskspace free. Please, check the Diskspace.")
 | extend script_name = "n/a"
 | extend script_version = "n/a"
-| extend value = round(CounterValue, 2)
+| extend value = round(InverseVal, 2)
 | extend additional_information = strcat("Only ", (value), " % Diskspace free. Managed by ",(tags_managedby_s),".")
-| extend affected_entity = InstanceName
+| extend affected_entity = Mountpoint
 | project TimeGenerated = now(), _ResourceId, state, affected_object, monitor_package, monitor_name, monitor_description, script_name, script_version, threshold, value, affected_entity, additional_information
