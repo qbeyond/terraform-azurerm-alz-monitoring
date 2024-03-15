@@ -4,6 +4,17 @@ All notable changes to this module will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] - 2024-03-15
+
+### Added 
+ - DCRs for VM-Insights and Event-Log
+
+### Changed
+ - Updated Kusto queries for new AMA 
+   
+### Removed
+ - Legacy datasources and VM-Insights solution
+
 ## [3.2.0] - 2024-01-31
 
 ### Added
