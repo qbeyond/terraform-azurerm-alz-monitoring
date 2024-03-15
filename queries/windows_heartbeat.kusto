@@ -11,7 +11,7 @@ Heartbeat
 | summarize LH = arg_max(TimeGenerated, *) by affected_object
 | where LH < ago(5m)
 | extend _ResourceId = toupper(_ResourceId)
-| project _ResourceId, , affected_object, OSType, LH
+| project _ResourceId, affected_object, OSType, LH
 | join kind= leftouter VMs on $left._ResourceId == $right.id_s
 | where tags_managedby_s =~ "q.beyond" or isempty(tags_managedby_s) 
 | where tags_alerting_s =~ "enabled" or isempty(tags_alerting_s)
