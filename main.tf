@@ -1,38 +1,6 @@
 data "azurerm_subscription" "current" {
 }
 
-resource "azurerm_log_analytics_datasource_windows_event" "application" {
-  name                = "lad-application"
-  resource_group_name = var.log_analytics_workspace.resource_group_name
-  workspace_name      = var.log_analytics_workspace.name
-  event_log_name      = "Application"
-  event_types         = ["Error", "Warning", "Information"]
-}
-
-resource "azurerm_log_analytics_datasource_windows_event" "system" {
-  name                = "lad-system"
-  resource_group_name = var.log_analytics_workspace.resource_group_name
-  workspace_name      = var.log_analytics_workspace.name
-  event_log_name      = "System"
-  event_types         = ["Error", "Warning", "Information"]
-}
-
-module "vm_insights" {
-  source  = "qbeyond/log-analytics-VMInsights/azurerm"
-  version = "1.0.2"
-  log_analytics_workspace = {
-    id                  = var.log_analytics_workspace.id
-    name                = var.log_analytics_workspace.name
-    resource_group_name = var.log_analytics_workspace.resource_group_name
-    location            = var.log_analytics_workspace.location
-  }
-
-  depends_on = [
-    azurerm_log_analytics_datasource_windows_event.application,
-    azurerm_log_analytics_datasource_windows_event.system
-  ]
-}
-
 resource "azurerm_monitor_action_group" "eventpipeline" {
   count = var.event_pipeline_config.enabled ? 1 : 0
   name                = "EventPipelineCentral_AG_1"

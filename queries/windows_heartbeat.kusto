@@ -5,19 +5,16 @@ let VMs = (MonitoringResources_CL
 | where type_s == "microsoft.compute/virtualmachines"
 | extend id_s = toupper(id_s) 
 | summarize arg_max(TimeGenerated,*) by id_s)
-| project TimeGenerated, id_s, name_s, tags_managedby_s;
-let appl_groups = ("RG.*AVD*");  // excluding a list of ResourceGroups. In this case AVD.
+| project TimeGenerated, id_s, name_s, tags_managedby_s, tags_alerting_s;
 Heartbeat
 | extend affected_object = toupper(tostring(split(_ResourceId, "/") [-1]))
-| extend affected_groups = toupper(extract(@"/resourcegroups/(.+)/providers", 1, _ResourceId)) // find groups
-| where not(affected_groups matches regex appl_groups)
 | summarize LH = arg_max(TimeGenerated, *) by affected_object
 | where LH < ago(5m)
 | extend _ResourceId = toupper(_ResourceId)
-| project _ResourceId, affected_groups, affected_object, OSType, LH
-| join kind= leftouter VMs
-on $left._ResourceId == $right.id_s
+| project _ResourceId, affected_object, OSType, LH
+| join kind= leftouter VMs on $left._ResourceId == $right.id_s
 | where tags_managedby_s =~ "q.beyond" or isempty(tags_managedby_s) 
+| where tags_alerting_s =~ "enabled" or isempty(tags_alerting_s)
 | where OSType contains_cs "Windows"
 | extend monitor_package = "AZ_NT_BASEPOLICY"
 | extend monitor_name = "AZ_NT_HEARTBEAT"
