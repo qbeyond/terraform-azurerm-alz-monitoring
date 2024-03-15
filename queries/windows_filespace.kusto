@@ -18,10 +18,9 @@ InsightsMetrics
 | extend state = case(Val > (critical), "Warning", Val <= (critical), "Critical", "Warning")
 | extend threshold = case(Val > (critical), warning, Val <= (critical), critical, warning)
 | extend affected_object = toupper(tostring(split(_ResourceId, "/") [-1]))
-| extend affected_groups = toupper(extract(@"/resourcegroups/(.+)/providers", 1, _ResourceId)) // find groups
 | extend _ResourceId = toupper(_ResourceId)
 | summarize arg_max(TimeGenerated, *) by affected_object, Mountpoint
-| project _ResourceId, affected_groups, affected_object, Val, threshold, Mountpoint, state
+| project _ResourceId, affected_object, Val, threshold, Mountpoint, state
 | join kind= leftouter VMs on $left._ResourceId == $right.id_s
 | where tags_alerting_s =~ "enabled" or isempty(tags_alerting_s)
 | where tags_managedby_s =~ "q.beyond" or isempty(tags_managedby_s) 

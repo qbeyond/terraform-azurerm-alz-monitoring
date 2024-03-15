@@ -12,7 +12,6 @@ Event
 | where EventLog == WinEventLog and Source == WinSource and EventID == WinEventID
 | where TimeGenerated > ago(10m)
 | extend affected_object = toupper(tostring(split(_ResourceId, "/") [-1]))
-| extend affected_groups = toupper(extract(@"/resourcegroups/(.+)/providers", 1, _ResourceId)) // find groups
 | extend _ResourceId = toupper(_ResourceId)
 | summarize arg_max(TimeGenerated, *) by affected_object
 | project _ResourceId, affected_object, EventLog, Source, EventID, RenderedDescription
