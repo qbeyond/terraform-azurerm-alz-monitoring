@@ -1,3 +1,4 @@
+// Alert when SAP mountpoints used diskspace exceeds the defined threshold.
 let config = dynamic([
     {"mountpoint": "/SAPINST$", "warning": 90, "critical": 95},
     {"mountpoint": "^/hana/log/[A-Za-z0-9]{3}", "warning": 50, "critical": 70},

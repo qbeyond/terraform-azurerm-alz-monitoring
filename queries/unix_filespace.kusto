@@ -1,10 +1,10 @@
 // more or equal than 90% Diskspace used (Unix)
-let VMs = (MonitoringResources_CL 
+let VMs = MonitoringResources_CL 
 | where TimeGenerated > ago(13h)
 | where type_s == "microsoft.compute/virtualmachines"
 | extend id_s = toupper(id_s) 
-| summarize arg_max(TimeGenerated,*) by id_s)
-| project TimeGenerated, id_s, name_s, tags_managedby_s;
+| summarize arg_max(TimeGenerated,*) by id_s
+| project TimeGenerated, id_s, name_s, tags_managedby_s, tags_alerting_s;
 let mountpoints = dynamic(["/", "/var", "/boot", "/tmp", "/home", "/opt", "/backup", "/boot/efi"]);
 let warning = int(80);
 let critical = int(90);
@@ -20,10 +20,9 @@ InsightsMetrics
 | summarize arg_max(TimeGenerated, *) by affected_object, Mountpoint
 | extend _ResourceId = toupper(_ResourceId)
 | project _ResourceId, affected_object, InverseVal, Mountpoint
-| join kind= leftouter VMs
-on $left._ResourceId == $right.id_s
+| join kind= leftouter VMs on $left._ResourceId == $right.id_s
 | where tags_managedby_s =~ "q.beyond" or isempty(tags_managedby_s) 
-| where InverseVal >= (warning)
+| where tags_alerting_s =~ "enabled" or isempty(tags_alerting_s)
 | extend state = case(InverseVal >= (critical), "Critical", InverseVal <= (critical), "Warning", "")
 | extend threshold = case(InverseVal >= (critical), critical, InverseVal < (critical), warning, warning)
 | extend monitor_package = "AZ_UX_SC_ManagedOSUnix"
@@ -33,5 +32,5 @@ on $left._ResourceId == $right.id_s
 | extend script_version = "n/a"
 | extend value = round(InverseVal, 2)
 | extend additional_information = strcat("more or equal than ", (threshold), "% Diskspace used. Managed by ",(tags_managedby_s),".")
-| extend affected_entity = InverseVal
+| extend affected_entity = Mountpoint
 | project TimeGenerated =now(), _ResourceId, state, affected_object, monitor_package, monitor_name, monitor_description, script_name, script_version, threshold, value, affected_entity, additional_information
