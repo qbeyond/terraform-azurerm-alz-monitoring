@@ -76,3 +76,9 @@ variable "root_management_group_id" {
   description = "The management group that will be scanned by the Import-ResourceGraphToLogAnalytics runbook."
   default     = "alz"
 }
+
+variable "tags" {
+  type        = map(string)
+  description = "Tags that will be assigned to all resources."
+  default     = {}
+}

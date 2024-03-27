@@ -1,7 +1,8 @@
 resource "azurerm_monitor_data_collection_rule" "vm_insight" {
-  name                        = "dcr-prd-all-VmInsights-01"
-  resource_group_name         = var.log_analytics_workspace.resource_group_name
-  location                    = var.log_analytics_workspace.location
+  name                = "dcr-prd-all-VmInsights-01"
+  resource_group_name = var.log_analytics_workspace.resource_group_name
+  location            = var.log_analytics_workspace.location
+  tags                = var.tags
 
   destinations {
     log_analytics {
@@ -44,10 +45,11 @@ resource "azurerm_monitor_data_collection_rule" "vm_insight" {
 }
 
 resource "azurerm_monitor_data_collection_rule" "event_log" {
-  name                        = "dcr-prd-win-EventLogBasic-01"
-  resource_group_name         = var.log_analytics_workspace.resource_group_name
-  location                    = var.log_analytics_workspace.location
-  kind                        = "Windows"
+  name                = "dcr-prd-win-EventLogBasic-01"
+  resource_group_name = var.log_analytics_workspace.resource_group_name
+  location            = var.log_analytics_workspace.location
+  kind                = "Windows"
+  tags                = var.tags
 
   destinations {
     log_analytics {
