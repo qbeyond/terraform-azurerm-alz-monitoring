@@ -11,7 +11,7 @@ To enable usage of tags and resource properties in monitoring queries an existin
 <!-- BEGIN_TF_DOCS -->
 ## Usage
 
-To use this module a resource group and log analytics workspace is required.
+To use this module a resource group and log analytics workspace is required. 
 The webhook URL needs to point to a valid receiver for pipeline events.
 If authentication or other options are required they need to be included in the URL as path or query parameters.
 
@@ -50,6 +50,9 @@ module "monitor" {
   }
   automation_account      = azurerm_automation_account.example
   secret                  = "key"
+  tags                    = {
+    "MyTagName" = "MyTagValue"
+  }
 }
 ```
 
@@ -109,7 +112,7 @@ module "monitor" {
 AddonAzureBackupJobs
 | summarize arg_max(TimeGenerated,*) by JobUniqueId
 | where JobStatus == "Failed"
-```
+```  
 ## Requirements
 
 | Name | Version |
@@ -127,58 +130,60 @@ AddonAzureBackupJobs
 | <a name="input_event_pipeline_config"></a> [event\_pipeline\_config](#input\_event\_pipeline\_config) | <pre>{<br>    enabled       = Enable the action group if you want to send data to a monitoring service.<br>    name          = Name of the alert webhook.<br>    service_uri   = Link to the webhook receiver URL. Must contain the placeholder \"{{secret}}\". This placeholder will be replaced by the secret value from var.secret. This is used to add authentication to the webhook URL as a query parameter.<br>}</pre> | <pre>object({<br>    enabled     = bool<br>    name        = optional(string, "QBY EventPipeline")<br>    service_uri = optional(string)<br>  })</pre> | <pre>{<br>  "enabled": false<br>}</pre> | no |
 | <a name="input_root_management_group_id"></a> [root\_management\_group\_id](#input\_root\_management\_group\_id) | The management group that will be scanned by the Import-ResourceGraphToLogAnalytics runbook. | `string` | `"alz"` | no |
 | <a name="input_secret"></a> [secret](#input\_secret) | Value that will replace the placeholder `{{secret}}` in `event_pipeline_config.service_uri`. | `string` | `""` | no |
+| <a name="input_tags"></a> [tags](#input\_tags) | Tags that will be assigned to all resources. | `map(string)` | `{}` | no |
 ## Outputs
 
 No outputs.
 
-## Resource types
+      ## Resource types
 
-| Type | Used |
-|------|-------|
-| [azurerm_automation_job_schedule](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_job_schedule) | 1 |
-| [azurerm_automation_module](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_module) | 2 |
-| [azurerm_automation_runbook](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_runbook) | 1 |
-| [azurerm_automation_schedule](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_schedule) | 1 |
-| [azurerm_automation_variable_string](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_variable_string) | 1 |
-| [azurerm_monitor_action_group](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_action_group) | 1 |
-| [azurerm_monitor_data_collection_rule](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | 2 |
-| [azurerm_monitor_scheduled_query_rules_alert](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_scheduled_query_rules_alert) | 1 |
-| [time_static](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/static) | 1 |
+      | Type | Used |
+      |------|-------|
+        | [azurerm_automation_job_schedule](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_job_schedule) | 1 |
+        | [azurerm_automation_module](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_module) | 2 |
+        | [azurerm_automation_runbook](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_runbook) | 1 |
+        | [azurerm_automation_schedule](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_schedule) | 1 |
+        | [azurerm_automation_variable_string](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_variable_string) | 1 |
+        | [azurerm_monitor_action_group](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_action_group) | 1 |
+        | [azurerm_monitor_data_collection_rule](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | 2 |
+        | [azurerm_monitor_scheduled_query_rules_alert](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_scheduled_query_rules_alert) | 1 |
+        | [time_static](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/static) | 1 |
 
-**`Used` only includes resource blocks.** `for_each` and `count` meta arguments, as well as resource blocks of modules are not considered.
-
+      **`Used` only includes resource blocks.** `for_each` and `count` meta arguments, as well as resource blocks of modules are not considered.
+    
 ## Modules
 
 No modules.
 
-## Resources by Files
+        ## Resources by Files
 
-### data_collection_rules.tf
+            ### data_collection_rules.tf
 
-| Name | Type |
-|------|------|
-| [azurerm_monitor_data_collection_rule.event_log](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | resource |
-| [azurerm_monitor_data_collection_rule.vm_insight](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | resource |
+            | Name | Type |
+            |------|------|
+                  | [azurerm_monitor_data_collection_rule.event_log](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | resource |
+                  | [azurerm_monitor_data_collection_rule.vm_insight](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | resource |
 
-### main.tf
+            ### main.tf
 
-| Name | Type |
-|------|------|
-| [azurerm_monitor_action_group.eventpipeline](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_action_group) | resource |
-| [azurerm_monitor_scheduled_query_rules_alert.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_scheduled_query_rules_alert) | resource |
-| [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subscription) | data source |
+            | Name | Type |
+            |------|------|
+                  | [azurerm_monitor_action_group.eventpipeline](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_action_group) | resource |
+                  | [azurerm_monitor_scheduled_query_rules_alert.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_scheduled_query_rules_alert) | resource |
+                  | [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subscription) | data source |
 
-### resourcegraph.tf
+            ### resourcegraph.tf
 
-| Name | Type |
-|------|------|
-| [azurerm_automation_job_schedule.resourcegraph_query](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_job_schedule) | resource |
-| [azurerm_automation_module.az_accounts](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_module) | resource |
-| [azurerm_automation_module.az_resourcegraph](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_module) | resource |
-| [azurerm_automation_runbook.resourcegraph_query](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_runbook) | resource |
-| [azurerm_automation_schedule.twice_daily](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_schedule) | resource |
-| [azurerm_automation_variable_string.law_sharedkey](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_variable_string) | resource |
-| [time_static.automation_schedule_tomorrow_5am](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/static) | resource |
+            | Name | Type |
+            |------|------|
+                  | [azurerm_automation_job_schedule.resourcegraph_query](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_job_schedule) | resource |
+                  | [azurerm_automation_module.az_accounts](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_module) | resource |
+                  | [azurerm_automation_module.az_resourcegraph](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_module) | resource |
+                  | [azurerm_automation_runbook.resourcegraph_query](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_runbook) | resource |
+                  | [azurerm_automation_schedule.twice_daily](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_schedule) | resource |
+                  | [azurerm_automation_variable_string.law_sharedkey](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_variable_string) | resource |
+                  | [time_static.automation_schedule_tomorrow_5am](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/static) | resource |
+    
 <!-- END_TF_DOCS -->
 
 ## Contribute
