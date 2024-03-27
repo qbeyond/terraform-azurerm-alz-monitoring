@@ -28,6 +28,7 @@ resource "azurerm_automation_runbook" "resourcegraph_query" {
   description             = "This runbook imports results from defined azure resource graph query to log analytics workspace."
   runbook_type            = "PowerShell"
   content                 = file("${path.module}/resourcegraph/Import-ResourceGraphToLogAnalytics.ps1")
+  tags                    = var.tags
 }
 
 resource "azurerm_automation_variable_string" "law_sharedkey" {
