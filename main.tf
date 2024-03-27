@@ -6,6 +6,7 @@ resource "azurerm_monitor_action_group" "eventpipeline" {
   name                = "EventPipelineCentral_AG_1"
   resource_group_name = var.log_analytics_workspace.resource_group_name
   short_name          = "monitorhook"
+  tags                = var.tags
 
   webhook_receiver {
     name                    = var.event_pipeline_config.name
@@ -19,6 +20,7 @@ resource "azurerm_monitor_scheduled_query_rules_alert" "this" {
   name                = each.key
   location            = var.log_analytics_workspace.location
   resource_group_name = var.log_analytics_workspace.resource_group_name
+  tags                = var.tags
   action {
     action_group = local.action_group
   }

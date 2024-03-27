@@ -32,4 +32,7 @@ module "monitor" {
   }
   automation_account      = azurerm_automation_account.example
   secret                  = "key"
+  tags                    = {
+    "MyTagName" = "MyTagValue"
+  }
 }
