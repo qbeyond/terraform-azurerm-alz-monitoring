@@ -136,8 +136,7 @@ AddonAzureBackupJobs
 | Name | Description |
 |------|-------------|
 | <a name="output_action_group_id"></a> [action\_group\_id](#output\_action\_group\_id) | The id of the action group created for the event pipeline. |
-
-      ## Resource types
+## Resource types
 
       | Type | Used |
       |------|-------|
