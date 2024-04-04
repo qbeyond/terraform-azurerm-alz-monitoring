@@ -25,14 +25,14 @@ resource "azurerm_automation_account" "example" {
 module "monitor" {
   source                  = "../.."
   log_analytics_workspace = azurerm_log_analytics_workspace.example
-  event_pipeline_config   = {
-    enabled = true
-    name = "QBY EventPipeline"
+  event_pipeline_config = {
+    enabled     = true
+    name        = "QBY EventPipeline"
     service_uri = "https://my-webhook.azurewebsites.net/api/GenericWebhookJS1?code={{secret}}&clientid=some-fct-key"
   }
-  automation_account      = azurerm_automation_account.example
-  secret                  = "key"
-  tags                    = {
+  automation_account = azurerm_automation_account.example
+  secret             = "key"
+  tags = {
     "MyTagName" = "MyTagValue"
   }
 }
