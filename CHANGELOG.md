@@ -4,6 +4,11 @@ All notable changes to this module will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.2.0] - 2024-04-04
+
+### Added
+- Apply all examples on `terraform test`
+
 ## [4.1.0] - 2024-03-27
 
 ### Added
