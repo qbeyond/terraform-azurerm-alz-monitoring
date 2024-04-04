@@ -11,6 +11,7 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 ### Added
 
 - ouput of `action_group_id`
+- Apply all examples on `terraform test`
 
 ## [4.1.0] - 2024-03-27
 
