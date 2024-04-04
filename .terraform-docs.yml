@@ -71,7 +71,7 @@ content: |-
             No resources.
         {{ end }}
       {{ else }}
-        {{ indent 0 "#" }} Resource types
+        {{- indent 0 "#" }} Resource types
 
         | Type | Used |
         |------|-------|
