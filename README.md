@@ -43,14 +43,14 @@ resource "azurerm_automation_account" "example" {
 module "monitor" {
   source                  = "../.."
   log_analytics_workspace = azurerm_log_analytics_workspace.example
-  event_pipeline_config   = {
-    enabled = true
-    name = "QBY EventPipeline"
-    service_uri = "https://my-webhook.azurewebsites.net/api/GenericWebhookJS1?code={{secret}}&clientid=some-fct-key"
+  event_pipeline_config = {
+    enabled     = true
+    name        = "QBY EventPipeline"
+    service_uri = "https://qbeyond.de/{{secret}}"
   }
-  automation_account      = azurerm_automation_account.example
-  secret                  = "key"
-  tags                    = {
+  automation_account = azurerm_automation_account.example
+  secret             = "impressum"
+  tags = {
     "MyTagName" = "MyTagValue"
   }
 }
@@ -61,7 +61,7 @@ module "monitor" {
 You can specify additional kusto queries to monitor.
 ```hcl
 provider "azurerm" {
-  features{}
+  features {}
 }
 
 resource "azurerm_resource_group" "example" {
@@ -87,19 +87,19 @@ resource "azurerm_automation_account" "example" {
 module "monitor" {
   source                  = "../.."
   log_analytics_workspace = azurerm_log_analytics_workspace.example
-  event_pipeline_config   = {
-    enabled = true
-    name = "QBY EventPipeline"
-    service_uri = "https://my-webhook.azurewebsites.net/api/GenericWebhookJS1?code={{secret}}&clientid=some-fct-key"
+  event_pipeline_config = {
+    enabled     = true
+    name        = "QBY EventPipeline"
+    service_uri = "https://qbeyond.de/{{secret}}"
   }
-  automation_account      = azurerm_automation_account.example
-  secret                  = "key"
+  automation_account = azurerm_automation_account.example
+  secret             = "impressum"
 
-  additional_queries    = {
-    "alr-prd-diskspace-bkp-law-logsea-warn-01": {
-        query_path  = "${path.module}/queries/failed_jobs.kusto"
-        description = "Example of monitoring for failed backup jobs"
-        time_window = 2280
+  additional_queries = {
+    "alr-prd-diskspace-bkp-law-logsea-warn-01" : {
+      query_path  = "${path.module}/queries/failed_jobs.kusto"
+      description = "Example of monitoring for failed backup jobs"
+      time_window = 2280
     }
   }
 }
@@ -133,9 +133,10 @@ AddonAzureBackupJobs
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags that will be assigned to all resources. | `map(string)` | `{}` | no |
 ## Outputs
 
-No outputs.
-
-      ## Resource types
+| Name | Description |
+|------|-------------|
+| <a name="output_action_group_id"></a> [action\_group\_id](#output\_action\_group\_id) | The id of the action group created for the event pipeline. |
+## Resource types
 
       | Type | Used |
       |------|-------|
