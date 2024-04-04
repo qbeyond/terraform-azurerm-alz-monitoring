@@ -4,9 +4,13 @@ All notable changes to this module will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - yyyy-mm-dd
+
 ## [4.2.0] - 2024-04-04
 
 ### Added
+
+- ouput of `action_group_id`
 - Apply all examples on `terraform test`
 
 ## [4.1.0] - 2024-03-27
