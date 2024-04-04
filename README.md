@@ -192,3 +192,7 @@ No modules.
 Please use Pull requests to contribute.
 
 When a new Feature or Fix is ready to be released, create a new Github release and adhere to [Semantic Versioning 2.0.0](https://semver.org/lang/de/spec/v2.0.0.html).
+
+### Tests
+
+To test this module all examples should be applied. This can be done by running `terraform test`.
