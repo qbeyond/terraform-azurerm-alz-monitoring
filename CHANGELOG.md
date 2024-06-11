@@ -6,6 +6,11 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased] - yyyy-mm-dd
 
+## [4.2.1] - 2024-06-11
+
+### Fixed
+- Fixed Resource-Graph query so tag filtering properly excludes Arc machines
+
 ## [4.2.0] - 2024-04-04
 
 ### Added
