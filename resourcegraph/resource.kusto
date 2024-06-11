@@ -12,7 +12,9 @@ resources
 	"microsoft.Sql/managedInstances/databases",
 	"microsoft.Storage/storageaccounts",
 	"microsoft.Compute/virtualmachines",
+	"microsoft.compute/virtualmachinescalesets",
 	"microsoft.Network/virtualWans",
-	"microsoft.Network/vpngateways"
+	"microsoft.Network/vpngateways",
+	"microsoft.hybridcompute/machines"
 )
 | project id, name, type, tenantId, location, resourceGroup, subscriptionId, tags, properties
