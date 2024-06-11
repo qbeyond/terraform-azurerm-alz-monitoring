@@ -30,10 +30,10 @@ resource "azurerm_monitor_data_collection_rule" "vm_insight" {
     }
 
     performance_counter {
-        counter_specifiers            = ["\\VmInsights\\DetailedMetrics"]
-        name                          = "VMInsightsPerfCounters"
-        sampling_frequency_in_seconds = 60
-        streams                       = ["Microsoft-InsightsMetrics"]
+      counter_specifiers            = ["\\VmInsights\\DetailedMetrics"]
+      name                          = "VMInsightsPerfCounters"
+      sampling_frequency_in_seconds = 60
+      streams                       = ["Microsoft-InsightsMetrics"]
     }
   }
 
@@ -76,4 +76,37 @@ resource "azurerm_monitor_data_collection_rule" "event_log" {
   }
 
   description = "Collects EventIDs 55 and 6008 from the EventLog"
+}
+
+resource "azurerm_monitor_data_collection_rule" "syslog" {
+  name                = "dcr-prd-ux-Syslog-01"
+  resource_group_name = var.log_analytics_workspace.resource_group_name
+  kind                = "Linux"
+  description         = "Collect syslog data for security monitoring"
+  tags                = var.tags
+
+  destinations {
+    log_analytics {
+      workspace_resource_id = var.log_analytics_workspace.id
+      name                  = var.log_analytics_workspace.name
+    }
+  }
+
+  data_sources {
+    syslog {
+      name           = "Syslog"
+      streams        = ["Microsoft-Syslog"]
+      facility_names = ["auth", "authpriv", "cron", "daemon", "mark", "kern", "user"]
+      log_levels     = ["*"]
+    }
+  }
+
+  data_flow {
+    streams      = ["Microsoft-Syslog"]
+    destinations = [var.log_analytics_workspace.name]
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
 }
