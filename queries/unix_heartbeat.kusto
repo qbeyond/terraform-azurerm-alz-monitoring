@@ -2,7 +2,7 @@
 // Display the VM's reported availability during the last 5 minutes.
 let VMs = (MonitoringResources_CL 
 | where TimeGenerated > ago(13h)
-| where type_s == "microsoft.compute/virtualmachines"
+| where type_s in~ ("microsoft.compute/virtualmachines", "microsoft.hybridcompute/machines", "microsoft.compute/virtualmachinescalesets")
 | extend id_s = toupper(id_s) 
 | summarize arg_max(TimeGenerated,*) by id_s)
 | project TimeGenerated, id_s, name_s, tags_managedby_s, tags_alerting_s;
