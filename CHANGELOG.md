@@ -6,6 +6,9 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased] - yyyy-mm-dd
 
+### Added
+- DCRs for security monitoring
+
 ## [4.2.0] - 2024-04-04
 
 ### Added
