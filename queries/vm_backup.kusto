@@ -1,6 +1,6 @@
 let VMs = MonitoringResources_CL 
 | where TimeGenerated > ago(13h)
-| where type_s == "microsoft.compute/virtualmachines"
+| where type_s in~ ("microsoft.compute/virtualmachines", "microsoft.hybridcompute/machines", "microsoft.compute/virtualmachinescalesets")
 | summarize arg_max(TimeGenerated, *) by name_s
 | project vmResourceID = ResourceId, name = tolower(name_s), managedby = tags_managedby_s, alerting = tags_alerting_s, osType = properties_storageProfile_osDisk_osType_s;
 AddonAzureBackupJobs
