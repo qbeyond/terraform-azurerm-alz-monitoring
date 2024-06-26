@@ -9,7 +9,7 @@ let config = dynamic([
 let excludes = dynamic(["/", "/var", "/boot", "/tmp", "/home", "/opt", "/backup"]);
 let VMs = MonitoringResources_CL 
 | where TimeGenerated > ago(13h)
-| where type_s == "microsoft.compute/virtualmachines"
+| where type_s in~ ("microsoft.compute/virtualmachines", "microsoft.hybridcompute/machines", "microsoft.compute/virtualmachinescalesets")
 | summarize arg_max(TimeGenerated,*) by id_s
 | project TimeGenerated, vm_resource_id = tolower(id_s), name = name_s, managed_by = tags_managedby_s, alerting = tags_alerting_s;
 InsightsMetrics
@@ -36,10 +36,14 @@ InsightsMetrics
 | extend state = case(InverseVal >= critical, "Critical", InverseVal >= warning, "Warning", "")
 | where managed_by =~ "q.beyond" or isempty(managed_by)
 | where alerting =~ "enabled" or isempty(alerting)
+| extend affected_object = name
 | extend monitor_package = "AZ_SC_ManagedSAPInstance"
 | extend monitor_name = "AZ_UNIX_FILESPACE"
 | extend monitor_description = strcat("Disk threshold reached. More or equal than ", (threshold), "% Diskspace used. Check the Diskspace of the Mountpoint, please.")
 | extend script_name = "n/a"
 | extend script_version = "n/a"
+| extend value = round(InverseVal, 2)
+| extend affected_entity =Mountpoint
 | extend additional_information = strcat("More or equal than ", (threshold), "% Diskspace used (Unix). Managed by: ",(managed_by),".")
-| project TimeGenerated=now(), _ResourceId, state, affected_object = name, monitor_package, monitor_name, monitor_description, script_name, script_version, threshold, value = round(InverseVal, 2), affected_entity = Mountpoint, additional_information
+| project _ResourceId, RawData = strcat("TimeGenerated:", now(), ";_ResourceId:", _ResourceId, ";state:", state, ";affected_object:", affected_object, ";monitor_package:", monitor_package, ";monitor_name:", monitor_name, ";monitor_description:", monitor_description, ";script_name:", script_name, ";script_version:", script_version, ";threshold:", threshold, ";value:", value , ";affected_entity:", affected_entity, ";additional_information:", additional_information)
+
