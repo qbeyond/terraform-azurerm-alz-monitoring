@@ -16,7 +16,7 @@ resource "azurerm_monitor_data_collection_rule" "vm_insight" {
     destinations = [var.log_analytics_workspace.name]
   }
 
-  data_flow { 
+  data_flow {
     streams      = ["Microsoft-InsightsMetrics"]
     destinations = [var.log_analytics_workspace.name]
   }
@@ -30,10 +30,10 @@ resource "azurerm_monitor_data_collection_rule" "vm_insight" {
     }
 
     performance_counter {
-        counter_specifiers            = ["\\VmInsights\\DetailedMetrics"]
-        name                          = "VMInsightsPerfCounters"
-        sampling_frequency_in_seconds = 60
-        streams                       = ["Microsoft-InsightsMetrics"]
+      counter_specifiers            = ["\\VmInsights\\DetailedMetrics"]
+      name                          = "VMInsightsPerfCounters"
+      sampling_frequency_in_seconds = 60
+      streams                       = ["Microsoft-InsightsMetrics"]
     }
   }
 
@@ -62,11 +62,11 @@ resource "azurerm_monitor_data_collection_rule" "event_log" {
     streams      = ["Microsoft-Event"]
     destinations = [var.log_analytics_workspace.name]
   }
-  
+
   data_sources {
     windows_event_log {
-      name     = "EventLog"
-      streams  = ["Microsoft-Event"]
+      name           = "EventLog"
+      streams        = ["Microsoft-Event"]
       x_path_queries = ["Application!*[System[EventID=55]]", "Application!*[System[EventID=6008]]"]
     }
   }
