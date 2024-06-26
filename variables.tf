@@ -64,7 +64,7 @@ variable "event_pipeline_config" {
     condition     = var.event_pipeline_config.enabled ? var.event_pipeline_config.service_uri != null : true
     error_message = "If the config is enabled the service_uri must be set."
   }
-  
+
   validation {
     condition     = var.event_pipeline_config.enabled ? strcontains(var.event_pipeline_config.service_uri, "{{secret}}") : true
     error_message = "If the config is enabled the service_uri must contain the {{secret}} placeholder."
