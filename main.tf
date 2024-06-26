@@ -15,25 +15,41 @@ resource "azurerm_monitor_action_group" "eventpipeline" {
   }
 }
 
-resource "azurerm_monitor_scheduled_query_rules_alert" "this" {
+resource "azurerm_monitor_scheduled_query_rules_alert_v2" "this" {
   for_each = local.rules
-  name                = each.key
-  location            = var.log_analytics_workspace.location
+  name = each.key
+  location = var.log_analytics_workspace.location
   resource_group_name = var.log_analytics_workspace.resource_group_name
-  tags                = var.tags
+  tags = var.tags
+
   action {
-    action_group = local.action_group
+    action_groups = local.action_group
   }
-  data_source_id = var.log_analytics_workspace.id
-  description    = each.value.description
-  enabled        = true
-  # Count all requests with server error result code grouped into 5-minute bins
-  query       = file(each.value.query_path)
-  severity    = 1
-  frequency   = 5
-  time_window = each.value.time_window
-  trigger {
-    operator  = "GreaterThan"
+
+  scopes = [var.log_analytics_workspace.id]
+  description = each.value.description
+  enabled = true
+  severity = 0
+
+  evaluation_frequency = "PT5M"
+  window_duration = each.value.time_window
+  criteria {
+    query = file(each.value.query_path)
+    time_aggregation_method = "Count"
+    operator = "GreaterThan"
     threshold = 0
+
+    dimension {
+      name = "RawData"
+      operator = "Include"
+      values = ["*"]
+    }
+
+    resource_id_column = "_ResourceId"
   }
+  target_resource_types = [
+    "microsoft.compute/virtualmachines",
+    "microsoft.hybridcompute/machines",
+    "microsoft.compute/virtualmachinescalesets"
+  ]
 }
