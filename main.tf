@@ -26,10 +26,11 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "this" {
     action_groups = local.action_group
   }
 
-  scopes      = [var.log_analytics_workspace.id]
-  description = each.value.description
-  enabled     = true
-  severity    = 0
+  scopes                = [var.log_analytics_workspace.id]
+  description           = each.value.description
+  enabled               = true
+  severity              = 0
+  skip_query_validation = true
 
   evaluation_frequency = "PT5M"
   window_duration      = each.value.time_window
