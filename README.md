@@ -136,6 +136,9 @@ AddonAzureBackupJobs
 | Name | Description |
 |------|-------------|
 | <a name="output_action_group_id"></a> [action\_group\_id](#output\_action\_group\_id) | The id of the action group created for the event pipeline. |
+| <a name="output_linux_dcr_ids"></a> [linux\_dcr\_ids](#output\_linux\_dcr\_ids) | Map of DCRs and their resource IDs that should be associated to linux VMs. |
+| <a name="output_vminsights_dcr_id"></a> [vminsights\_dcr\_id](#output\_vminsights\_dcr\_id) | Resource ID of the VM-Insights DCR that should be associated with every VM. |
+| <a name="output_windows_dcr_ids"></a> [windows\_dcr\_ids](#output\_windows\_dcr\_ids) | Map of DCRs and their resource IDs that should be associated to windows VMs. |
 ## Resource types
 
       | Type | Used |
@@ -146,7 +149,7 @@ AddonAzureBackupJobs
         | [azurerm_automation_schedule](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_schedule) | 1 |
         | [azurerm_automation_variable_string](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_variable_string) | 1 |
         | [azurerm_monitor_action_group](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_action_group) | 1 |
-        | [azurerm_monitor_data_collection_rule](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | 2 |
+        | [azurerm_monitor_data_collection_rule](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | 4 |
         | [azurerm_monitor_scheduled_query_rules_alert](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_scheduled_query_rules_alert) | 1 |
         | [time_static](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/static) | 1 |
 
@@ -163,6 +166,8 @@ No modules.
             | Name | Type |
             |------|------|
                   | [azurerm_monitor_data_collection_rule.event_log](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | resource |
+                  | [azurerm_monitor_data_collection_rule.event_log_security](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | resource |
+                  | [azurerm_monitor_data_collection_rule.syslog](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | resource |
                   | [azurerm_monitor_data_collection_rule.vm_insight](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | resource |
 
             ### main.tf
