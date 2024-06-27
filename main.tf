@@ -32,7 +32,7 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "this" {
   severity              = 0
   skip_query_validation = true
 
-  evaluation_frequency = "PT5M"
+  evaluation_frequency = each.value.frequency
   window_duration      = each.value.time_window
   criteria {
     query                   = file(each.value.query_path)
