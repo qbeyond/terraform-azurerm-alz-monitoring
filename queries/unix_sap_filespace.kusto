@@ -18,6 +18,7 @@ InsightsMetrics
 | extend InverseVal = (100 - Val)
 | extend Mountpoint = tostring(parse_json(Tags)["vm.azm.ms/mountId"])
 | where Mountpoint !in (excludes)
+| summarize arg_max(TimeGenerated, *) by Mountpoint
 // 2 iff statements are needed for each monitored path due to a kusto constriant that the regex must be a constant
 | extend warning = iff(Mountpoint matches regex tostring(config[0]["mountpoint"]), config[0]["warning"], -1)
 | extend warning = iff(Mountpoint matches regex tostring(config[1]["mountpoint"]), config[1]["warning"], warning)
