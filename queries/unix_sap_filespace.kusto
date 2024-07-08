@@ -38,7 +38,7 @@ InsightsMetrics
 | where managed_by =~ "q.beyond" or isempty(managed_by)
 | where alerting =~ "enabled" or isempty(alerting)
 | extend affected_object = name
-| extend monitor_package = "AZ_SC_ManagedSAPInstance"
+| extend monitor_package = "AZ_SC_ManagedSAPSystem"
 | extend monitor_name = "AZ_UNIX_FILESPACE"
 | extend monitor_description = strcat("Disk threshold reached. More or equal than ", (threshold), "% Diskspace used. Check the Diskspace of the Mountpoint, please.")
 | extend script_name = "n/a"
