@@ -5,7 +5,6 @@ output "action_group_id" {
 
 output "windows_dcr_ids" {
   value = [
-    azurerm_monitor_data_collection_rule.event_log_security.id,
     azurerm_monitor_data_collection_rule.event_log.id
   ]
   description = "Map of DCRs and their resource IDs that should be associated to windows VMs."
