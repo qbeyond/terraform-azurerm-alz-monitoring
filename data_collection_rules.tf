@@ -67,7 +67,11 @@ resource "azurerm_monitor_data_collection_rule" "event_log" {
     windows_event_log {
       name           = "EventLog"
       streams        = ["Microsoft-Event"]
-      x_path_queries = ["Application!*[System[EventID=55]]", "Application!*[System[EventID=6008]]"]
+      x_path_queries = [
+        "System!*[System[EventID=55]]", 
+        "System!*[System[EventID=6008]]",
+        "System!*[System[Provider[@Name='Microsoft-Windows-Time-Service'] and (EventID=36) and Level=3]]",
+      ]
     }
   }
 
