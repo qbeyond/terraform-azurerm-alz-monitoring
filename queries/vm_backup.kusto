@@ -1,25 +1,40 @@
 let VMs = MonitoringResources_CL 
-| where TimeGenerated > ago(13h)
-| where type_s in~ ("microsoft.compute/virtualmachines", "microsoft.hybridcompute/machines", "microsoft.compute/virtualmachinescalesets")
-| summarize arg_max(TimeGenerated, *) by name_s
-| project vmResourceID = ResourceId, name = tolower(name_s), managedby = tags_managedby_s, alerting = tags_alerting_s, osType = properties_storageProfile_osDisk_osType_s;
+    | where TimeGenerated > ago(13h)
+    | where type_s in~ ("microsoft.compute/virtualmachines", "microsoft.hybridcompute/machines", "microsoft.compute/virtualmachinescalesets")
+    | summarize arg_max(TimeGenerated, *) by name_s
+    | project
+        vmResourceID = ResourceId,
+        name = tolower(name_s),
+        managedby = tags_managedby_s,
+        alerting = tags_alerting_s,
+        osType = properties_storageProfile_osDisk_osType_s;
 AddonAzureBackupJobs
 | where JobStatus == "Failed"
-| where JobOperation =="Backup"
+| where JobOperation == "Backup"
 | extend vm = extract("(iaasvmcontainerv2;.+?;)(.+)", 2, BackupItemUniqueId)
 | extend vault = extract("(microsoft.recoveryservices/vaults/)(.+)$", 2, tostring(_ResourceId))
-| project TimeGenerated, JobFailureCode, vm, vault, _ResourceId, JobOperationSubType, JobStartDateTime, BackupItemUniqueId, AdHocOrScheduledJob
+| project
+    TimeGenerated,
+    JobFailureCode,
+    vm,
+    vault,
+    _ResourceId,
+    JobOperationSubType,
+    JobStartDateTime,
+    BackupItemUniqueId,
+    AdHocOrScheduledJob
 | join kind = leftouter(VMs) on $left.vm == $right.name
 | where managedby =~ "q.beyond" or isempty(managedby)
 | where alerting =~ "enabled" or isempty(alerting)
 | extend state = "Warning"
-| extend monitor_package = iff(osType == "Windows","AZ_SC_ManagedOSWindows","AZ_SC_ManagedOSUnix")
+| extend monitor_package = iff(osType == "Windows", "AZ_SC_ManagedOSWindows", "AZ_SC_ManagedOSUnix")
 | extend monitor_name = "AZ_BACKUP_FAILED"
 | extend monitor_description = "Monitors data backup onAzure"
 | extend script_name = "n/a"
 | extend script_version = "n/a"
 | extend threshold = "n/a"
 | extend affected_entity = iff(isempty(JobOperationSubType), "Backup failed on JobOperationSubtype: not given", strcat("Backup failed on JobOperationSubtype: ", JobOperationSubType))
-| extend additional_information = strcat("Backup failed on ",vm,". AdHoc or Scheduled job: " , AdHocOrScheduledJob, ". JobStartDateTime[UTC]: ",JobStartDateTime, ". BackupItemUniqueId: ", BackupItemUniqueId, ". ManagedBy: ",managedby)
+| extend additional_information = strcat("Backup failed on ", vm, ". AdHoc or Scheduled job: ", AdHocOrScheduledJob, ". JobStartDateTime[UTC]: ", JobStartDateTime, ". BackupItemUniqueId: ", BackupItemUniqueId, ". ManagedBy: ", managedby)
 | extend Timestamp = now()
-| project Timestamp, _ResourceId = vmResourceID,state, affected_object = vm, monitor_package, monitor_name, monitor_description, script_name, script_version, threshold, value = JobFailureCode, affected_entity, additional_information
+| project _ResourceId = vmResourceID, RawData = strcat("TimeGenerated:", now(), ";_ResourceId:", _ResourceId, ";state:", state, ";affected_object:", vm, ";monitor_package:", monitor_package, ";monitor_name:", monitor_name, ";monitor_description:", monitor_description, ";script_name:", script_name, ";script_version:", script_version, ";threshold:", threshold, ";value:", JobFailureCode, ";affected_entity:", affected_entity, ";additional_information:", additional_information)
+

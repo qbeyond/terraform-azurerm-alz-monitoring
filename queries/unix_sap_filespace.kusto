@@ -4,7 +4,7 @@ let config = dynamic([
     {"mountpoint": "^/hana/log/[A-Za-z0-9]{3}", "warning": 50, "critical": 70},
     {"mountpoint": "^/oracle/[A-Za-z0-9]{3}/oraarch$", "warning": 50, "critical": 70},
     {"mountpoint": "^/oracle/[A-Za-z0-9]{3}/(orig|mirr)log[A-B]$", "warning": 50, "critical": 70},
-    {"mountpoint": "^/oracle/[A-Za-z0-9]{3}/sapdata", "warning": 50, "critical": 70}
+    {"mountpoint": "^/oracle/[A-Za-z0-9]{3}/sapdata", "warning": 90, "critical": 95}
 ]);
 let excludes = dynamic(["/", "/var", "/boot", "/tmp", "/home", "/opt", "/backup"]);
 let VMs = MonitoringResources_CL 
@@ -18,6 +18,7 @@ InsightsMetrics
 | extend InverseVal = (100 - Val)
 | extend Mountpoint = tostring(parse_json(Tags)["vm.azm.ms/mountId"])
 | where Mountpoint !in (excludes)
+| summarize arg_max(TimeGenerated, *) by Mountpoint
 // 2 iff statements are needed for each monitored path due to a kusto constriant that the regex must be a constant
 | extend warning = iff(Mountpoint matches regex tostring(config[0]["mountpoint"]), config[0]["warning"], -1)
 | extend warning = iff(Mountpoint matches regex tostring(config[1]["mountpoint"]), config[1]["warning"], warning)
@@ -36,10 +37,14 @@ InsightsMetrics
 | extend state = case(InverseVal >= critical, "Critical", InverseVal >= warning, "Warning", "")
 | where managed_by =~ "q.beyond" or isempty(managed_by)
 | where alerting =~ "enabled" or isempty(alerting)
-| extend monitor_package = "AZ_SC_ManagedSAPInstance"
+| extend affected_object = name
+| extend monitor_package = "AZ_SC_ManagedSAPSystem"
 | extend monitor_name = "AZ_UNIX_FILESPACE"
 | extend monitor_description = strcat("Disk threshold reached. More or equal than ", (threshold), "% Diskspace used. Check the Diskspace of the Mountpoint, please.")
 | extend script_name = "n/a"
 | extend script_version = "n/a"
+| extend value = round(InverseVal, 2)
+| extend affected_entity =Mountpoint
 | extend additional_information = strcat("More or equal than ", (threshold), "% Diskspace used (Unix). Managed by: ",(managed_by),".")
-| project TimeGenerated=now(), _ResourceId, state, affected_object = name, monitor_package, monitor_name, monitor_description, script_name, script_version, threshold, value = round(InverseVal, 2), affected_entity = Mountpoint, additional_information
+| project _ResourceId, RawData = strcat("TimeGenerated:", now(), ";_ResourceId:", _ResourceId, ";state:", state, ";affected_object:", affected_object, ";monitor_package:", monitor_package, ";monitor_name:", monitor_name, ";monitor_description:", monitor_description, ";script_name:", script_name, ";script_version:", script_version, ";threshold:", threshold, ";value:", value , ";affected_entity:", affected_entity, ";additional_information:", additional_information)
+
