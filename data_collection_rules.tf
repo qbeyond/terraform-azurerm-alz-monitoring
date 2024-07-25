@@ -132,7 +132,7 @@ resource "azurerm_monitor_data_collection_rule" "custom_log" {
   }
 
   data_flow {
-    streams       = ["Custom-Text_CustomLog"]
+    streams       = ["Custom-Text_Win_CL"]
     destinations  = [var.log_analytics_workspace.name]
     output_stream = "Custom-CustomLog_Win_CL"
     transform_kql = "source"
@@ -140,9 +140,9 @@ resource "azurerm_monitor_data_collection_rule" "custom_log" {
 
   data_sources {
     log_file {
-      name          = "Custom-Text_CustomLog"
+      name          = "Custom-Text_Win_CL"
       format        = "text"
-      streams       = ["Custom-Text_CustomLog"]
+      streams       = ["Custom-Text_Win_CL"]
       file_patterns = ["c:\\program files\\ud\\logs\\*.log"]
       settings {
         text {
@@ -153,7 +153,7 @@ resource "azurerm_monitor_data_collection_rule" "custom_log" {
   }
 
   stream_declaration {
-    stream_name = "Custom-Text_CustomLog"
+    stream_name = "Custom-Text_Win_CL"
     column {
       name = "TimeGenerated"
       type = "datetime"
