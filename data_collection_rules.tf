@@ -3,6 +3,7 @@ resource "azurerm_monitor_data_collection_rule" "vm_insight" {
   resource_group_name = var.log_analytics_workspace.resource_group_name
   location            = var.log_analytics_workspace.location
   tags                = var.tags
+  description         = "Central DCR to collect performance counter metrics and dependency agent data for azure monitor"
 
   destinations {
     log_analytics {
@@ -41,7 +42,6 @@ resource "azurerm_monitor_data_collection_rule" "vm_insight" {
     type = "SystemAssigned"
   }
 
-  description = "Central DCR to collect performance counter metrics and dependency agent data for azure monitor"
 }
 
 resource "azurerm_monitor_data_collection_rule" "event_log" {
@@ -50,6 +50,7 @@ resource "azurerm_monitor_data_collection_rule" "event_log" {
   location            = var.log_analytics_workspace.location
   kind                = "Windows"
   tags                = var.tags
+  description         = "Collects EventIDs 55 and 6008 from the EventLog"
 
   destinations {
     log_analytics {
@@ -65,10 +66,10 @@ resource "azurerm_monitor_data_collection_rule" "event_log" {
 
   data_sources {
     windows_event_log {
-      name           = "EventLog"
-      streams        = ["Microsoft-Event"]
+      name    = "EventLog"
+      streams = ["Microsoft-Event"]
       x_path_queries = [
-        "System!*[System[EventID=55]]", 
+        "System!*[System[EventID=55]]",
         "System!*[System[EventID=6008]]",
         "System!*[System[Provider[@Name='Microsoft-Windows-Time-Service'] and (EventID=36) and Level=3]]",
       ]
@@ -79,7 +80,6 @@ resource "azurerm_monitor_data_collection_rule" "event_log" {
     type = "SystemAssigned"
   }
 
-  description = "Collects EventIDs 55 and 6008 from the EventLog"
 }
 
 resource "azurerm_monitor_data_collection_rule" "syslog" {
@@ -87,8 +87,8 @@ resource "azurerm_monitor_data_collection_rule" "syslog" {
   resource_group_name = var.log_analytics_workspace.resource_group_name
   location            = var.log_analytics_workspace.location
   kind                = "Linux"
-  description         = "Collect syslog data for security monitoring"
   tags                = var.tags
+  description         = "Collect syslog data for security monitoring"
 
   destinations {
     log_analytics {
@@ -114,4 +114,55 @@ resource "azurerm_monitor_data_collection_rule" "syslog" {
   identity {
     type = "SystemAssigned"
   }
+}
+
+resource "azurerm_monitor_data_collection_rule" "custom_log" {
+  name                        = "dcr-prd-win-CustomLog-01"
+  resource_group_name         = var.log_analytics_workspace.resource_group_name
+  location                    = var.log_analytics_workspace.location
+  tags                        = var.tags
+  description                 = "Collect custom log data for monitoring"
+  data_collection_endpoint_id = azurerm_monitor_data_collection_endpoint.dce.id
+
+  destinations {
+    log_analytics {
+      workspace_resource_id = var.log_analytics_workspace.id
+      name                  = var.log_analytics_workspace.name
+    }
+  }
+
+  data_flow {
+    streams       = ["Custom-Text_CustomLog"]
+    destinations  = [var.log_analytics_workspace.name]
+    output_stream = "Custom-CustomLog_Win_CL"
+    transform_kql = "source"
+  }
+
+  data_sources {
+    log_file {
+      name          = "Custom-Text_CustomLog"
+      format        = "text"
+      streams       = ["Custom-Text_CustomLog"]
+      file_patterns = ["c:\\program files\\ud\\logs\\*.log"]
+      settings {
+        text {
+          record_start_timestamp_format = "ISO 8601"
+        }
+      }
+    }
+  }
+
+  stream_declaration {
+    stream_name = "Custom-Text_CustomLog"
+    column {
+      name = "TimeGenerated"
+      type = "datetime"
+    }
+    column {
+      name = "RawData"
+      type = "string"
+    }
+
+  }
+  depends_on = [azapi_resource.data_collection_logs_table]
 }
