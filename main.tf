@@ -54,3 +54,40 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "this" {
     "microsoft.compute/virtualmachinescalesets"
   ]
 }
+
+# TODO: fix naming, add more possible endpoints via param
+resource "azurerm_monitor_data_collection_endpoint" "dce" {
+  name                = "dce-dev-${var.log_analytics_workspace.location}-LawEndpoint-01"
+  resource_group_name = var.log_analytics_workspace.resource_group_name
+  location            = var.log_analytics_workspace.location
+}
+
+
+resource "azapi_resource" "data_collection_logs_table" {
+  name      = "CustomLog_Win_CL"
+  parent_id = var.log_analytics_workspace.id
+  type      = "Microsoft.OperationalInsights/workspaces/tables@2022-10-01"
+  body = jsonencode(
+    {
+      "properties" : {
+        "schema" : {
+          "name" : "CustomLog_Win_CL",
+          "columns" : [
+            {
+              "name" : "TimeGenerated",
+              "type" : "datetime",
+              "description" : "The time at which the data was generated"
+            },
+            {
+              "name" : "RawData",
+              "type" : "string",
+              "description" : "The data from the file"
+            }
+          ]
+        },
+        "retentionInDays" : 30,
+        "totalRetentionInDays" : 30
+      }
+    }
+  )
+}
