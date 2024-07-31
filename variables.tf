@@ -11,6 +11,15 @@ variable "log_analytics_workspace" {
   nullable    = false
 }
 
+variable "resource_group" {
+  type = object({
+    id                  = string
+    name                = string
+    location            = string
+  })
+  
+}
+
 variable "additional_queries" {
   type = map(object({
     query_path  = string

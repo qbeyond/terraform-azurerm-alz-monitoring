@@ -62,32 +62,9 @@ resource "azurerm_monitor_data_collection_endpoint" "dce" {
   location            = var.log_analytics_workspace.location
 }
 
-
-resource "azapi_resource" "data_collection_logs_table" {
-  name      = "CustomLog_Win_CL"
-  parent_id = var.log_analytics_workspace.id
-  type      = "Microsoft.OperationalInsights/workspaces/tables@2022-10-01"
-  body = jsonencode(
-    {
-      "properties" : {
-        "schema" : {
-          "name" : "CustomLog_Win_CL",
-          "columns" : [
-            {
-              "name" : "TimeGenerated",
-              "type" : "datetime",
-              "description" : "The time at which the data was generated"
-            },
-            {
-              "name" : "RawData",
-              "type" : "string",
-              "description" : "The data from the file"
-            }
-          ]
-        },
-        "retentionInDays" : 30,
-        "totalRetentionInDays" : 30
-      }
-    }
-  )
+resource "azurerm_monitor_data_collection_endpoint" "additional_dces" {
+  for_each = ["eastus"] # hier parameter
+  name                = "dce-dev-${each.value}-Endpoint-01"
+  resource_group_name = var.log_analytics_workspace.resource_group_name
+  location            = each.value
 }
