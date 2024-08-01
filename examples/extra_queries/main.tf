@@ -26,6 +26,7 @@ module "monitor" {
   source                  = "../.."
   log_analytics_workspace = azurerm_log_analytics_workspace.example
   resource_group          = azurerm_resource_group.example
+
   event_pipeline_config = {
     enabled     = true
     name        = "QBY EventPipeline"
