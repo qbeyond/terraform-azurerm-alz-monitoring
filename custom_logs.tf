@@ -42,14 +42,14 @@ resource "azapi_resource" "data_collection_logs_table" {
 
 resource "azapi_resource" "dcr_custom_json_logs" {
   type                      = "Microsoft.insights/dataCollectionRules@2023-03-11"
-  name                      = "dcr-prd-win-CustomLog-03"
+  name                      = "dcr-prd-all-CustomLog-01"
   parent_id                 = var.resource_group.id
   location                  = var.log_analytics_workspace.location
   schema_validation_enabled = false
 
   body = jsonencode(
     {
-      kind = "Windows"
+      kind = "All"
       properties = {
         dataFlows = [
           {
