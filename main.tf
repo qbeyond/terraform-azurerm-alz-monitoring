@@ -57,14 +57,14 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "this" {
 
 # TODO: fix naming, add more possible endpoints via param
 resource "azurerm_monitor_data_collection_endpoint" "dce" {
-  name                = "dce-dev-${var.log_analytics_workspace.location}-LawEndpoint-01"
+  name                = "dce-dev-${var.log_analytics_workspace.location}-lawEndpoint-01"
   resource_group_name = var.log_analytics_workspace.resource_group_name
   location            = var.log_analytics_workspace.location
 }
 
 resource "azurerm_monitor_data_collection_endpoint" "additional_dces" {
-  for_each = ["eastus"] # hier parameter
-  name                = "dce-dev-${each.value}-Endpoint-01"
+  for_each = var.additional_regions 
+  name                = "dce-dev-${each.value}-endpoint-01"
   resource_group_name = var.log_analytics_workspace.resource_group_name
   location            = each.value
 }
