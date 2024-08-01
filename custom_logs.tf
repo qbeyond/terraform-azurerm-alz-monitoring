@@ -48,8 +48,7 @@ resource "azapi_resource" "dcr_custom_json_logs" {
   schema_validation_enabled = false
 
   body = jsonencode(
-    {
-      kind = "All"
+    {      
       properties = {
         dataFlows = [
           {
