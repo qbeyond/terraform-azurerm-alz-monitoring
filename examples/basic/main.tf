@@ -25,7 +25,8 @@ resource "azurerm_automation_account" "example" {
 module "monitor" {
   source                  = "../.."
   log_analytics_workspace = azurerm_log_analytics_workspace.example
-  resource_group = azurerm_resource_group.example
+  resource_group          = azurerm_resource_group.example
+  additional_regions      = ["northeurope"]
   event_pipeline_config = {
     enabled     = true
     name        = "QBY EventPipeline"
