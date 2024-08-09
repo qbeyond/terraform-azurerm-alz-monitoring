@@ -82,3 +82,8 @@ variable "tags" {
   description = "Tags that will be assigned to all resources."
   default     = {}
 }
+
+variable "additional_regions" {
+  type    = set(string)
+  default = []
+}

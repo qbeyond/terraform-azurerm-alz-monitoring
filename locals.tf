@@ -54,5 +54,11 @@ locals {
       time_window = "P2D"
       frequency   = "PT5M"
     }
+    "alr-prd-Monitoring-winux-law-custlog-warn-01" : {
+      description = "Alert for monitoring logs"
+      query_path  = "${local.path}/monitoring_scripts_json.kusto"
+      time_window = "P2D"
+      frequency   = "PT5M"
+    }
   }, var.additional_queries)
 }

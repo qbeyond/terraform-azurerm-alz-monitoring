@@ -96,3 +96,18 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
  - No longer existing parameters in examples
 
 ### Fixed
+
+## [5.1.0] - 2024-08-08
+ 
+### Added
+ - new LAW Tables for Custom Text logs
+ - new LAW Tables for Custom JSON logs
+ - Custom Text Log Data Collection Rule 
+ - Custom JSON Log Data Collection Rule 
+ - Alert rule for incomming custom JSON logs
+ 
+### Changed
+ 
+### Removed
+
+### Fixed
