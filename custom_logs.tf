@@ -15,7 +15,7 @@ locals {
   }
   kql_types = join(", ", [for column_name, column_type in local.columns : "${column_name}:${column_type}"])
 
-  resource_group_id = substr(var.log_analytics_workspace.id, 0, length(regexall("^[^/]*/[^/]*/[^/]*/[^/]*/[^/]*", var.log_analytics_workspace.id)[0]))
+  resource_group_id = regex("^((/[^/]+){4})", var.log_analytics_workspace.id)[0]
 }
 
 resource "azapi_resource" "data_collection_json_logs_table" {
