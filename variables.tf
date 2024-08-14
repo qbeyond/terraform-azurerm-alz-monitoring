@@ -85,5 +85,6 @@ variable "tags" {
 
 variable "additional_regions" {
   type    = set(string)
+  description = "Regions for additional data collection endpoints outside of the LAWs region."
   default = []
 }
