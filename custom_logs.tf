@@ -42,15 +42,15 @@ resource "azapi_resource" "data_collection_json_logs_table" {
   )
 }
 
-resource "azapi_resource" "data_collection_logs_table" {
-  name      = "MonitoringScripts_CL"
+resource "azapi_resource" "data_collection_text_logs_table" {
+  name      = "MonitoringScriptsTEXT_CL"
   parent_id = var.log_analytics_workspace.id
   type      = "Microsoft.OperationalInsights/workspaces/tables@2022-10-01"
   body = jsonencode(
     {
       "properties" : {
         "schema" : {
-          "name" : "MonitoringScripts_CL",
+          "name" : "MonitoringScriptsTEXT_CL",
           "columns" : [
             {
               "name" = "TimeGenerated"
@@ -82,21 +82,21 @@ resource "azapi_resource" "dcr_custom_json_logs" {
         dataFlows = [
           {
             streams = [
-              "Custom-MonitoringScriptsJSON_CL"
+              "Custom-${azapi_resource.data_collection_json_logs_table.name}"
             ],
             destinations = [
               "${var.log_analytics_workspace.name}"
             ],
             transformKql = "source"
-            outputStream = "Custom-MonitoringScriptsJSON_CL"
+            outputStream = "Custom-${azapi_resource.data_collection_json_logs_table.name}"
           }
         ]
         dataSources = {
           logFiles = [
             {
-              name         = "Custom-MonitoringScriptsJSON_CL"
+              name         = "Custom-${azapi_resource.data_collection_json_logs_table.name}"
               format       = "json"
-              streams      = ["Custom-MonitoringScriptsJSON_CL"]
+              streams      = ["Custom-${azapi_resource.data_collection_json_logs_table.name}"]
               filePatterns = ["c:\\program files\\ud\\logs\\json\\*.log"]
             }
           ]
@@ -111,7 +111,7 @@ resource "azapi_resource" "dcr_custom_json_logs" {
         }
         dataCollectionEndpointId = azurerm_monitor_data_collection_endpoint.dce.id
         streamDeclarations = {
-          Custom-MonitoringScripts_CL = {
+          Custom-MonitoringScriptsTEXT_CL = {
             columns = [
               for column_name, column_type in local.columns : {
                 "name" = column_name
@@ -141,17 +141,17 @@ resource "azurerm_monitor_data_collection_rule" "dcr_custom_text_logs" {
   }
 
   data_flow {
-    streams       = ["Custom-MonitoringScripts_CL"]
+    streams       = ["Custom-${azapi_resource.data_collection_text_logs_table.name}"]
     destinations  = [var.log_analytics_workspace.name]
-    output_stream = "Custom-MonitoringScripts_CL"
+    output_stream = "Custom-${azapi_resource.data_collection_text_logs_table.name}"
     transform_kql = "source"
   }
 
   data_sources {
     log_file {
-      name          = "Custom-MonitoringScripts_CL"
+      name          = "Custom-${azapi_resource.data_collection_text_logs_table.name}"
       format        = "text"
-      streams       = ["Custom-MonitoringScripts_CL"]
+      streams       = ["Custom-${azapi_resource.data_collection_text_logs_table.name}"]
       file_patterns = ["c:\\program files\\ud\\logs\\*.log"]
       settings {
         text {
@@ -162,7 +162,7 @@ resource "azurerm_monitor_data_collection_rule" "dcr_custom_text_logs" {
   }
 
   stream_declaration {
-    stream_name = "Custom-MonitoringScripts_CL"
+    stream_name = "Custom-${azapi_resource.data_collection_text_logs_table.name}"
     column {
       name = "TimeGenerated"
       type = "datetime"
@@ -173,5 +173,4 @@ resource "azurerm_monitor_data_collection_rule" "dcr_custom_text_logs" {
     }
 
   }
-  depends_on = [azapi_resource.data_collection_logs_table]
 }
