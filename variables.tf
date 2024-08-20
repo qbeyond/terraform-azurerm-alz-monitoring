@@ -63,6 +63,7 @@ variable "event_pipeline_config" {
     enabled       = Enable the action group if you want to send data to a monitoring service.
     name          = Name of the alert webhook.
     service_uri   = Link to the webhook receiver URL. Must contain the placeholder \"{{secret}}\". This placeholder will be replaced by the secret value from var.secret. This is used to add authentication to the webhook URL as a query parameter.
+    service_uri_integration   = Same as service_uri for non productive monitoring alerts, the secret value from var.secret_integration will be used here.
 }
   ```
   DOC

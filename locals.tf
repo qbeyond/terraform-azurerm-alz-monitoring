@@ -55,14 +55,14 @@ locals {
     "alr-int-CustLogJson-winux-law-logsea-warn-01" : {
       description    = "Alert for custom json monitoring logs"
       query_path     = "${local.path}/monitoring_scripts_json.kusto"
-      time_window    = "P2D"
+      time_window    = "PT15M"
       frequency      = "PT5M"
       non_productive = true
     }
     "alr-prd-CustLogText-winux-law-logsea-warn-01" : {
       description = "Alert for custom text monitoring logs"
       query_path  = "${local.path}/monitoring_scripts_text.kusto"
-      time_window = "P2D"
+      time_window = "PT15M"
       frequency   = "PT5M"
     }
   }, var.additional_queries)

@@ -37,7 +37,6 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "this" {
   tags                = var.tags
 
   action {
-    #action_groups = azurerm_monitor_action_group.eventpipeline[*].id # local.action_group #TODO distinguish prd und non prd
     action_groups = lookup(each.value, "non_productive", false) ? azurerm_monitor_action_group.optional[*].id : azurerm_monitor_action_group.eventpipeline[*].id
   }
 
