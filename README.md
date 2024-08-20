@@ -121,6 +121,7 @@ AddonAzureBackupJobs
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.5.0 |
+| <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) | >= 1.14.0 |
 | <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | >= 3.7.0 |
 
 ## Inputs
@@ -130,7 +131,7 @@ AddonAzureBackupJobs
 | <a name="input_automation_account"></a> [automation\_account](#input\_automation\_account) | Automation account where the resource graph script will be deployed. | <pre>object({<br>    name                = string<br>    id                  = string<br>    location            = string<br>    resource_group_name = string<br>  })</pre> | n/a | yes |
 | <a name="input_log_analytics_workspace"></a> [log\_analytics\_workspace](#input\_log\_analytics\_workspace) | Log Analytics Worksapce that all VMs are connected to for monitoring. | <pre>object({<br>    id                  = string<br>    name                = string<br>    resource_group_name = string<br>    location            = string<br>    workspace_id        = string<br>    primary_shared_key  = string<br>  })</pre> | n/a | yes |
 | <a name="input_additional_queries"></a> [additional\_queries](#input\_additional\_queries) | List of additional alert rule queries to create with a file path, description and time\_window. | <pre>map(object({<br>    query_path  = string<br>    description = string<br>    time_window = number<br>  }))</pre> | `{}` | no |
-| <a name="input_additional_regions"></a> [additional\_regions](#input\_additional\_regions) | n/a | `set(string)` | `[]` | no |
+| <a name="input_additional_regions"></a> [additional\_regions](#input\_additional\_regions) | Regions for additional data collection endpoints outside of the LAWs region. | `set(string)` | `[]` | no |
 | <a name="input_event_pipeline_config"></a> [event\_pipeline\_config](#input\_event\_pipeline\_config) | <pre>{<br>    enabled       = Enable the action group if you want to send data to a monitoring service.<br>    name          = Name of the alert webhook.<br>    service_uri   = Link to the webhook receiver URL. Must contain the placeholder \"{{secret}}\". This placeholder will be replaced by the secret value from var.secret. This is used to add authentication to the webhook URL as a query parameter.<br>}</pre> | <pre>object({<br>    enabled     = bool<br>    name        = optional(string, "QBY EventPipeline")<br>    service_uri = optional(string)<br>  })</pre> | <pre>{<br>  "enabled": false<br>}</pre> | no |
 | <a name="input_root_management_group_id"></a> [root\_management\_group\_id](#input\_root\_management\_group\_id) | The management group that will be scanned by the Import-ResourceGraphToLogAnalytics runbook. | `string` | `"alz"` | no |
 | <a name="input_secret"></a> [secret](#input\_secret) | Value that will replace the placeholder `{{secret}}` in `event_pipeline_config.service_uri`. | `string` | `""` | no |
@@ -172,7 +173,7 @@ No modules.
             | Name | Type |
             |------|------|
                   | [azapi_resource.data_collection_json_logs_table](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource) | resource |
-                  | [azapi_resource.data_collection_logs_table](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource) | resource |
+                  | [azapi_resource.data_collection_text_logs_table](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource) | resource |
                   | [azapi_resource.dcr_custom_json_logs](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource) | resource |
                   | [azurerm_monitor_data_collection_rule.dcr_custom_text_logs](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | resource |
 
