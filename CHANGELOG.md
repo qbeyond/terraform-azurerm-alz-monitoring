@@ -104,7 +104,11 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
  - new LAW Tables for Custom JSON logs
  - Custom Text Log Data Collection Rule 
  - Custom JSON Log Data Collection Rule 
- - Alert rule for incomming custom JSON logs
+ - Alert rule with action group for incomming custom JSON logs
+ - Alert rule with action group for incomming custom text logs
+ - Add Data Collection Endpoint based on optional additional regions
+ - Add non_productive attribute to alert rules
+ - Add integration service uri and event pipeline
  
 ### Changed
  
