@@ -1,6 +1,4 @@
 locals {
-  action_group = one(azurerm_monitor_action_group.eventpipeline[*].id) != null ? [one(azurerm_monitor_action_group.eventpipeline[*].id)] : []
-
   path = "${path.module}/queries"
 
   rules = merge({
@@ -52,6 +50,19 @@ locals {
       description = "Alert when a VM backup job fails"
       query_path  = "${local.path}/vm_backup.kusto"
       time_window = "P2D"
+      frequency   = "PT5M"
+    }
+    "alr-int-CustLogJson-winux-law-logsea-warn-01" : {
+      description    = "Alert for custom json monitoring logs"
+      query_path     = "${local.path}/monitoring_scripts_json.kusto"
+      time_window    = "PT15M"
+      frequency      = "PT5M"
+      non_productive = true
+    }
+    "alr-prd-CustLogText-winux-law-logsea-warn-01" : {
+      description = "Alert for custom text monitoring logs"
+      query_path  = "${local.path}/monitoring_scripts_text.kusto"
+      time_window = "PT15M"
       frequency   = "PT5M"
     }
   }, var.additional_queries)
