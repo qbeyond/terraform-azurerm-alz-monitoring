@@ -3,7 +3,7 @@ let config = dynamic([
     {"mountpoint": "/SAPINST$", "warning": 90, "critical": 95},
     {"mountpoint": "^/hana/log/[A-Za-z0-9]{3}", "warning": 50, "critical": 70},
     {"mountpoint": "^/oracle/[A-Za-z0-9]{3}/oraarch$", "warning": 50, "critical": 70},
-    {"mountpoint": "^/oracle/[A-Za-z0-9]{3}/(orig|mirr)log[A-B]$", "warning": 50, "critical": 70},
+    {"mountpoint": "^/oracle/[A-Za-z0-9]{3}/(orig|mirr)log[A-B]$", "warning": 90, "critical": 95},
     {"mountpoint": "^/oracle/[A-Za-z0-9]{3}/sapdata", "warning": 90, "critical": 95}
 ]);
 let excludes = dynamic(["/", "/var", "/boot", "/tmp", "/home", "/opt", "/backup"]);

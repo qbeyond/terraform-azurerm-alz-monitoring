@@ -13,9 +13,11 @@ variable "log_analytics_workspace" {
 
 variable "additional_queries" {
   type = map(object({
-    query_path  = string
-    description = string
-    time_window = number
+    query_path     = string
+    description    = string
+    time_window    = string
+    frequency      = string
+    non_productive = optional(bool)
   }))
   description = "List of additional alert rule queries to create with a file path, description and time_window."
   default     = {}
@@ -25,6 +27,13 @@ variable "additional_queries" {
 variable "secret" {
   type        = string
   description = "Value that will replace the placeholder `{{secret}}` in `event_pipeline_config.service_uri`."
+  sensitive   = true
+  default     = ""
+}
+
+variable "secret_integration" {
+  type        = string
+  description = "Value that will replace the placeholder `{{secret}}` in `event_pipeline_config.service_uri_integration`."
   sensitive   = true
   default     = ""
 }
@@ -42,9 +51,10 @@ variable "automation_account" {
 
 variable "event_pipeline_config" {
   type = object({
-    enabled     = bool
-    name        = optional(string, "QBY EventPipeline")
-    service_uri = optional(string)
+    enabled                 = bool
+    name                    = optional(string, "QBY EventPipeline")
+    service_uri             = optional(string)
+    service_uri_integration = optional(string)
   })
 
   description = <<-DOC
@@ -53,6 +63,7 @@ variable "event_pipeline_config" {
     enabled       = Enable the action group if you want to send data to a monitoring service.
     name          = Name of the alert webhook.
     service_uri   = Link to the webhook receiver URL. Must contain the placeholder \"{{secret}}\". This placeholder will be replaced by the secret value from var.secret. This is used to add authentication to the webhook URL as a query parameter.
+    service_uri_integration   = Same as service_uri for non productive monitoring alerts, the secret value from var.secret_integration will be used here.
 }
   ```
   DOC
@@ -81,4 +92,10 @@ variable "tags" {
   type        = map(string)
   description = "Tags that will be assigned to all resources."
   default     = {}
+}
+
+variable "additional_regions" {
+  type        = set(string)
+  description = "Regions for additional data collection endpoints outside of the LAWs region."
+  default     = []
 }
