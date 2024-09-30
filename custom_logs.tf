@@ -19,9 +19,12 @@ locals {
 }
 
 resource "azapi_resource" "data_collection_json_logs_table" {
-  name      = "MonitoringScriptsJSON_CL"
-  parent_id = var.log_analytics_workspace.id
-  type      = "Microsoft.OperationalInsights/workspaces/tables@2022-10-01"
+  name                      = "MonitoringScriptsJSON_CL"
+  parent_id                 = var.log_analytics_workspace.id
+  type                      = "Microsoft.OperationalInsights/workspaces/tables@2022-10-01"
+  tags                      = var.tags
+  schema_validation_enabled = false
+
   body = jsonencode(
     {
       "properties" : {
@@ -43,9 +46,12 @@ resource "azapi_resource" "data_collection_json_logs_table" {
 }
 
 resource "azapi_resource" "data_collection_text_logs_table" {
-  name      = "MonitoringScriptsTEXT_CL"
-  parent_id = var.log_analytics_workspace.id
-  type      = "Microsoft.OperationalInsights/workspaces/tables@2022-10-01"
+  name                      = "MonitoringScriptsTEXT_CL"
+  parent_id                 = var.log_analytics_workspace.id
+  type                      = "Microsoft.OperationalInsights/workspaces/tables@2022-10-01"
+  tags                      = var.tags
+  schema_validation_enabled = false
+
   body = jsonencode(
     {
       "properties" : {
@@ -75,6 +81,7 @@ resource "azapi_resource" "dcr_custom_json_logs" {
   parent_id                 = local.resource_group_id
   location                  = var.log_analytics_workspace.location
   schema_validation_enabled = false
+  tags                      = var.tags
 
   body = jsonencode(
     {
