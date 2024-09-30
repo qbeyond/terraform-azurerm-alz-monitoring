@@ -73,6 +73,7 @@ resource "azurerm_monitor_data_collection_endpoint" "dce" {
   name                = "dce-prd-${var.log_analytics_workspace.location}-lawEndpoint-01"
   resource_group_name = var.log_analytics_workspace.resource_group_name
   location            = var.log_analytics_workspace.location
+  tags                = var.tags
 }
 
 resource "azurerm_monitor_data_collection_endpoint" "additional_dces" {
@@ -80,4 +81,5 @@ resource "azurerm_monitor_data_collection_endpoint" "additional_dces" {
   name                = "dce-prd-${each.value}-endpoint-01"
   resource_group_name = var.log_analytics_workspace.resource_group_name
   location            = each.value
+  tags                = var.tags
 }
