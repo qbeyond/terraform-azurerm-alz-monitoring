@@ -6,17 +6,32 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased] - yyyy-mm-dd
 
+## [5.2.0] - 2024-09-30
+
+### Added
+
+- Added tags variable in somes resources
+
+## [5.1.0] - 2024-08-20
+
+### Added
+
+- Custom log monitoring
+
 ## [5.0.0] - 2024-04-04
 
 ### Added
+
 - DCRs for security monitoring
 
 ### Changed
+
 - Switched alert rules to alert rules v2
 
 ## [4.2.1] - 2024-06-11
 
 ### Fixed
+
 - Fixed Resource-Graph query so tag filtering properly excludes Arc machines
 
 ## [4.2.0] - 2024-04-04
@@ -29,49 +44,59 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 ## [4.1.0] - 2024-03-27
 
 ### Added
+
 - Added Tags as variable
 
 ## [4.0.0] - 2024-03-15
 
 ### Added 
+
  - DCRs for VM-Insights and Event-Log
 
 ### Changed
+
  - Updated Kusto queries for new AMA 
    
 ### Removed
+
  - Legacy datasources and VM-Insights solution
 
 ## [3.2.0] - 2024-01-31
 
 ### Added
+
  - Override paremter to allow for different management groups
 
 ## [3.1.0] - 2024-01-12
  
 ### Added
+
  - New alert rule for failed VM backup jobs
  
 ### Changed
+
  - Naming of existing rules
  - Schedule of Resource Graph query to twice daily as intended
    
 ### Removed
 
 ### Fixed
-=======
+
 ## [3.0.0] - 2024-01-02
 
 ### Added
+
  - New example for new feature
  
 ### Changed
+
  - Put all action group configuration into one variable
  - Made the webhook configuration optional
 
 ### Removed
 
 ### Fixed
+
  - Removed unused parameter for secret
 
 ## [2.0.3] - 2023-12-07
@@ -83,16 +108,19 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 ### Removed
 
 ### Fixed
+
  - Parameters disappearing from the job schedule on updates of the runbook
  
 ## [2.0.2] - 2023-08-08
  
 ### Added
+
  - Changelog
  
 ### Changed
  
 ### Removed
+
  - No longer existing parameters in examples
 
 ### Fixed
@@ -100,15 +128,16 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 ## [5.1.0] - 2024-08-08
  
 ### Added
- - new LAW Tables for Custom Text logs
- - new LAW Tables for Custom JSON logs
- - Custom Text Log Data Collection Rule 
- - Custom JSON Log Data Collection Rule 
- - Alert rule with action group for incomming custom JSON logs
- - Alert rule with action group for incomming custom text logs
- - Add Data Collection Endpoint based on optional additional regions
- - Add non_productive attribute to alert rules
- - Add integration service uri and event pipeline
+
+- new LAW Tables for Custom Text logs
+- new LAW Tables for Custom JSON logs
+- Custom Text Log Data Collection Rule 
+- Custom JSON Log Data Collection Rule 
+- Alert rule with action group for incomming custom JSON logs
+- Alert rule with action group for incomming custom text logs
+- Add Data Collection Endpoint based on optional additional regions
+- Add non_productive attribute to alert rules
+- Add integration service uri and event pipeline
  
 ### Changed
  
