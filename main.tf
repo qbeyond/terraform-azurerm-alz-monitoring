@@ -50,7 +50,7 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "this" {
   window_duration      = each.value.time_window
   criteria {
     query                   = templatefile(each.value.query_path, {
-      "tenant" = title(split("-", regex("fctkey-[^-]+", var.event_pipeline_config.service_uri_integration))[1])
+      "tenant" = upper(split("-", regex("fctkey-[^-]+", var.event_pipeline_config.service_uri_integration))[1])
     })
     time_aggregation_method = "Count"
     operator                = "GreaterThan"
