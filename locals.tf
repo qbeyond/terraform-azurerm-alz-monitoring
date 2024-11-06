@@ -48,7 +48,7 @@ locals {
     }
     "alr-prd-VMBackup-bkp-law-logsea-warn-01" : {
       description = "Alert when a VM backup job fails"
-      query_path  = "${local.path}/vm_backup.kusto"
+      query_path  = "${local.path}/backup.kusto.tftpl"
       time_window = "P2D"
       frequency   = "PT5M"
     }
