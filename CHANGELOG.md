@@ -6,6 +6,16 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased] - yyyy-mm-dd
 
+## [5.2.1] - 2024-11-06
+
+### Added
+
+- Added option to include template variables in queries
+
+### Changed
+
+- Changed VM Backup query to generic Backup query
+
 ## [5.2.0] - 2024-09-30
 
 ### Added

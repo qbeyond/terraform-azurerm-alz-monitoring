@@ -48,8 +48,8 @@ module "monitor" {
   event_pipeline_config = {
     enabled                 = true
     name                    = "QBY EventPipeline"
-    service_uri             = "https://qbeyond.de/{{secret}}"
-    service_uri_integration = "https://qbeyond.de/{{secret}}"
+    service_uri             = "https://qbeyond.de/Webhook?code={{secret}}}&clientid=fctkey-cust-prd-eventpipeline-01"
+    service_uri_integration = "https://qbeyond.de/WebhookIntegration?code={{secret}}}&clientid=fctkey-cust-int-eventpipeline-01"
   }
 
   automation_account = azurerm_automation_account.example
@@ -96,7 +96,7 @@ module "monitor" {
   event_pipeline_config = {
     enabled     = true
     name        = "QBY EventPipeline"
-    service_uri = "https://qbeyond.de/{{secret}}"
+    service_uri = "https://qbeyond.de/Webhook?code={{secret}}}&clientid=fctkey-cust-prd-eventpipeline-01"
   }
   automation_account = azurerm_automation_account.example
   secret             = "impressum"
