@@ -4,7 +4,7 @@ resource "azurerm_automation_module" "az_accounts" {
   automation_account_name = var.automation_account.name
 
   module_link {
-    uri = "https://devopsgallerystorage.blob.core.windows.net:443/packages/az.accounts.2.12.1.nupkg"
+    uri = "https://psg-prod-eastus.azureedge.net/packages/az.accounts.3.0.5.nupkg"
   }
 }
 
