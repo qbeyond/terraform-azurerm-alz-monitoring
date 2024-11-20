@@ -1,4 +1,4 @@
-let Tenant = "PEACF";
+let Tenant = "${tenant}";
 let VMs = MonitoringResources_CL 
     | where TimeGenerated > ago(13h)
     | where type_s in~ ("microsoft.compute/virtualmachines", "microsoft.hybridcompute/machines", "microsoft.compute/virtualmachinescalesets")
