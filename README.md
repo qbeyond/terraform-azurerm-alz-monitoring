@@ -12,7 +12,7 @@ To enable usage of tags and resource properties in monitoring queries an existin
 <!-- BEGIN_TF_DOCS -->
 ## Usage
 
-To use this module a resource group and log analytics workspace is required. 
+To use this module a resource group and log analytics workspace is required.
 The webhook URL needs to point to a valid receiver for pipeline events.
 If authentication or other options are required they need to be included in the URL as path or query parameters.
 
@@ -65,6 +65,7 @@ module "monitor" {
 ### Extra Queries
 
 You can specify additional kusto queries to monitor.
+
 ```hcl
 provider "azurerm" {
   features {}
@@ -111,7 +112,9 @@ module "monitor" {
   }
 }
 ```
+
 `queries/failed_jobs.kusto`
+
 ```kusto
 // Example from Azure:
 // All Failed Jobs 
@@ -120,6 +123,7 @@ AddonAzureBackupJobs
 | summarize arg_max(TimeGenerated,*) by JobUniqueId
 | where JobStatus == "Failed"
 ```  
+
 ## Requirements
 
 | Name | Version |
@@ -141,6 +145,7 @@ AddonAzureBackupJobs
 | <a name="input_secret"></a> [secret](#input\_secret) | Value that will replace the placeholder `{{secret}}` in `event_pipeline_config.service_uri`. | `string` | `""` | no |
 | <a name="input_secret_integration"></a> [secret\_integration](#input\_secret\_integration) | Value that will replace the placeholder `{{secret}}` in `event_pipeline_config.service_uri_integration`. | `string` | `""` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags that will be assigned to all resources. | `map(string)` | `{}` | no |
+
 ## Outputs
 
 | Name | Description |
@@ -149,6 +154,7 @@ AddonAzureBackupJobs
 | <a name="output_linux_dcr_ids"></a> [linux\_dcr\_ids](#output\_linux\_dcr\_ids) | Map of DCRs and their resource IDs that should be associated to linux VMs. |
 | <a name="output_vminsights_dcr_id"></a> [vminsights\_dcr\_id](#output\_vminsights\_dcr\_id) | Resource ID of the VM-Insights DCR that should be associated with every VM. |
 | <a name="output_windows_dcr_ids"></a> [windows\_dcr\_ids](#output\_windows\_dcr\_ids) | Map of DCRs and their resource IDs that should be associated to windows VMs. |
+
 ## Resource types
 
 | Type | Used |
@@ -166,15 +172,15 @@ AddonAzureBackupJobs
 | [time static](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/static) | 1 |
 | | |
 
-      **`Used` only includes resource blocks.** `for_each` and `count` meta arguments, as well as resource blocks of modules are not considered.
-    
+`Used` only includes resource blocks. `for_each` and `count` meta arguments, as well as resource blocks of modules are not considered.
+
 ## Modules
 
 No modules.
 
-        ## Resources by Files
+## Resources by Files
 
-            ### custom_logs.tf
+### custom_logs.tf
 
 | Name | Type |
 |------|------|
@@ -184,7 +190,7 @@ No modules.
 | [azurerm monitor data collection rule.dcr custom text logs](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | resource |
 | | |
 
-            ### data_collection_rules.tf
+### data_collection_rules.tf
 
 | Name | Type |
 |------|------|
@@ -193,7 +199,7 @@ No modules.
 | [azurerm monitor data collection rule.vm insight](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | resource |
 | | |
 
-            ### main.tf
+### main.tf
 
 | Name | Type |
 |------|------|
@@ -205,7 +211,7 @@ No modules.
 | [azurerm subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subscription) | data source |
 | | |
 
-            ### resourcegraph.tf
+### resourcegraph.tf
 
 | Name | Type |
 |------|------|
