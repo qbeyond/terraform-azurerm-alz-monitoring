@@ -1,41 +1,34 @@
-let Tenant = "${tenant}";
+let Tenant = "PEACF";
 let VMs = MonitoringResources_CL 
     | where TimeGenerated > ago(13h)
     | where type_s in~ ("microsoft.compute/virtualmachines", "microsoft.hybridcompute/machines", "microsoft.compute/virtualmachinescalesets")
     | summarize arg_max(TimeGenerated, *) by name_s
     | project
         vmResourceID = ResourceId,
-        name = tolower(name_s),
+        VMname = tolower(name_s),
         managedby = tags_managedby_s,
         alerting = tags_alerting_s,
         osType = properties_storageProfile_osDisk_osType_s;
 AddonAzureBackupJobs
 | where JobStatus == "Failed"
 | where JobOperation == "Backup"
-| extend vm = extract("(iaasvmcontainerv2;.+?;)(.+)", 2, BackupItemUniqueId)
-| extend vm = case(
-                  isnotempty(vm) == true,
-                  vm,
-                  isnotempty(extract(";([v|V][m|M]-[^;]+);", 1, BackupItemUniqueId)) == true,
-                  extract(";(vm-[^;]+);", 1, BackupItemUniqueId),
-                  Tenant
-              )
+| extend VMname = tolower(extract(@";(vm-[^;]+)(;|$)", 1, BackupItemUniqueId))
 | extend vault = extract("(microsoft.recoveryservices/vaults/)(.+)$", 2, tostring(_ResourceId))
 | project
     TimeGenerated,
     JobFailureCode,
-    vm,
+    VMname,
     vault,
     _ResourceId,
     JobOperationSubType,
     JobStartDateTime,
     BackupItemUniqueId,
     AdHocOrScheduledJob
-| join kind = leftouter(VMs) on $left.vm == $right.name
+| join kind = leftouter(VMs) on $left.VMname == $right.VMname
 | where managedby =~ "q.beyond" or isempty(managedby)
-| where alerting =~ "enabled" or isempty(alerting)
+//| where alerting =~ "enabled" or isempty(alerting)
 | extend managedby = iff(isempty(managedby) == true, "n/a", managedby)
-| extend _ResourceId = iff(vm == (Tenant), strcat("/SUBSCRIPTIONS/", Tenant, "/RESOURCEGROUPS/BACKUP/PROVIDERS/MICROSOFT.RECOVERYSERVICES/VAULTS"), vmResourceID)
+| extend _ResourceId = iff(VMname == "", strcat("/SUBSCRIPTIONS/", Tenant, "/RESOURCEGROUPS/BACKUP/PROVIDERS/MICROSOFT.RECOVERYSERVICES/VAULTS"), vmResourceID)
 | extend state = "Warning"
 | extend monitor_package = case(
                                osType == "Windows",
@@ -48,8 +41,8 @@ AddonAzureBackupJobs
 | extend script_version = "n/a"
 | extend threshold = "n/a"
 | extend affected_entity = iff(isempty(JobOperationSubType), "Backup failed on JobOperationSubtype: not given", strcat("Backup failed on JobOperationSubtype: ", JobOperationSubType))
-| extend additional_information = strcat("Backup failed on ", vm, ". AdHoc or Scheduled job: ", AdHocOrScheduledJob, ". JobStartDateTime[UTC]: ", JobStartDateTime, ". BackupItemUniqueId: ", BackupItemUniqueId = replace(";", ",", BackupItemUniqueId), ". Recovery Service Vault: ", vault, ". ManagedBy: ", managedby, ".")
+| extend additional_information = strcat("Backup failed on ", VMname, ". AdHoc or Scheduled job: ", AdHocOrScheduledJob, ". JobStartDateTime[UTC]: ", JobStartDateTime, ". BackupItemUniqueId: ", BackupItemUniqueId = replace(";", ",", BackupItemUniqueId), ". Recovery Service Vault: ", vault, ". ManagedBy: ", managedby, ".")
 | extend Timestamp = now()
 | project
-    _ResourceId,
-    RawData = strcat("TimeGenerated:", now(), ";_ResourceId:", _ResourceId, ";state:", state, ";affected_object:", vm, ";monitor_package:", monitor_package, ";monitor_name:", monitor_name, ";monitor_description:", monitor_description, ";script_name:", script_name, ";script_version:", script_version, ";threshold:", threshold, ";value:", JobFailureCode, ";affected_entity:", affected_entity, ";additional_information:", additional_information)
+    _ResourceId, VMname, BackupItemUniqueId,
+    RawData = strcat("TimeGenerated:", Timestamp, ";_ResourceId:", _ResourceId, ";state:", state, ";affected_object:", toupper(VMname), ";monitor_package:", monitor_package, ";monitor_name:", monitor_name, ";monitor_description:", monitor_description, ";script_name:", script_name, ";script_version:", script_version, ";threshold:", threshold, ";value:", JobFailureCode, ";affected_entity:", affected_entity, ";additional_information:", additional_information)
