@@ -246,6 +246,8 @@ When a new Feature or Fix is ready to be released, create a new Github release a
 
 To test this module all examples should be applied. This can be done by running `terraform test`.
 
+## Automatic TF DOCS
+
 <!-- BEGIN_TF_DOCS -->
 ## Usage
 

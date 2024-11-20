@@ -26,7 +26,7 @@ AddonAzureBackupJobs
     AdHocOrScheduledJob
 | join kind = leftouter(VMs) on $left.VMname == $right.VMname
 | where managedby =~ "q.beyond" or isempty(managedby)
-//| where alerting =~ "enabled" or isempty(alerting)
+| where alerting =~ "enabled" or isempty(alerting)
 | extend managedby = iff(isempty(managedby) == true, "n/a", managedby)
 | extend _ResourceId = iff(VMname == "", strcat("/SUBSCRIPTIONS/", Tenant, "/RESOURCEGROUPS/BACKUP/PROVIDERS/MICROSOFT.RECOVERYSERVICES/VAULTS"), vmResourceID)
 | extend state = "Warning"
