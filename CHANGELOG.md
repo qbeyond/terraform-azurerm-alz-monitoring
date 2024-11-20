@@ -11,7 +11,7 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ### Changed
 
-- Fix backup kustom query
+- Fix backup kusto query
 
 ## [5.4.0] - 2024-11-15
 
