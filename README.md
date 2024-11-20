@@ -1,4 +1,5 @@
 # ALZ Monitoring
+
 [![GitHub tag](https://img.shields.io/github/v/tag/qbeyond/terraform-azurerm-alz-monitoring.svg)](https://registry.terraform.io/modules/qbeyond/alz-monitoring/azurerm/latest)
 [![License](https://img.shields.io/github/license/qbeyond/terraform-azurerm-alz-monitoring.svg)](https://github.com/qbeyond/terraform-azurerm-alz-monitoring/blob/main/LICENSE)
 

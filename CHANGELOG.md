@@ -1,10 +1,17 @@
 # Changelog
+
 All notable changes to this module will be documented in this file.
- 
+
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased] - yyyy-mm-dd
+
+## [5.4.1] - 2024-11-20
+
+### Changed
+
+- Fix backup kusto query
 
 ## [5.4.0] - 2024-11-15
 
@@ -65,35 +72,35 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [4.0.0] - 2024-03-15
 
-### Added 
+### Added
 
- - DCRs for VM-Insights and Event-Log
+- DCRs for VM-Insights and Event-Log
 
 ### Changed
 
- - Updated Kusto queries for new AMA 
-   
+- Updated Kusto queries for new AMA
+
 ### Removed
 
- - Legacy datasources and VM-Insights solution
+- Legacy datasources and VM-Insights solution
 
 ## [3.2.0] - 2024-01-31
 
 ### Added
 
- - Override paremter to allow for different management groups
+- Override paremter to allow for different management groups
 
 ## [3.1.0] - 2024-01-12
- 
+
 ### Added
 
- - New alert rule for failed VM backup jobs
- 
+- New alert rule for failed VM backup jobs
+
 ### Changed
 
- - Naming of existing rules
- - Schedule of Resource Graph query to twice daily as intended
-   
+- Naming of existing rules
+- Schedule of Resource Graph query to twice daily as intended
+
 ### Removed
 
 ### Fixed
@@ -102,61 +109,61 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ### Added
 
- - New example for new feature
- 
+- New example for new feature
+
 ### Changed
 
- - Put all action group configuration into one variable
- - Made the webhook configuration optional
+- Put all action group configuration into one variable
+- Made the webhook configuration optional
 
 ### Removed
 
 ### Fixed
 
- - Removed unused parameter for secret
+- Removed unused parameter for secret
 
 ## [2.0.3] - 2023-12-07
 
 ### Added
- 
+
 ### Changed
- 
+
 ### Removed
 
 ### Fixed
 
- - Parameters disappearing from the job schedule on updates of the runbook
- 
+- Parameters disappearing from the job schedule on updates of the runbook
+
 ## [2.0.2] - 2023-08-08
- 
+
 ### Added
 
- - Changelog
- 
+- Changelog
+
 ### Changed
- 
+
 ### Removed
 
- - No longer existing parameters in examples
+- No longer existing parameters in examples
 
 ### Fixed
 
 ## [5.1.0] - 2024-08-08
- 
+
 ### Added
 
 - new LAW Tables for Custom Text logs
 - new LAW Tables for Custom JSON logs
-- Custom Text Log Data Collection Rule 
-- Custom JSON Log Data Collection Rule 
+- Custom Text Log Data Collection Rule
+- Custom JSON Log Data Collection Rule
 - Alert rule with action group for incomming custom JSON logs
 - Alert rule with action group for incomming custom text logs
 - Add Data Collection Endpoint based on optional additional regions
 - Add non_productive attribute to alert rules
 - Add integration service uri and event pipeline
- 
+
 ### Changed
- 
+
 ### Removed
 
 ### Fixed

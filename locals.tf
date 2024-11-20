@@ -47,7 +47,7 @@ locals {
       frequency   = "PT5M"
     }
     "alr-prd-Backup-bkp-law-logsea-warn-01" : {
-      description = "Alert when a VM backup job fails"
+      description = "Alert when a backup job fails"
       query_path  = "${local.path}/backup.kusto.tftpl"
       time_window = "P2D"
       frequency   = "PT5M"
