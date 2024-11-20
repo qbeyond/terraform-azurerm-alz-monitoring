@@ -1,7 +1,17 @@
-<!-- BEGIN_TF_DOCS -->
+# ALZ Monitoring
+
+[![GitHub tag](https://img.shields.io/github/v/tag/qbeyond/terraform-azurerm-alz-monitoring.svg)](https://registry.terraform.io/modules/qbeyond/alz-monitoring/azurerm/latest)
+[![License](https://img.shields.io/github/license/qbeyond/terraform-azurerm-alz-monitoring.svg)](https://github.com/qbeyond/terraform-azurerm-alz-monitoring/blob/main/LICENSE)
+
+----
+
+This module deploys all resources to enable the monitoring of a Log Analytics Workspace for all managed resources by the managed services provider. This includes Action group to send alerts to event pipeline of MSP, alerts for specific resources and a automation to add information (especially tags) to the LAW.
+
+To enable usage of tags and resource properties in monitoring queries an existing automation account is used to import resource metadata into the central log analytics workspace.
+
 ## Usage
 
-To use this module a resource group and log analytics workspace is required. 
+To use this module a resource group and log analytics workspace is required.
 The webhook URL needs to point to a valid receiver for pipeline events.
 If authentication or other options are required they need to be included in the URL as path or query parameters.
 
@@ -54,6 +64,7 @@ module "monitor" {
 ### Extra Queries
 
 You can specify additional kusto queries to monitor.
+
 ```hcl
 provider "azurerm" {
   features {}
@@ -100,7 +111,9 @@ module "monitor" {
   }
 }
 ```
+
 `queries/failed_jobs.kusto`
+
 ```kusto
 // Example from Azure:
 // All Failed Jobs 
@@ -109,6 +122,7 @@ AddonAzureBackupJobs
 | summarize arg_max(TimeGenerated,*) by JobUniqueId
 | where JobStatus == "Failed"
 ```  
+
 ## Requirements
 
 | Name | Version |
@@ -116,6 +130,7 @@ AddonAzureBackupJobs
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.5.0 |
 | <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) | >= 1.14.0 |
 | <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | >= 3.7.0 |
+| | |
 
 ## Inputs
 
@@ -130,6 +145,8 @@ AddonAzureBackupJobs
 | <a name="input_secret"></a> [secret](#input\_secret) | Value that will replace the placeholder `{{secret}}` in `event_pipeline_config.service_uri`. | `string` | `""` | no |
 | <a name="input_secret_integration"></a> [secret\_integration](#input\_secret\_integration) | Value that will replace the placeholder `{{secret}}` in `event_pipeline_config.service_uri_integration`. | `string` | `""` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags that will be assigned to all resources. | `map(string)` | `{}` | no |
+| | | | | |
+
 ## Outputs
 
 | Name | Description |
@@ -138,68 +155,93 @@ AddonAzureBackupJobs
 | <a name="output_linux_dcr_ids"></a> [linux\_dcr\_ids](#output\_linux\_dcr\_ids) | Map of DCRs and their resource IDs that should be associated to linux VMs. |
 | <a name="output_vminsights_dcr_id"></a> [vminsights\_dcr\_id](#output\_vminsights\_dcr\_id) | Resource ID of the VM-Insights DCR that should be associated with every VM. |
 | <a name="output_windows_dcr_ids"></a> [windows\_dcr\_ids](#output\_windows\_dcr\_ids) | Map of DCRs and their resource IDs that should be associated to windows VMs. |
+| | |
+
 ## Resource types
 
-      | Type | Used |
-      |------|-------|
-        | [azapi_resource](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource) | 3 |
-        | [azurerm_automation_job_schedule](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_job_schedule) | 1 |
-        | [azurerm_automation_module](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_module) | 2 |
-        | [azurerm_automation_runbook](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_runbook) | 1 |
-        | [azurerm_automation_schedule](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_schedule) | 1 |
-        | [azurerm_automation_variable_string](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_variable_string) | 1 |
-        | [azurerm_monitor_action_group](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_action_group) | 2 |
-        | [azurerm_monitor_data_collection_endpoint](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_endpoint) | 2 |
-        | [azurerm_monitor_data_collection_rule](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | 4 |
-        | [azurerm_monitor_scheduled_query_rules_alert_v2](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_scheduled_query_rules_alert_v2) | 1 |
-        | [time_static](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/static) | 1 |
+| Type | Used |
+|------|------|
+| [azapi resource](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource) | 3 |
+| [azurerm automation job schedule](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_job_schedule) | 1 |
+| [azurerm automation module](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_module) | 2 |
+| [azurerm automation runbook](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_runbook) | 1 |
+| [azurerm automation schedule](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_schedule) | 1 |
+| [azurerm automation variable string](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_variable_string) | 1 |
+| [azurerm monitor action group](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_action_group) | 2 |
+| [azurerm_monitor data collection endpoint](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_endpoint) | 2 |
+| [azurerm monitor data collection rule](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | 4 |
+| [azurerm monitor scheduled query rules alert v2](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_scheduled_query_rules_alert_v2) | 1 |
+| [time static](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/static) | 1 |
+| | |
 
-      **`Used` only includes resource blocks.** `for_each` and `count` meta arguments, as well as resource blocks of modules are not considered.
-    
+`Used` only includes resource blocks. `for_each` and `count` meta arguments, as well as resource blocks of modules are not considered.
+
 ## Modules
 
 No modules.
 
-        ## Resources by Files
+## Resources by Files
 
-            ### custom_logs.tf
+Resources used in TF files.
 
-            | Name | Type |
-            |------|------|
-                  | [azapi_resource.data_collection_json_logs_table](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource) | resource |
-                  | [azapi_resource.data_collection_text_logs_table](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource) | resource |
-                  | [azapi_resource.dcr_custom_json_logs](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource) | resource |
-                  | [azurerm_monitor_data_collection_rule.dcr_custom_text_logs](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | resource |
+### custom_logs.tf
 
-            ### data_collection_rules.tf
+Resources used in custom log file.
 
-            | Name | Type |
-            |------|------|
-                  | [azurerm_monitor_data_collection_rule.event_log](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | resource |
-                  | [azurerm_monitor_data_collection_rule.syslog](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | resource |
-                  | [azurerm_monitor_data_collection_rule.vm_insight](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | resource |
+| Name | Type |
+|------|------|
+| [azapi resource.data collection json logs table](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource) | resource |
+| [azapi resource.data collection text logs table](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource) | resource |
+| [azapi resource.dcr custom json logs](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource) | resource |
+| [azurerm monitor data collection rule.dcr custom text logs](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | resource |
+| | |
 
-            ### main.tf
+### data_collection_rules.tf
 
-            | Name | Type |
-            |------|------|
-                  | [azurerm_monitor_action_group.eventpipeline](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_action_group) | resource |
-                  | [azurerm_monitor_action_group.optional](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_action_group) | resource |
-                  | [azurerm_monitor_data_collection_endpoint.additional_dces](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_endpoint) | resource |
-                  | [azurerm_monitor_data_collection_endpoint.dce](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_endpoint) | resource |
-                  | [azurerm_monitor_scheduled_query_rules_alert_v2.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_scheduled_query_rules_alert_v2) | resource |
-                  | [azurerm_subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subscription) | data source |
+Resources used in data collection rules.
 
-            ### resourcegraph.tf
+| Name | Type |
+|------|------|
+| [azurerm monitor data collection rule.event log](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | resource |
+| [azurerm monitor data collection rule.syslog](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | resource |
+| [azurerm monitor data collection rule.vm insight](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | resource |
+| | |
 
-            | Name | Type |
-            |------|------|
-                  | [azurerm_automation_job_schedule.resourcegraph_query](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_job_schedule) | resource |
-                  | [azurerm_automation_module.az_accounts](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_module) | resource |
-                  | [azurerm_automation_module.az_resourcegraph](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_module) | resource |
-                  | [azurerm_automation_runbook.resourcegraph_query](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_runbook) | resource |
-                  | [azurerm_automation_schedule.twice_daily](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_schedule) | resource |
-                  | [azurerm_automation_variable_string.law_sharedkey](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_variable_string) | resource |
-                  | [time_static.automation_schedule_tomorrow_5am](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/static) | resource |
-    
-<!-- END_TF_DOCS -->
+### main.tf
+
+Resources used in main.
+
+| Name | Type |
+|------|------|
+| [azurerm monitor action group.eventpipeline](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_action_group) | resource |
+| [azurerm monitor action group.optional](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_action_group) | resource |
+| [azurerm monitor data collection endpoint.additional dces](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_endpoint) | resource |
+| [azurerm monitor data collection endpoint.dce](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_endpoint) | resource |
+| [azurerm monitor scheduled query rules alert v2.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_scheduled_query_rules_alert_v2) | resource |
+| [azurerm subscription.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subscription) | data source |
+| | |
+
+### resourcegraph.tf
+
+Resources used in graph.
+
+| Name | Type |
+|------|------|
+| [azurerm automation job schedule.resourcegraph query](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_job_schedule) | resource |
+| [azurerm automation module.az accounts](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_module) | resource |
+| [azurerm automation module.az resourcegraph](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_module) | resource |
+| [azurerm automation runbook.resourcegraph query](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_runbook) | resource |
+| [azurerm automation schedule.twice daily](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_schedule) | resource |
+| [azurerm automation variable string.law sharedkey](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_variable_string) | resource |
+| [time static.automation schedule tomorrow 5am](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/static) | resource |
+| | |
+
+## Contribute
+
+Please use Pull requests to contribute.
+
+When a new Feature or Fix is ready to be released, create a new Github release and adhere to [Semantic Versioning 2.0.0](https://semver.org/lang/de/spec/v2.0.0.html).
+
+### Tests
+
+To test this module all examples should be applied. This can be done by running `terraform test`.
