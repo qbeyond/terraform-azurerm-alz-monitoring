@@ -7,11 +7,11 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased] - yyyy-mm-dd
 
-## [5.5.0] - 2024-11-20
+## [5.4.1] - 2024-11-20
 
 ### Changed
 
-- Upgraded backup kustom query
+- Fix backup kustom query
 
 ## [5.4.0] - 2024-11-15
 
