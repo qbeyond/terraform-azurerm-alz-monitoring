@@ -51,17 +51,7 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "this" {
   criteria {
     query = templatefile(each.value.query_path, {
       "tenant" = local.customer_code
-      "all_events" = {
-        "1008" = {
-          area      = "AD"
-          severity  = "critical"
-          winsource = "Microsoft-Windows-ActiveDirectory_DomainService"
-        }
-        "17137" = {
-          area      = "NT"
-          severity  = "Information"
-          winsource = "MSSQL$EXPR_CM_530"
-      }}
+      "all_events" = local.selected_events
     })
     time_aggregation_method = "Count"
     operator                = "GreaterThan"
