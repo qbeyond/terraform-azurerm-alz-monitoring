@@ -49,8 +49,19 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "this" {
   evaluation_frequency = each.value.frequency
   window_duration      = each.value.time_window
   criteria {
-    query                   = templatefile(each.value.query_path, {
-      "tenant" = upper(split("-", regex("fctkey-[^-]+", var.event_pipeline_config.service_uri_integration))[1])
+    query = templatefile(each.value.query_path, {
+      "tenant" = local.customer_code
+      "all_events" = {
+        "1008" = {
+          area      = "AD"
+          severity  = "critical"
+          winsource = "Microsoft-Windows-ActiveDirectory_DomainService"
+        }
+        "17137" = {
+          area      = "NT"
+          severity  = "Information"
+          winsource = "MSSQL$EXPR_CM_530"
+      }}
     })
     time_aggregation_method = "Count"
     operator                = "GreaterThan"
