@@ -99,3 +99,11 @@ variable "additional_regions" {
   description = "Regions for additional data collection endpoints outside of the LAWs region."
   default     = []
 }
+
+variable "active_services" {
+  type = object({
+    active_directory = optional(bool,false)
+    managed_os = optional(bool,false)
+    mssql = optional(bool,false)
+  })
+}

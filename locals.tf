@@ -66,4 +66,6 @@ locals {
       frequency   = "PT5M"
     }
   }, var.additional_queries)
+
+  customer_code = upper(split("-", regex("fctkey-[^-]+", var.event_pipeline_config.service_uri_integration))[1])
 }
