@@ -27,23 +27,26 @@ module "monitor" {
   log_analytics_workspace = azurerm_log_analytics_workspace.example
 
   event_pipeline_config = {
-    enabled     = true
-    name        = "QBY EventPipeline"
-    service_uri = "https://qbeyond.de/Webhook?code={{secret}}}&clientid=fctkey-cust-prd-eventpipeline-01"
+    enabled                 = true
+    name                    = "QBY EventPipeline"
+    service_uri             = "https://qbeyond.de/Webhook?code={{secret}}}&clientid=fctkey-cust-prd-eventpipeline-01"
+    service_uri_integration = "https://qbeyond.de/WebhookIntegration?code={{secret}}}&clientid=fctkey-cust-int-eventpipeline-01"
   }
   automation_account = azurerm_automation_account.example
   secret             = "impressum"
+  secret_integration = "integration"
 
   additional_queries = {
     "alr-prd-diskspace-bkp-law-logsea-warn-01" : {
       query_path  = "${path.module}/queries/failed_jobs.kusto"
       description = "Example of monitoring for failed backup jobs"
       time_window = 2280
+      frequency   = ""
     }
   }
   active_services = {
     active_directory = true
-    managed_os = true
-    mssql = true
+    managed_os       = true
+    mssql            = true
   }
 }
