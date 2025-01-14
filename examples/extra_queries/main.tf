@@ -41,4 +41,9 @@ module "monitor" {
       time_window = 2280
     }
   }
+  active_services = {
+    active_directory = true
+    managed_os = true
+    mssql = true
+  }
 }
