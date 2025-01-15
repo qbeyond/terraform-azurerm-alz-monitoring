@@ -40,8 +40,8 @@ module "monitor" {
     "alr-prd-diskspace-bkp-law-logsea-warn-01" : {
       query_path  = "${path.module}/queries/failed_jobs.kusto"
       description = "Example of monitoring for failed backup jobs"
-      time_window = 2280
-      frequency   = ""
+      time_window = "PT15M"
+      frequency   = "PT15M"
     }
   }
   active_services = {
