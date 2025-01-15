@@ -17,7 +17,7 @@ variable "additional_queries" {
     description    = string
     time_window    = string
     frequency      = string
-    non_productive = optional(bool)
+    non_productive = optional(bool, false)
   }))
   description = "List of additional alert rule queries to create with a file path, description and time_window."
   default     = {}
