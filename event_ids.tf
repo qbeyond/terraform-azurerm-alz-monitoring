@@ -1,6 +1,5 @@
 locals {
   selected_events = concat(
-    [],
     var.active_services.active_directory == true ? local.active_directory : [],
     var.active_services.managed_os == true ? local.managed_os : [],
     var.active_services.mssql == true ? local.mssql : []

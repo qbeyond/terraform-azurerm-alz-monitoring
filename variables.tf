@@ -101,6 +101,7 @@ variable "additional_regions" {
 }
 
 variable "active_services" {
+  description = "Services to receive event monitoring."
   type = object({
     active_directory = optional(bool, false)
     managed_os       = optional(bool, false)
