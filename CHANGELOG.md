@@ -174,6 +174,7 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 - generic windows event kusto query terraform template
 - optional event alert rule
+- services the alert rules should be attributed to (extend monitor_package)
 
 ### Changed
 

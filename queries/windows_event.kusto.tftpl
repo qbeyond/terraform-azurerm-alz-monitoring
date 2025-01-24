@@ -1,7 +1,7 @@
 //create datatable with a row for each entry in the terraform map
-let  LogTable = datatable(WinEventId:int, Severity:string, WinSource:string, Area:string)[
+let  LogTable = datatable(WinEventId:int, Severity:string, WinSource:string, Area:string, Service: string)[
 %{ for event_info in all_events ~}
-${event_info.event_id}, "${event_info.severity}", "${event_info.winsource}", "${event_info.area}",
+${event_info.event_id}, "${event_info.severity}", "${event_info.winsource}", "${event_info.area}", "${event_info.service}",
 %{endfor ~}
 ];
 let VMs = (MonitoringResources_CL
@@ -20,7 +20,7 @@ Event|join kind=inner LogTable on $left.EventID == $right.WinEventId and $left.S
 | where tags_managedby_s =~ "q.beyond" or isempty(tags_managedby_s)
 | where tags_alerting_s =~ "enabled" or isempty(tags_alerting_s)
 | extend state = Severity
-| extend monitor_package = "AZ_SC_ManagedOSWindows"
+| extend monitor_package = strcat("AZ_SC_", Service)
 | extend monitor_name = strcat("AZ_", Area, "_EVENTLOG_", EventID)
 | extend monitor_description = "Search the Windows event log for specific entries."
 | extend script_name = "n/a"
