@@ -21,19 +21,6 @@ locals {
       frequency   = "PT5M"
     }
 
-    "alr-prd-Eventlog6008-win-law-logsea-crit-01" : {
-      description = "Alert when the Windows event 6008 (unexpected shutdown) was logged"
-      query_path  = "${local.path}/windows_event_6008.kusto"
-      time_window = "PT30M"
-      frequency   = "PT5M"
-    }
-    "alr-prd-Eventlog55-win-law-logsea-crit-01" : {
-      description = "Alert when the Windows event 55 (disk corruption) was logged"
-      query_path  = "${local.path}/windows_event_55.kusto"
-      time_window = "PT30M"
-      frequency   = "PT5M"
-    }
-
     "alr-prd-Heartbeat-win-law-metric-crit-01" : {
       description = "Alert when Heartbeat from Windows machines Stopped"
       query_path  = "${local.path}/windows_heartbeat.kusto"
@@ -66,4 +53,21 @@ locals {
       frequency   = "PT5M"
     }
   }, var.additional_queries)
+
+  event_rule = {
+    "alr-prd-Eventlog-win-law-logsea-crit-warn-01" : {
+      description = "Alert when the Windows event was logged"
+      query_path  = "${local.path}/windows_event.kusto.tftpl"
+      time_window = "PT30M"
+      frequency   = "PT5M"
+    }
+  }
+
+  all_alertrules = merge(
+    local.rules,
+    length(local.selected_events) > 0 ? local.event_rule : {}
+  )
+
+  customer_code = upper(split("-", regex("fctkey-[^-]+", var.event_pipeline_config.service_uri_integration))[1])
+
 }
