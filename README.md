@@ -95,19 +95,27 @@ module "monitor" {
   log_analytics_workspace = azurerm_log_analytics_workspace.example
 
   event_pipeline_config = {
-    enabled     = true
-    name        = "QBY EventPipeline"
-    service_uri = "https://qbeyond.de/Webhook?code={{secret}}}&clientid=fctkey-cust-prd-eventpipeline-01"
+    enabled                 = true
+    name                    = "QBY EventPipeline"
+    service_uri             = "https://qbeyond.de/Webhook?code={{secret}}}&clientid=fctkey-cust-prd-eventpipeline-01"
+    service_uri_integration = "https://qbeyond.de/WebhookIntegration?code={{secret}}}&clientid=fctkey-cust-int-eventpipeline-01"
   }
   automation_account = azurerm_automation_account.example
   secret             = "impressum"
+  secret_integration = "integration"
 
   additional_queries = {
     "alr-prd-diskspace-bkp-law-logsea-warn-01" : {
       query_path  = "${path.module}/queries/failed_jobs.kusto"
       description = "Example of monitoring for failed backup jobs"
-      time_window = 2280
+      time_window = "PT15M"
+      frequency   = "PT15M"
     }
+  }
+  active_services = {
+    active_directory = true
+    managed_os       = true
+    mssql            = true
   }
 }
 ```
@@ -125,7 +133,7 @@ AddonAzureBackupJobs
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.5.0 |
-| <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) | >= 1.14.0 |
+| <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) | ~> 1.14.0 |
 | <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | >= 3.7.0 |
 
 ## Inputs
@@ -134,7 +142,8 @@ AddonAzureBackupJobs
 |------|-------------|------|---------|:--------:|
 | <a name="input_automation_account"></a> [automation\_account](#input\_automation\_account) | Automation account where the resource graph script will be deployed. | <pre>object({<br/>    name                = string<br/>    id                  = string<br/>    location            = string<br/>    resource_group_name = string<br/>  })</pre> | n/a | yes |
 | <a name="input_log_analytics_workspace"></a> [log\_analytics\_workspace](#input\_log\_analytics\_workspace) | Log Analytics Worksapce that all VMs are connected to for monitoring. | <pre>object({<br/>    id                  = string<br/>    name                = string<br/>    resource_group_name = string<br/>    location            = string<br/>    workspace_id        = string<br/>    primary_shared_key  = string<br/>  })</pre> | n/a | yes |
-| <a name="input_additional_queries"></a> [additional\_queries](#input\_additional\_queries) | List of additional alert rule queries to create with a file path, description and time\_window. | <pre>map(object({<br/>    query_path     = string<br/>    description    = string<br/>    time_window    = string<br/>    frequency      = string<br/>    non_productive = optional(bool)<br/>  }))</pre> | `{}` | no |
+| <a name="input_active_services"></a> [active\_services](#input\_active\_services) | Services to receive event monitoring. | <pre>object({<br/>    active_directory = optional(bool, false)<br/>    managed_os       = optional(bool, false)<br/>    mssql            = optional(bool, false)<br/>  })</pre> | `{}` | no |
+| <a name="input_additional_queries"></a> [additional\_queries](#input\_additional\_queries) | List of additional alert rule queries to create with a file path, description and time\_window. | <pre>map(object({<br/>    query_path     = string<br/>    description    = string<br/>    time_window    = string<br/>    frequency      = string<br/>    non_productive = optional(bool, false)<br/>  }))</pre> | `{}` | no |
 | <a name="input_additional_regions"></a> [additional\_regions](#input\_additional\_regions) | Regions for additional data collection endpoints outside of the LAWs region. | `set(string)` | `[]` | no |
 | <a name="input_event_pipeline_config"></a> [event\_pipeline\_config](#input\_event\_pipeline\_config) | <pre>{<br/>    enabled       = Enable the action group if you want to send data to a monitoring service.<br/>    name          = Name of the alert webhook.<br/>    service_uri   = Link to the webhook receiver URL. Must contain the placeholder \"{{secret}}\". This placeholder will be replaced by the secret value from var.secret. This is used to add authentication to the webhook URL as a query parameter.<br/>    service_uri_integration   = Same as service_uri for non productive monitoring alerts, the secret value from var.secret_integration will be used here.<br/>}</pre> | <pre>object({<br/>    enabled                 = bool<br/>    name                    = optional(string, "QBY EventPipeline")<br/>    service_uri             = optional(string)<br/>    service_uri_integration = optional(string)<br/>  })</pre> | <pre>{<br/>  "enabled": false<br/>}</pre> | no |
 | <a name="input_root_management_group_id"></a> [root\_management\_group\_id](#input\_root\_management\_group\_id) | The management group that will be scanned by the Import-ResourceGraphToLogAnalytics runbook. | `string` | `"alz"` | no |

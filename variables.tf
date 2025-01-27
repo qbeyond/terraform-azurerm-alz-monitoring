@@ -17,7 +17,7 @@ variable "additional_queries" {
     description    = string
     time_window    = string
     frequency      = string
-    non_productive = optional(bool)
+    non_productive = optional(bool, false)
   }))
   description = "List of additional alert rule queries to create with a file path, description and time_window."
   default     = {}
@@ -98,4 +98,14 @@ variable "additional_regions" {
   type        = set(string)
   description = "Regions for additional data collection endpoints outside of the LAWs region."
   default     = []
+}
+
+variable "active_services" {
+  description = "Services to receive event monitoring."
+  type = object({
+    active_directory = optional(bool, false)
+    managed_os       = optional(bool, false)
+    mssql            = optional(bool, false)
+  })
+  default = {}
 }
