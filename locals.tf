@@ -70,4 +70,10 @@ locals {
 
   customer_code = upper(split("-", regex("fctkey-[^-]+", var.event_pipeline_config.service_uri_integration))[1])
 
+  all_functions = {
+    sql            = "functions/sql_monitor"
+    universalprint = "functions/universal_print_monitor"
+  }
+
+  excluded_functions = [for key, path in local.all_functions : path if !lookup(var.functions_config, "enable_${key}", false)]
 }
