@@ -18,6 +18,11 @@ output "linux_dcr_ids" {
 }
 
 output "vminsights_dcr_id" {
-  value = azurerm_monitor_data_collection_rule.vm_insight.id
+  value       = azurerm_monitor_data_collection_rule.vm_insight.id
   description = "Resource ID of the VM-Insights DCR that should be associated with every VM."
+}
+
+output "function_app" {
+  value       = azurerm_windows_function_app.func_app
+  description = "The function app that executes PowerShell scripts for resource monitorings"
 }
