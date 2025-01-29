@@ -109,3 +109,21 @@ variable "active_services" {
   })
   default = {}
 }
+
+# WARN: Not yet working (also how can we only zip certain functions?)
+variable "functions_config" {
+  type = object({
+    enable_sql            = optional(bool, false)
+    enable_universalprint = optional(bool, false)
+  })
+  description = <<-DOC
+  ```
+  {
+  enable_sql = Enable Azure function that monitors all sql databases
+  enable_universalprint = Enable Azure function that monitors the status of universal print printers
+}
+  ```
+  DOC
+
+  default = {}
+}

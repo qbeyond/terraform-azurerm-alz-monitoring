@@ -1,6 +1,9 @@
 data "azurerm_subscription" "current" {
 }
 
+# Provides tenant ID
+data "azurerm_client_config" "current" {}
+
 resource "azurerm_monitor_action_group" "eventpipeline" {
   count               = var.event_pipeline_config.enabled ? 1 : 0
   name                = "EventPipelineCentral_AG_1"
