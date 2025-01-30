@@ -76,4 +76,6 @@ locals {
   }
 
   excluded_functions = [for key, path in local.all_functions : path if !lookup(var.functions_config, "enable_${key}", false)]
+  
+  key_vault_name = format("kv-%s-sqlmonitor-01", local.customer_code)
 }

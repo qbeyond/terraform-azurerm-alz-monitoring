@@ -32,17 +32,43 @@ param(
 )
 
 # # 1. Get all DBs in tenant (that are managed by qbeyond)
-# $tenant_dbs = @()
 
 # 2. Get all connection strings
 Connect-AzAccount -Identity
-$passwords = Get-AzKeyVaultSecret $env:SQL_MONITORING_KEY_VAULT -AsPlainText
+$keys = Get-AzKeyVaultSecret $env:SQL_MONITORING_KEY_VAULT
 
 # 3. Connect to all connection strings
-foreach ($pwd in $passwords) {
-    Write-Host $pwd
-    # a. Connect to DB
-    # b. Send-MonitoringEvent -Severity OK|Critical
+foreach ($key in $keys) {
+    $password = Get-AzKeyVaultSecret $env:SQL_MONITORING_KEY_VAULT -name $key.Name
+    $password = [System.Net.NetworkCredential]::new("", $password.SecretValue).Password
+    $connection = New-Object System.Data.SqlClient.SqlConnection
+    Write-Host $password
+    
+    $connection.ConnectionString = $password
+
+    try {
+        $connection.Open()
+    
+        if ($connection.State -eq "Open") {
+            Write-Host "✅ Connection successful!"
+        } else {
+            Write-Host "⚠️ Connection state: $($connection.State)"
+        }
+    }
+    catch [System.Data.SqlClient.SqlException] {
+        Write-Host "❌ SQL Exception: $($_.Exception.Message)"
+    }
+    catch {
+        Write-Host "❌ General Error: $($_.Exception.Message)"
+    }
+    finally {
+        # Ensure the connection is closed
+        if ($connection.State -ne "Closed") {
+            $connection.Close()
+            Write-Host "🔒 Connection closed."
+        }
+    }
+    
     # c. Remove DB from list of all DBs in tenant
 }
 
@@ -50,48 +76,6 @@ foreach ($pwd in $passwords) {
 # foreach ($db in $tenant_dbs) {
 #     # Failure -> DB is not being monitored
 # }
-
-#region functions
-# function Connect-Database {
-#     [CmdletBinding()]
-#     param (
-#         [Parameter(Mandatory)]
-#         [string] $connectionstring,
-#     )
-
-#     process {
-
-#     }
-# }
-#endregion functions
-
-#region main_script
-# Connect-AzAccount -Identity
-# $credentials = Get-AzKeyVaultKey -VaultName $VaultName
-
-# foreach ($cred in $credentials) {
-#     Write-Host $cred
-# }
-
-# $dbs = Get-Databases
-# foreach ($db in $dbs) {
-#     # res is either true or false
-#     $res = Connect-Database $db
-
-#     Write-Host "Connect to $db is: $res"
-# }
-
-#endregion
-
-# 1. ConnectTo-Database
-# 2. SelectStatement
-# 3. Return value to LAW
-
-# $sqlServer = Get-AzSqlServer
-# foreach($server in $sqlServer) {
-
-# }
-
 
 # get sharedKey after LAW was created 
 # body ?

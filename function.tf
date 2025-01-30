@@ -22,7 +22,7 @@ resource "azurerm_service_plan" "asp_func_app" {
 
 resource "azurerm_key_vault" "sql_monitor" {
   count                       = var.functions_config.enable_sql ? 1 : 0
-  name                        = format("kv-%s-sqlmonitor-01", local.customer_code)
+  name                        = local.key_vault_name
   resource_group_name         = var.log_analytics_workspace.resource_group_name
   location                    = var.log_analytics_workspace.location
   enabled_for_disk_encryption = true
@@ -32,20 +32,38 @@ resource "azurerm_key_vault" "sql_monitor" {
 
   sku_name = "standard"
 
+  # TODO: Do we really need terraform to give us as the provoker access?
   access_policy {
     tenant_id = data.azurerm_client_config.current.tenant_id
     object_id = data.azurerm_client_config.current.object_id
 
     key_permissions = [
-      "Get",
+      "Get", "List",
     ]
 
     secret_permissions = [
-      "Get",
+      "Get", "List",
     ]
 
     storage_permissions = [
-      "Get",
+      "Get", "List",
+    ]
+  }
+
+  access_policy {
+    tenant_id = data.azurerm_client_config.current.tenant_id
+    object_id = azurerm_windows_function_app.func_app.identity[0].principal_id
+
+    key_permissions = [
+      "Get", "List",
+    ]
+
+    secret_permissions = [
+      "Get", "List",
+    ]
+
+    storage_permissions = [
+      "Get", "List",
     ]
   }
 }
@@ -99,7 +117,7 @@ resource "azurerm_windows_function_app" "func_app" {
     WEBSITE_RUN_FROM_PACKAGE         = azurerm_storage_blob.storage_blob_function.url
     FUNCTIONS_WORKER_RUNTIME         = "powershell"
     "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.appi.instrumentation_key
-    SQL_MONITORING_KEY_VAULT         = var.functions_config.enable_sql ? azurerm_key_vault.sql_monitor[0].name : ""
+    SQL_MONITORING_KEY_VAULT         = var.functions_config.enable_sql ? local.key_vault_name : ""
     TENANT_ID                        = data.azurerm_client_config.current.tenant_id
   }
 }
