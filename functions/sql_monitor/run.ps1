@@ -33,7 +33,7 @@ param(
     $Timer
 )
 
-#region
+#region helper_functions
 function Get-QbyDatabasesInTenant {
     param ()
 
@@ -51,16 +51,9 @@ Resources
     return @()
 }
 
-function Get-ConnectionStrings {
-    param ()
-
-    Write-Host "Retrieve connection strings from key vault ..."
-    return Get-AzKeyVaultSecret $env:SQL_MONITORING_KEY_VAULT
-}
-
 function Get-PlainTextSecret {
     param (
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string]$SecretName
     )
 
@@ -71,17 +64,19 @@ function Get-PlainTextSecret {
 
 function Get-DatabaseFromConnectionString {
     param (
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string]$ConnectionString
     )
+    return "unknown"
     # TODO: Implement function logic
 }
 
 function Remove-DatabaseFromList {
     param (
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
         [array]$List,
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string]$Database
     )
     # TODO: Implement function logic
@@ -89,7 +84,7 @@ function Remove-DatabaseFromList {
 
 function Test-DatabaseConnection {
     param (
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string]$ConnectionString
     )
 
@@ -123,23 +118,27 @@ function Test-DatabaseConnection {
 
 function Send-MonitoringEvent {
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string]$Message,
         [string]$Severity = "TRACE"
     )
     Write-Host "[$Severity] $Message"
 }
-#endregion
+#endregion helper_functions
 
 function Invoke-DatabaseMonitoring {
     param()
 
-    # Authenticate using Managed Identity
     Connect-AzAccount -Identity
+    $dbs = @($(Get-QbyDatabasesInTenant))
 
-    # Get database information
-    $dbs = Get-QbyDatabasesInTenant
-    $con_strings = Get-ConnectionStrings
+    try {
+        $con_strings = Get-AzKeyVaultSecret $env:SQL_MONITORING_KEY_VAULT -ErrorAction Stop
+    }
+    catch {
+        Send-MonitoringEvent -Message "Cannot access sql connection strings from keyvault: $($_.Exception.Message)"
+        $con_strings = @()
+    }
 
     $error_string = ""
     $success = $false
@@ -149,10 +148,8 @@ function Invoke-DatabaseMonitoring {
 
         # Try 3 times before sending error event
         for ($iTries = 0; $iTries -lt 3; $iTries++) {
-            Remove-DatabaseFromList -List $dbs -Database (Get-DatabaseFromConnectionString $con)
-        
             try {
-                $success = Test-DatabaseConnection -ConnectionString "$con;bla"
+                $success = Test-DatabaseConnection -ConnectionString $con
                 if ($success) { break }
             }
             catch {
@@ -167,6 +164,12 @@ function Invoke-DatabaseMonitoring {
         }
         else {
             Send-MonitoringEvent -Message $error_string -Severity "CRITICAL"
+        }
+
+        # Database has been monitored, remove from tenant-wide list
+        $dbname = Get-DatabaseFromConnectionString $con
+        if (![string]::IsNullOrWhiteSpace($dbname)) {
+            Remove-DatabaseFromList -List $dbs -Database $dbname
         }
     }
 

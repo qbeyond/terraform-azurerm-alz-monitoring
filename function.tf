@@ -78,7 +78,7 @@ resource "azurerm_storage_account" "sa_func_app" {
 
 resource "azurerm_storage_container" "storage_container_func" {
   name                  = "sc-monitoring-01"
-  storage_account_id    = azurerm_storage_account.sa_func_app.id
+  storage_account_name  = azurerm_storage_account.sa_func_app.name
   container_access_type = "blob"
 }
 
