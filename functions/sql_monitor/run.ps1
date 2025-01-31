@@ -1,29 +1,31 @@
 <#
 .SYNOPSIS
-    Retrieving Monitoring Data and sending it to LAW.
+    Retrieving Monitoring Data and sending it to our Event Pipeline.
 .DESCRIPTION
-    This script regularly checks SQL Servers for availability and sends the retrieved data to Log Analytics Workspace.
+    This script regularly checks SQL Servers for availability and sends the retrieved data to our Event Pipeline.
 
     Requirements
-    - Managed identity must be permitted on both keyvault
+    - Managed identity must be permitted on the keyvault
+    - Managed identity needs tenant-wide read permissions
 
     Procedure
     - Get all DBs managed by qbeyond
-    - Get keyvault name from Terraform
+    - Get keyvault name (environment variable set by Terraform)
     - Get connection strings from keyvault
     - For all connection strings: try to connect to db
+        - If connection failed: try a total of 3 times before sending a CRITICAL event
     - Make sure all DBs in tenant are being monitored
 
     Outputs
     - Login successful -> return OK
     - Login failed -> return CRITICAL
-    - Database has no connection string -> return CRITICAL
+    - Database has no connection string -> return WARNING
 
     Edge Cases
     - connect to DB timeout -> return CRITICAL
-    - LAW not reachable -> ?
+    - Event Pipeline not reachable -> ?
     - Wrong SQL credentials -> return CRITICAL with error info
-    - No permissions (managed identity not working) -> return CRITICAL with error info
+    - No permissions (managed identity not working) -> ?
 .EXAMPLE
 #>
 
@@ -31,51 +33,150 @@ param(
     $Timer
 )
 
-# # 1. Get all DBs in tenant (that are managed by qbeyond)
+#region
+function Get-QbyDatabasesInTenant {
+    param ()
 
-# 2. Get all connection strings
-Connect-AzAccount -Identity
-$keys = Get-AzKeyVaultSecret $env:SQL_MONITORING_KEY_VAULT
+    Write-Host "Search tenant for MSSQL databases ..."
 
-# 3. Connect to all connection strings
-foreach ($key in $keys) {
-    $password = Get-AzKeyVaultSecret $env:SQL_MONITORING_KEY_VAULT -name $key.Name
-    $password = [System.Net.NetworkCredential]::new("", $password.SecretValue).Password
+    # Go to the resource graph and get databases via Kusto query
+    $query = @"
+Resources
+| where type =~ 'microsoft.sql/servers/databases'
+| where tags['alerting'] == 'enabled'
+| where tags['managedby'] == 'test'
+| project id
+"@
+    # return Search-AzGraph -Query $query
+    return @()
+}
+
+function Get-ConnectionStrings {
+    param ()
+
+    Write-Host "Retrieve connection strings from key vault ..."
+    return Get-AzKeyVaultSecret $env:SQL_MONITORING_KEY_VAULT
+}
+
+function Get-PlainTextSecret {
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$SecretName
+    )
+
+    $secret = Get-AzKeyVaultSecret $env:SQL_MONITORING_KEY_VAULT -Name $SecretName
+    # Convert from secret string to string
+    return [System.Net.NetworkCredential]::new("", $secret.SecretValue).Password
+}
+
+function Get-DatabaseFromConnectionString {
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$ConnectionString
+    )
+    # TODO: Implement function logic
+}
+
+function Remove-DatabaseFromList {
+    param (
+        [Parameter(Mandatory=$true)]
+        [array]$List,
+        [Parameter(Mandatory=$true)]
+        [string]$Database
+    )
+    # TODO: Implement function logic
+}
+
+function Test-DatabaseConnection {
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$ConnectionString
+    )
+
+    Write-Host "Testing one database connection ..."
+
     $connection = New-Object System.Data.SqlClient.SqlConnection
-    Write-Host $password
-    
-    $connection.ConnectionString = $password
+    $result = $false
+        
+    $connection.ConnectionString = $ConnectionString
 
     try {
         $connection.Open()
-    
         if ($connection.State -eq "Open") {
-            Write-Host "✅ Connection successful!"
-        } else {
-            Write-Host "⚠️ Connection state: $($connection.State)"
+            $result = $true
+        }
+        else {
+            throw "Wrong connection state: $($connection.State)"
         }
     }
-    catch [System.Data.SqlClient.SqlException] {
-        Write-Host "❌ SQL Exception: $($_.Exception.Message)"
-    }
     catch {
-        Write-Host "❌ General Error: $($_.Exception.Message)"
+        throw $_
     }
     finally {
         # Ensure the connection is closed
         if ($connection.State -ne "Closed") {
             $connection.Close()
-            Write-Host "🔒 Connection closed."
         }
     }
-    
-    # c. Remove DB from list of all DBs in tenant
+    return $result
 }
 
-# # 4. Check the remaining list of all dbs in tenant
-# foreach ($db in $tenant_dbs) {
-#     # Failure -> DB is not being monitored
-# }
+function Send-MonitoringEvent {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$Message,
+        [string]$Severity = "TRACE"
+    )
+    Write-Host "[$Severity] $Message"
+}
+#endregion
+
+function Invoke-DatabaseMonitoring {
+    param()
+
+    # Authenticate using Managed Identity
+    Connect-AzAccount -Identity
+
+    # Get database information
+    $dbs = Get-QbyDatabasesInTenant
+    $con_strings = Get-ConnectionStrings
+
+    $error_string = ""
+    $success = $false
+
+    foreach ($con in $con_strings) {
+        $con = Get-PlainTextSecret -SecretName $con.Name
+
+        # Try 3 times before sending error event
+        for ($iTries = 0; $iTries -lt 3; $iTries++) {
+            Remove-DatabaseFromList -List $dbs -Database (Get-DatabaseFromConnectionString $con)
+        
+            try {
+                $success = Test-DatabaseConnection -ConnectionString "$con;bla"
+                if ($success) { break }
+            }
+            catch {
+                $error_string = $_.Exception.Message
+                # Sleep 1 minute before retrying
+                # Start-Sleep -Seconds 60
+            }
+        }
+        
+        if ($success) {
+            Send-MonitoringEvent -Message "Connection successful" -Severity "OK"
+        }
+        else {
+            Send-MonitoringEvent -Message $error_string -Severity "CRITICAL"
+        }
+    }
+
+    # Go over remaining list of unmonitored databases
+    foreach ($db in $dbs) {
+        Send-MonitoringEvent -Message "Database is not being monitored!" -Severity "WARNING"
+    }
+}
+
+Invoke-DatabaseMonitoring
 
 # get sharedKey after LAW was created 
 # body ?
