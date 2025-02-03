@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Retrieving Monitoring Data and sending it to our Event Pipeline.
+    Monitors MSSQL SLA and sends availability to our Qby Event Pipeline.
 .DESCRIPTION
     This script regularly checks SQL Servers for availability and sends the retrieved data to our Event Pipeline.
 
@@ -26,7 +26,6 @@
     - Event Pipeline not reachable -> ?
     - Wrong SQL credentials -> return CRITICAL with error info
     - No permissions (managed identity not working) -> ?
-.EXAMPLE
 #>
 
 param(
@@ -34,23 +33,6 @@ param(
 )
 
 #region helper_functions
-function Get-QbyDatabasesInTenant {
-    param ()
-
-    Write-Host "Search tenant for MSSQL databases ..."
-
-    # Go to the resource graph and get databases via Kusto query
-    $query = @"
-Resources
-| where type =~ 'microsoft.sql/servers/databases'
-| where tags['alerting'] == 'enabled'
-| where tags['managedby'] == 'test'
-| project id
-"@
-    # return Search-AzGraph -Query $query
-    return @()
-}
-
 function Get-PlainTextSecret {
     param (
         [Parameter(Mandatory = $true)]
@@ -60,26 +42,6 @@ function Get-PlainTextSecret {
     $secret = Get-AzKeyVaultSecret $env:SQL_MONITORING_KEY_VAULT -Name $SecretName
     # Convert from secret string to string
     return [System.Net.NetworkCredential]::new("", $secret.SecretValue).Password
-}
-
-function Get-DatabaseFromConnectionString {
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]$ConnectionString
-    )
-    return "unknown"
-    # TODO: Implement function logic
-}
-
-function Remove-DatabaseFromList {
-    param (
-        [Parameter(Mandatory = $true)]
-        [AllowEmptyCollection()]
-        [array]$List,
-        [Parameter(Mandatory = $true)]
-        [string]$Database
-    )
-    # TODO: Implement function logic
 }
 
 function Test-DatabaseConnection {
@@ -130,7 +92,6 @@ function Invoke-DatabaseMonitoring {
     param()
 
     Connect-AzAccount -Identity
-    $dbs = @($(Get-QbyDatabasesInTenant))
 
     try {
         $con_strings = Get-AzKeyVaultSecret $env:SQL_MONITORING_KEY_VAULT -ErrorAction Stop
@@ -155,7 +116,7 @@ function Invoke-DatabaseMonitoring {
             catch {
                 $error_string = $_.Exception.Message
                 # Sleep 1 minute before retrying
-                # Start-Sleep -Seconds 60
+                Start-Sleep -Seconds 60
             }
         }
         
@@ -165,17 +126,6 @@ function Invoke-DatabaseMonitoring {
         else {
             Send-MonitoringEvent -Message $error_string -Severity "CRITICAL"
         }
-
-        # Database has been monitored, remove from tenant-wide list
-        $dbname = Get-DatabaseFromConnectionString $con
-        if (![string]::IsNullOrWhiteSpace($dbname)) {
-            Remove-DatabaseFromList -List $dbs -Database $dbname
-        }
-    }
-
-    # Go over remaining list of unmonitored databases
-    foreach ($db in $dbs) {
-        Send-MonitoringEvent -Message "Database is not being monitored!" -Severity "WARNING"
     }
 }
 
