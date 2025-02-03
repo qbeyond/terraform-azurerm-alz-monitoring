@@ -100,7 +100,6 @@ function Invoke-DatabaseMonitoring {
         Send-MonitoringEvent -Message "Cannot access sql connection strings from keyvault: $($_.Exception.Message)"
         $con_strings = @()
     }
-
     $error_string = ""
     $success = $false
 
@@ -115,8 +114,13 @@ function Invoke-DatabaseMonitoring {
             }
             catch {
                 $error_string = $_.Exception.Message
+                Write-Host "Error while accessing database"
+                Write-Host $_.Exception.Message
                 # Sleep 1 minute before retrying
-                Start-Sleep -Seconds 60
+                if ($iTries -lt 2) {
+                    Write-Host "Trying again in 60s"
+                    Start-Sleep -Seconds 60
+                }
             }
         }
         
@@ -130,6 +134,7 @@ function Invoke-DatabaseMonitoring {
 }
 
 Invoke-DatabaseMonitoring
+Write-Host $env:WEBSITE_PRIVATE_IP
 
 # get sharedKey after LAW was created 
 # body ?

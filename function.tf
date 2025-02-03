@@ -16,6 +16,7 @@ resource "azurerm_service_plan" "asp_func_app" {
   name                = "asp-monitor-dev-01"
   resource_group_name = var.log_analytics_workspace.resource_group_name
   location            = var.log_analytics_workspace.location
+  #TODO: Is Linux possible? Do we need Premium?
   os_type             = "Windows"
   sku_name            = "EP1"
 }
