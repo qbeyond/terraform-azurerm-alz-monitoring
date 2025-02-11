@@ -7,6 +7,12 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased] - yyyy-mm-dd
 
+## [5.4.2] - 2025-2-11
+
+### Changed
+
+- Fix version constraint `~>1.14.0` -> `~>1.14`
+
 ## [5.4.1] - 2024-11-20
 
 ### Changed
