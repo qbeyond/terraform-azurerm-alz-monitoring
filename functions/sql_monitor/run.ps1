@@ -44,11 +44,12 @@ function Get-QbyDatabasesInTenant {
 Resources
 | where type =~ 'microsoft.sql/servers/databases'
 | where tags['alerting'] == 'enabled'
-| where tags['managedby'] == 'test'
+| where tags['managedby'] == 'q.beyond'
 | project id
 "@
-    # return Search-AzGraph -Query $query
-    return @()
+    # TODO: Make environment variable for "msp"
+    # Pass variable as monitoring module input to this function
+    return Search-AzGraph -Query $query -ManagementGroup "msp" -AllowPartialScope
 }
 
 function Get-PlainTextSecret {
@@ -179,67 +180,9 @@ function Invoke-DatabaseMonitoring {
 
     # Go over remaining list of unmonitored databases
     foreach ($db in $dbs) {
-        Send-MonitoringEvent -Message "Database is not being monitored!" -Severity "WARNING"
+        Send-MonitoringEvent -Message "Database is not being monitored! $db" -Severity "WARNING"
     }
 }
 
 Invoke-DatabaseMonitoring
 Write-Host $env:WEBSITE_PRIVATE_IP
-
-# get sharedKey after LAW was created 
-# body ?
-
-# TODO: Make sure customerID == tenantID
-# $customerId = "baee5c0e-d4cc-4c2e-b92c-fea0cff04431" #"8ab860c4-fca0-44ab-8704-faf34748c6a3"
-# $sharedKey = "ITMCHcARStQZmdYKyZFf9rnr0qXrMBB1KNUjaVNiequGOyOEqRIHT2rTd1JR/Bdvyu4q3Fn7IEeMBDMfpx/whA=="
-# $logType = "MonitoringResources"
-
-# $body = @"
-#     [
-#         {
-#             "TimeGenerated": "$(Get-Date -Format o)",
-#             "TestField": "TestValue1",
-#             "AnotherField": "TestValue2"
-#         }
-#     ]
-# "@
-
-
-
-
-# # Create the function to create and post the request
-# function Post-LogAnalyticsData($customerId, $sharedKey, $body, $logType) {
-#     $method = "POST"
-#     $contentType = "application/json"
-#     $resource = "/api/logs"
-#     $rfc1123date = [DateTime]::UtcNow.ToString("r")
-#     $contentLength = $body.Length
-#     $signature = Build-Signature `
-#         -customerId $customerId `
-#         -sharedKey $sharedKey `
-#         -date $rfc1123date `
-#         -contentLength $contentLength `
-#         -method $method `
-#         -contentType $contentType `
-#         -resource $resource
-#     $uri = "https://" + $customerId + ".ods.opinsights.azure.com" + $resource + "?api-version=2016-04-01"
-
-#     $headers = @{
-#         "Authorization" = $signature;
-#         "Log-Type"      = $logType;
-#         "x-ms-date"     = $rfc1123date;
-#     }
-
-#     $response = Invoke-WebRequest -Uri $uri -Method $method -ContentType $contentType -Headers $headers -Body $body -UseBasicParsing
-#     return $response.StatusCode
-# }
-
-# try {
-#     Write-Output "Start to import Microsoft Resource Graph data to Log Analytics ..."
-#     # Submit the data to the API endpoint
-#     Post-LogAnalyticsData -customerId $customerId -sharedKey $sharedKey -body (($result | ConvertTo-Json -Depth 10)) -logType $logType 
-#     Write-Output "Finished import Microsoft Resource Graph data to Log Analytics ..."
-# }
-# catch {
-#     throw "The script execution failed with Error `n`t $($($_.Exception).Message)"
-# }
