@@ -43,13 +43,10 @@ function Get-QbyDatabasesInTenant {
     $query = @"
 Resources
 | where type =~ 'microsoft.sql/servers/databases'
-| where tags['alerting'] == 'enabled'
-| where tags['managedby'] == 'q.beyond'
-| project id
+| extend server = tostring(split(id, "/")[8]), name = tostring(split(id, "/")[10])
+| project name, server
 "@
-    # TODO: Make environment variable for "msp"
-    # Pass variable as monitoring module input to this function
-    return Search-AzGraph -Query $query -ManagementGroup "msp" -AllowPartialScope
+    return Search-AzGraph -Query $query -ManagementGroup $env:ROOT_MANAGEMENT_GROUP_ID -AllowPartialScope
 }
 
 function Get-PlainTextSecret {
@@ -68,19 +65,28 @@ function Get-DatabaseFromConnectionString {
         [Parameter(Mandatory = $true)]
         [string]$ConnectionString
     )
-    return "unknown"
-    # TODO: Implement function logic
+    $ConnectionString -match "Server=tcp:(.*?).database.windows.net.*?Initial Catalog=(.*?);" | Out-Null; 
+    return [PSCustomObject]@{ Name = $Matches[2]; Server = $Matches[1] }
 }
 
 function Remove-DatabaseFromList {
     param (
         [Parameter(Mandatory = $true)]
         [AllowEmptyCollection()]
-        [array]$List,
+        [System.Collections.ArrayList]$List,
         [Parameter(Mandatory = $true)]
         [string]$Database
     )
-    # TODO: Implement function logic
+    $i = 0
+    while ($i -lt $List.Count) {
+        $i++
+        if ($db.name -eq $Database.name -and $db.server -eq $Database.server) {
+            break
+        }
+    }
+    if ($i -lt $List.Count) {
+        $List.RemoveAt($i)
+    }
 }
 
 function Test-DatabaseConnection {
@@ -117,6 +123,7 @@ function Test-DatabaseConnection {
     return $result
 }
 
+# TODO: Real monitoring logic
 function Send-MonitoringEvent {
     param(
         [Parameter(Mandatory = $true)]
@@ -131,7 +138,7 @@ function Invoke-DatabaseMonitoring {
     param()
 
     Connect-AzAccount -Identity
-    $dbs = @($(Get-QbyDatabasesInTenant))
+    $dbs = [System.Collections.ArrayList] @($(Get-QbyDatabasesInTenant))
 
     try {
         $con_strings = Get-AzKeyVaultSecret $env:SQL_MONITORING_KEY_VAULT -ErrorAction Stop

@@ -120,6 +120,7 @@ resource "azurerm_windows_function_app" "func_app" {
     "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.appi.instrumentation_key
     SQL_MONITORING_KEY_VAULT         = var.functions_config.enable_sql ? local.key_vault_name : ""
     TENANT_ID                        = data.azurerm_client_config.current.tenant_id
+    ROOT_MANAGEMENT_GROUP_ID         = var.root_management_group_id
   }
 }
 
