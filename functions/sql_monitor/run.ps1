@@ -40,34 +40,43 @@ function Get-QbyDatabasesInTenant {
     Write-Host "Search tenant for MSSQL databases ..."
 
     # Go to the resource graph and get databases via Kusto query
+    #     $query = @"
+    # Resources
+    # | where type =~ 'microsoft.sql/servers/databases'
+    # | extend server = tostring(split(id, "/")[8]), name = tostring(split(id, "/")[10])
+    # | where tags['alerting'] == 'enabled'
+    # | where tags['managedby'] == 'q.beyond'
+    # | project name, server, id
+    # "@
     $query = @"
 Resources
 | where type =~ 'microsoft.sql/servers/databases'
 | extend server = tostring(split(id, "/")[8]), name = tostring(split(id, "/")[10])
-| where tags['alerting'] == 'enabled'
-| where tags['managedby'] == 'q.beyond'
 | project name, server, id
 "@
     $databases = Search-AzGraph -Query $query -ManagementGroup $env:ROOT_MANAGEMENT_GROUP_ID -AllowPartialScope
 
     # AzGraph returns a list, but we want a map for faster search and deletion
+    # Key = "[name].[server]"
     $dbMap = @{}
     foreach ($db in $databases) {
+        $db | Add-Member -MemberType NoteProperty -Name "Error" -Value $null -Force
         $key = "$($db.name).$($db.server)"
         $dbMap[$key] = $db
     }
     return $dbMap
 }
 
-function Get-PlainTextSecret {
+function Get-PlainTextSecrets {
     param (
         [Parameter(Mandatory = $true)]
-        [string]$SecretName
+        [string]$KeyVault
     )
 
-    $secret = Get-AzKeyVaultSecret $env:SQL_MONITORING_KEY_VAULT -Name $SecretName
-    # Convert from secret string to string
-    return [System.Net.NetworkCredential]::new("", $secret.SecretValue).Password
+    return Get-AzKeyVaultSecret $KeyVault | Foreach-Object {
+        $secret = Get-AzKeyVaultSecret $KeyVault -Name $_.Name
+        [System.Net.NetworkCredential]::new("", $secret.SecretValue).Password
+    }
 }
 
 function Get-DatabaseFromConnectionString {
@@ -90,14 +99,12 @@ function Test-DatabaseConnection {
     Write-Host "Testing one database connection ..."
 
     $connection = New-Object System.Data.SqlClient.SqlConnection
-    $result = $false
         
     $connection.ConnectionString = $ConnectionString
 
     try {
         $connection.Open()
         if ($connection.State -eq "Open") {
-            $result = $true
         }
         else {
             throw "Wrong connection state: $($connection.State)"
@@ -112,7 +119,8 @@ function Test-DatabaseConnection {
             $connection.Close()
         }
     }
-    return $result
+    # If the function did not throw, everything was fine
+    return $true
 }
 
 # TODO: Real monitoring logic
@@ -133,49 +141,52 @@ function Invoke-DatabaseMonitoring {
     $dbs = $(Get-QbyDatabasesInTenant)
 
     try {
-        $con_strings = Get-AzKeyVaultSecret $env:SQL_MONITORING_KEY_VAULT -ErrorAction Stop
+        $con_strings = Get-PlainTextSecrets -KeyVault $env:SQL_MONITORING_KEY_VAULT -ErrorAction Stop
     }
     catch {
         Send-MonitoringEvent -Message "Cannot access sql connection strings from keyvault: $($_.Exception.Message)"
         $con_strings = @()
     }
-    $error_string = ""
-    $success = $false
 
-    foreach ($con in $con_strings) {
-        $con = Get-PlainTextSecret -SecretName $con.Name
-
-        # TODO: Retry loop for all dbs, not per db
-        for ($iTries = 0; $iTries -lt 3; $iTries++) {
+    for ($iTries = 0; $iTries -lt 3; $iTries++) {
+        $failed_dbs = @()
+        foreach ($con in $con_strings) {
+            $dbKey = Get-DatabaseFromConnectionString $con
+        
             try {
-                $success = Test-DatabaseConnection -ConnectionString $con
-                if ($success) { break }
-            }
-            catch {
-                $error_string = $_.Exception.Message
-                Write-Host "Error while accessing database"
-                Write-Host $_.Exception.Message
-                # Sleep 1 minute before retrying
-                if ($iTries -lt 2) {
-                    Write-Host "Trying again in 60s"
-                    Start-Sleep -Seconds 60
+                Test-DatabaseConnection -ConnectionString $con
+
+                if (![string]::IsNullOrWhiteSpace($dbKey) -and $dbs.ContainsKey($dbKey)) {
+                    $dbs.Remove($dbKey)
+                } else {
+                    $dbs[$dbKey].Error = "Connection state is not open. Maybe it crashed and closed immediately?"
+                    $failed_dbs += $con
                 }
             }
-        }
-        
-        if ($success) {
-            Send-MonitoringEvent -Message "Connection successful" -Severity "OK"
-        }
-        else {
-            Send-MonitoringEvent -Message $error_string -Severity "CRITICAL"
+            catch {
+                $failed_dbs += $con
+                $dbs[$dbKey].Error = $_.Exception.Message
+            }
         }
 
-        # Database has been monitored, remove from tenant-wide list
-        $dbKey = Get-DatabaseFromConnectionString $con
-        if (![string]::IsNullOrWhiteSpace($dbKey) -and $dbs.ContainsKey($dbKey)) {
-            Write-Host $dbKey
-            $dbs.Remove($dbKey)
+        $con_strings = $failed_dbs
+
+        # Sleep 1 minute before retrying
+        if ($iTries -lt 2 -and $failed_dbs.Count -gt 0) {
+            Write-Host "Trying again in 60s"
+            Start-Sleep -Seconds 60
         }
+    }
+
+    # Every remaining connection string has errored out 3 times in a row
+    foreach ($con in $con_strings) {
+        $dbKey = Get-DatabaseFromConnectionString $con
+        if ([string]::IsNullOrWhiteSpace($dbKey) -or !$dbs.ContainsKey($dbKey)) {
+            continue
+        }
+        
+        Send-MonitoringEvent -Message "Error while trying to connect to $dbKey - $($dbs[$dbKey].Error)" -Severity "CRITICAL"
+        $dbs.Remove($dbKey)
     }
 
     # Go over remaining list of unmonitored databases
@@ -185,4 +196,3 @@ function Invoke-DatabaseMonitoring {
 }
 
 Invoke-DatabaseMonitoring
-Write-Host $env:WEBSITE_PRIVATE_IP
