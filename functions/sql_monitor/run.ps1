@@ -44,9 +44,19 @@ function Get-QbyDatabasesInTenant {
 Resources
 | where type =~ 'microsoft.sql/servers/databases'
 | extend server = tostring(split(id, "/")[8]), name = tostring(split(id, "/")[10])
-| project name, server
+| where tags['alerting'] == 'enabled'
+| where tags['managedby'] == 'q.beyond'
+| project name, server, id
 "@
-    return Search-AzGraph -Query $query -ManagementGroup $env:ROOT_MANAGEMENT_GROUP_ID -AllowPartialScope
+    $databases = Search-AzGraph -Query $query -ManagementGroup $env:ROOT_MANAGEMENT_GROUP_ID -AllowPartialScope
+
+    # AzGraph returns a list, but we want a map for faster search and deletion
+    $dbMap = @{}
+    foreach ($db in $databases) {
+        $key = "$($db.name).$($db.server)"
+        $dbMap[$key] = $db
+    }
+    return $dbMap
 }
 
 function Get-PlainTextSecret {
@@ -65,28 +75,10 @@ function Get-DatabaseFromConnectionString {
         [Parameter(Mandatory = $true)]
         [string]$ConnectionString
     )
-    $ConnectionString -match "Server=tcp:(.*?).database.windows.net.*?Initial Catalog=(.*?);" | Out-Null; 
-    return [PSCustomObject]@{ Name = $Matches[2]; Server = $Matches[1] }
-}
 
-function Remove-DatabaseFromList {
-    param (
-        [Parameter(Mandatory = $true)]
-        [AllowEmptyCollection()]
-        [System.Collections.ArrayList]$List,
-        [Parameter(Mandatory = $true)]
-        [string]$Database
-    )
-    $i = 0
-    while ($i -lt $List.Count) {
-        $i++
-        if ($db.name -eq $Database.name -and $db.server -eq $Database.server) {
-            break
-        }
-    }
-    if ($i -lt $List.Count) {
-        $List.RemoveAt($i)
-    }
+    # Returns "[name].[server]" of database
+    $ConnectionString -match "Server=tcp:(.*?).database.windows.net.*?Initial Catalog=(.*?);" | Out-Null; 
+    return "$($Matches[2]).$($Matches[1])"
 }
 
 function Test-DatabaseConnection {
@@ -138,7 +130,7 @@ function Invoke-DatabaseMonitoring {
     param()
 
     Connect-AzAccount -Identity
-    $dbs = [System.Collections.ArrayList] @($(Get-QbyDatabasesInTenant))
+    $dbs = $(Get-QbyDatabasesInTenant)
 
     try {
         $con_strings = Get-AzKeyVaultSecret $env:SQL_MONITORING_KEY_VAULT -ErrorAction Stop
@@ -153,7 +145,7 @@ function Invoke-DatabaseMonitoring {
     foreach ($con in $con_strings) {
         $con = Get-PlainTextSecret -SecretName $con.Name
 
-        # Try 3 times before sending error event
+        # TODO: Retry loop for all dbs, not per db
         for ($iTries = 0; $iTries -lt 3; $iTries++) {
             try {
                 $success = Test-DatabaseConnection -ConnectionString $con
@@ -179,15 +171,16 @@ function Invoke-DatabaseMonitoring {
         }
 
         # Database has been monitored, remove from tenant-wide list
-        $dbname = Get-DatabaseFromConnectionString $con
-        if (![string]::IsNullOrWhiteSpace($dbname)) {
-            Remove-DatabaseFromList -List $dbs -Database $dbname
+        $dbKey = Get-DatabaseFromConnectionString $con
+        if (![string]::IsNullOrWhiteSpace($dbKey) -and $dbs.ContainsKey($dbKey)) {
+            Write-Host $dbKey
+            $dbs.Remove($dbKey)
         }
     }
 
     # Go over remaining list of unmonitored databases
-    foreach ($db in $dbs) {
-        Send-MonitoringEvent -Message "Database is not being monitored! $db" -Severity "WARNING"
+    foreach ($db in $dbs.GetEnumerator()) {
+        Send-MonitoringEvent -Message "Database is not being monitored! $($db.Value.Id)" -Severity "WARNING"
     }
 }
 
