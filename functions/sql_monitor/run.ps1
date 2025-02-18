@@ -2,31 +2,19 @@
 .SYNOPSIS
     Retrieving Monitoring Data and sending it to our Event Pipeline.
 .DESCRIPTION
-    This script regularly checks SQL Servers for availability and sends the retrieved data to our Event Pipeline.
+    This script regularly checks MSSQL databases for availability and sends the retrieved data to our Event Pipeline.
 
     Requirements
     - Managed identity must be permitted on the keyvault
     - Managed identity needs tenant-wide read permissions
 
     Procedure
-    - Get all DBs managed by qbeyond
-    - Get keyvault name (environment variable set by Terraform)
-    - Get connection strings from keyvault
-    - For all connection strings: try to connect to db
-        - If connection failed: try a total of 3 times before sending a CRITICAL event
-    - Make sure all DBs in tenant are being monitored
-
-    Outputs
-    - Login successful -> return OK
-    - Login failed -> return CRITICAL
-    - Database has no connection string -> return WARNING
-
-    Edge Cases
-    - connect to DB timeout -> return CRITICAL
-    - Event Pipeline not reachable -> ?
-    - Wrong SQL credentials -> return CRITICAL with error info
-    - No permissions (managed identity not working) -> ?
-.EXAMPLE
+    1. Get all DBs managed by qbeyond
+    2. Get connection strings from keyvault (keyvault information from environment variable set by terraform deployment)
+    3. For all connection strings: try to connect to db
+        If connection failed: try a total of 3 times before sending a CRITICAL event
+    4. For all remaining databases in tenant
+        Send a warning, because we are currently not monitoring those databases.
 #>
 
 param(
@@ -200,8 +188,8 @@ function Invoke-DatabaseMonitoring {
 }
 
 Initialize-QbyMonitoring -Package "MSSQL Monitor"`
-    -Description = ""`
+    -Description "This script regularly checks MSSQL databases for availability"`
     -Name "MSSQL Monitor"`
-    -ServiceUri "dev"`
+    -ServiceUri "dev"
 
 Invoke-DatabaseMonitoring
