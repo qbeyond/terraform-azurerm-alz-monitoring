@@ -48,7 +48,6 @@ Resources
     # Key = "[name].[server]"
     $dbMap = @{}
     foreach ($db in $databases) {
-        $db | Add-Member -MemberType NoteProperty -Name "Error" -Value $null -Force
         $key = "$($db.name).$($db.server)"
         $dbMap[$key] = $db
     }
@@ -60,6 +59,8 @@ function Get-PlainTextSecrets {
         [Parameter(Mandatory = $true)]
         [string]$KeyVault
     )
+
+    Write-Host "Getting connection strings from keyvault ..."
 
     return Get-AzKeyVaultSecret $KeyVault | Foreach-Object {
         $secret = Get-AzKeyVaultSecret $KeyVault -Name $_.Name
@@ -74,8 +75,10 @@ function Get-DatabaseFromConnectionString {
     )
 
     # Returns "[name].[server]" of database
-    $ConnectionString -match "Server=tcp:(.*?).database.windows.net.*?Initial Catalog=(.*?);" | Out-Null; 
-    return "$($Matches[2]).$($Matches[1])"
+    if ($ConnectionString -match "Server=tcp:(.*?).database.windows.net.*?Initial Catalog=(.*?);") { 
+        return "$($Matches[2]).$($Matches[1])"
+    }
+    return ""
 }
 
 function Test-DatabaseConnection {
@@ -87,7 +90,6 @@ function Test-DatabaseConnection {
     Write-Host "Testing one database connection ..."
 
     $connection = New-Object System.Data.SqlClient.SqlConnection
-        
     $connection.ConnectionString = $ConnectionString
 
     try {
@@ -117,6 +119,7 @@ function Invoke-DatabaseMonitoring {
     try {
         $con_strings = Get-PlainTextSecrets -KeyVault $env:SQL_MONITORING_KEY_VAULT -ErrorAction Stop
     } catch {
+        # TODO: What resource id?
         Send-MonitoringEvent -Message "Cannot access sql connection strings from keyvault: $(§_.Exception.Message)"`
             -State "CRITICAL"`
             -ResourceID ""`
@@ -126,6 +129,7 @@ function Invoke-DatabaseMonitoring {
         $con_strings = @()
     }
 
+    $db_errors = @{}
     for ($iTries = 0; $iTries -lt 3; $iTries++) {
         $failed_dbs = @()
         foreach ($con in $con_strings) {
@@ -142,13 +146,10 @@ function Invoke-DatabaseMonitoring {
                         -AffectedObject $dbs[$dbKey].Server
 
                     $dbs.Remove($dbKey)
-                } else {
-                    $dbs[$dbKey].Error = "Connection state is not open. Maybe it crashed and closed immediately?"
-                    $failed_dbs += $con
                 }
             } catch {
                 $failed_dbs += $con
-                $dbs[$dbKey].Error = $_.Exception.Message
+                $db_errors[$dbKey] = $_.Exception.Message
             }
         }
 
@@ -168,7 +169,7 @@ function Invoke-DatabaseMonitoring {
             continue
         }
         
-        Send-MonitoringEvent -Message "Error while connecting to $dbKey - $($dbs[$dbKey].Error)"`
+        Send-MonitoringEvent -Message "Error while connecting to $dbKey - $($db_errors[$dbKey])"`
             -State "CRITICAL"`
             -ResourceID $dbs[$dbKey].Id`
             -AffectedEntity $dbs[$dbKey].Name`
