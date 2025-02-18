@@ -10,7 +10,7 @@ resource "azurerm_monitor_action_group" "eventpipeline" {
 
   webhook_receiver {
     name                    = var.event_pipeline_config.name
-    service_uri             = replace(var.event_pipeline_config.service_uri, "{{secret}}", var.secret)
+    service_uri             = local.service_uri
     use_common_alert_schema = true
   }
 }
@@ -24,7 +24,7 @@ resource "azurerm_monitor_action_group" "optional" {
 
   webhook_receiver {
     name                    = var.event_pipeline_config.name
-    service_uri             = replace(var.event_pipeline_config.service_uri_integration, "{{secret}}", var.secret_integration)
+    service_uri             = local.service_uri_integration
     use_common_alert_schema = true
   }
 }

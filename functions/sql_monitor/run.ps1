@@ -190,6 +190,8 @@ function Invoke-DatabaseMonitoring {
 Initialize-QbyMonitoring -Package "MSSQL Monitor"`
     -Description "This script regularly checks MSSQL databases for availability"`
     -Name "MSSQL Monitor"`
-    -ServiceUri "dev"
+    -ServiceUri $env:SQL_SERVICE_URI
+
+Write-Host "Service URI: $($env:SQL_SERVICE_URI)"
 
 Invoke-DatabaseMonitoring
