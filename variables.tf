@@ -110,20 +110,29 @@ variable "active_services" {
   default = {}
 }
 
-# WARN: Not yet working (also how can we only zip certain functions?)
 variable "functions_config" {
   type = object({
-    enable_sql            = optional(bool, false)
-    enable_universalprint = optional(bool, false)
+    stage_sql = optional(string, "off")
   })
   description = <<-DOC
   ```
+  A configuration object for each function stage setting, where each function can be set to:
+  - "prd" for production event pipeline
+  - "int" for integration event pipeline
+  - "off" to disable the function
+
   {
-  enable_sql = Enable Azure function that monitors all sql databases
-  enable_universalprint = Enable Azure function that monitors the status of universal print printers
-}
+    stage_sql = This function monitors MSSQL databases managed by q.beyond
+  }
   ```
   DOC
 
   default = {}
+
+  validation {
+    condition = alltrue([
+      for v in values(var.functions_config) : v == "prd" || v == "int" || v == "off"
+    ])
+    error_message = "Each function stage value must be one of 'prd', 'int', or 'off'."
+  }
 }

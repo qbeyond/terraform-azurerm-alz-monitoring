@@ -1,5 +1,7 @@
 locals {
-  path = "${path.module}/queries"
+  path                    = "${path.module}/queries"
+  service_uri             = replace(var.event_pipeline_config.service_uri, "{{secret}}", var.secret)
+  service_uri_integration = replace(var.event_pipeline_config.service_uri, "{{secret}}", var.secret_integration)
 
   rules = merge({
     "alr-prd-Heartbeat-ux-law-metric-crit-01" : {
@@ -70,12 +72,15 @@ locals {
 
   customer_code = upper(split("-", regex("fctkey-[^-]+", var.event_pipeline_config.service_uri_integration))[1])
 
+  # Add <name> = <directory> entries for each function you want to add to the monitoring function app.
+  # Note: the <name> must correspond to the variable function_config.stage_<name>
+  # Note: the directory is the name of the subdirectory in /functions where the function code is located
   all_functions = {
-    sql            = "sql_monitor"
-    universalprint = "universal_print_monitor"
+    sql = "sql_monitor"
   }
 
-  excluded_functions = [for key, path in local.all_functions : path if !lookup(var.functions_config, "enable_${key}", false)]
-  
+  # Exclude source code of all functions that are set to "off"
+  excluded_functions = [for key, path in local.all_functions : path if lookup(var.functions_config, "stage_${key}", "off") == "off"]
+
   key_vault_name = format("kv-%s-sqlmonitor-01", local.customer_code)
 }
