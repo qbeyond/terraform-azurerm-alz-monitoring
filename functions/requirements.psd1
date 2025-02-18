@@ -8,7 +8,4 @@
     'Az.Accounts'                         = '4.*'
     'Az.ResourceGraph'                    = '1.*'
     'Az.KeyVault'                         = '6.*'
-    
-    'Microsoft.Graph'                     = '2.*'
-    'Microsoft.Graph.Identity.Governance' = '2.*'
 }
