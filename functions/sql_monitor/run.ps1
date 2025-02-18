@@ -105,15 +105,12 @@ function Test-DatabaseConnection {
     try {
         $connection.Open()
         if ($connection.State -eq "Open") {
-        }
-        else {
+        } else {
             throw "Wrong connection state: $($connection.State)"
         }
-    }
-    catch {
+    } catch {
         throw $_
-    }
-    finally {
+    } finally {
         # Ensure the connection is closed
         if ($connection.State -ne "Closed") {
             $connection.Close()
@@ -123,17 +120,6 @@ function Test-DatabaseConnection {
     return $true
 }
 
-# TODO: Real monitoring logic
-function Send-MonitoringEvent {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$Message,
-        [string]$Severity = "TRACE"
-    )
-    Write-Host "[$Severity] $Message"
-}
-#endregion helper_functions
-
 function Invoke-DatabaseMonitoring {
     param()
 
@@ -142,9 +128,13 @@ function Invoke-DatabaseMonitoring {
 
     try {
         $con_strings = Get-PlainTextSecrets -KeyVault $env:SQL_MONITORING_KEY_VAULT -ErrorAction Stop
-    }
-    catch {
-        Send-MonitoringEvent -Message "Cannot access sql connection strings from keyvault: $($_.Exception.Message)"
+    } catch {
+        Send-MonitoringEvent -Message "Cannot access sql connection strings from keyvault: $(§_.Exception.Message)"`
+            -State "CRITICAL"`
+            -ResourceID ""`
+            -AffectedEntity "SQL Monitoring Connectionstrings"`
+            -AffectedObject $env:SQL_MONITORING_KEY_VAULTi`
+
         $con_strings = @()
     }
 
@@ -157,13 +147,18 @@ function Invoke-DatabaseMonitoring {
                 Test-DatabaseConnection -ConnectionString $con
 
                 if (![string]::IsNullOrWhiteSpace($dbKey) -and $dbs.ContainsKey($dbKey)) {
+                    Send-MonitoringEvent -Message "Connection successful"`
+                        -State "OK"`
+                        -ResourceID $dbs[$dbKey].Id`
+                        -AffectedEntity $dbs[$dbKey].Name`
+                        -AffectedObject $dbs[$dbKey].Server
+
                     $dbs.Remove($dbKey)
                 } else {
                     $dbs[$dbKey].Error = "Connection state is not open. Maybe it crashed and closed immediately?"
                     $failed_dbs += $con
                 }
-            }
-            catch {
+            } catch {
                 $failed_dbs += $con
                 $dbs[$dbKey].Error = $_.Exception.Message
             }
@@ -185,14 +180,28 @@ function Invoke-DatabaseMonitoring {
             continue
         }
         
-        Send-MonitoringEvent -Message "Error while trying to connect to $dbKey - $($dbs[$dbKey].Error)" -Severity "CRITICAL"
+        Send-MonitoringEvent -Message "Error while connecting to $dbKey - $($dbs[$dbKey].Error)"`
+            -State "CRITICAL"`
+            -ResourceID $dbs[$dbKey].Id`
+            -AffectedEntity $dbs[$dbKey].Name`
+            -AffectedObject $dbs[$dbKey].Server
+
         $dbs.Remove($dbKey)
     }
 
     # Go over remaining list of unmonitored databases
     foreach ($db in $dbs.GetEnumerator()) {
-        Send-MonitoringEvent -Message "Database is not being monitored! $($db.Value.Id)" -Severity "WARNING"
+        Send-MonitoringEvent -Message "Database is not being monitored! $($db.Value.Id)"`
+            -State "WARNING"`
+            -ResourceID $db.Value.Id`
+            -AffectedEntity $db.Value.Name`
+            -AffectedObject $db.Value.Server
     }
 }
+
+Initialize-QbyMonitoring -Package "MSSQL Monitor"`
+    -Description = ""`
+    -Name "MSSQL Monitor"`
+    -ServiceUri "dev"`
 
 Invoke-DatabaseMonitoring
