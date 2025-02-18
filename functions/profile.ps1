@@ -2,9 +2,7 @@
 $modules = @(
     'Az.Accounts',
     'Az.ResourceGraph',
-    'Az.KeyVault',
-    'Microsoft.Graph',
-    'Microsoft.Graph.Identity.Governance'
+    'Az.KeyVault'
 )
 
 foreach ($module in $modules) {
