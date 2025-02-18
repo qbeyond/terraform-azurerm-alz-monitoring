@@ -17,8 +17,8 @@ resource "azurerm_service_plan" "asp_func_app" {
   resource_group_name = var.log_analytics_workspace.resource_group_name
   location            = var.log_analytics_workspace.location
   #TODO: Is Linux possible? Do we need Premium?
-  os_type             = "Windows"
-  sku_name            = "EP1"
+  os_type  = "Windows"
+  sku_name = "EP1"
 }
 
 resource "azurerm_key_vault" "sql_monitor" {
@@ -96,14 +96,22 @@ resource "azurerm_windows_function_app" "func_app" {
     type = "SystemAssigned"
   }
 
-  app_settings = {
-    WEBSITE_RUN_FROM_PACKAGE         = azurerm_storage_blob.storage_blob_function.url
-    FUNCTIONS_WORKER_RUNTIME         = "powershell"
-    "APPINSIGHTS_INSTRUMENTATIONKEY" = azurerm_application_insights.appi.instrumentation_key
-    SQL_MONITORING_KEY_VAULT         = var.functions_config.stage_sql == "off" ? "" : local.key_vault_name
-    TENANT_ID                        = data.azurerm_client_config.current.tenant_id
-    ROOT_MANAGEMENT_GROUP_ID         = var.root_management_group_id
-  }
+  app_settings = merge(
+    {
+      WEBSITE_RUN_FROM_PACKAGE       = azurerm_storage_blob.storage_blob_function.url
+      FUNCTIONS_WORKER_RUNTIME       = "powershell"
+      APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.appi.instrumentation_key
+      SQL_MONITORING_KEY_VAULT       = var.functions_config.stage_sql == "off" ? "" : local.key_vault_name
+      TENANT_ID                      = data.azurerm_client_config.current.tenant_id
+      ROOT_MANAGEMENT_GROUP_ID       = var.root_management_group_id
+    },
+    {
+      # For each function, set an environment variable <func>_SERVICE_URI, which is either the prd or the int event pipeline
+      for func_key, stage in var.functions_config :
+      upper("${replace(func_key, "stage_", "")}_SERVICE_URI") => stage == "prd" ? local.service_uri : local.service_uri_integration
+      if stage != "off"
+    }
+  )
 }
 
 resource "azurerm_application_insights" "appi" {
