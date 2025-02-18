@@ -169,7 +169,7 @@ function Invoke-DatabaseMonitoring {
         # Sleep 1 minute before retrying
         if ($iTries -lt 2 -and $failed_dbs.Count -gt 0) {
             Write-Host "Trying again in 60s"
-            Start-Sleep -Seconds 60
+            #Start-Sleep -Seconds 60
         }
     }
 
