@@ -79,8 +79,11 @@ locals {
     sql = "sql_monitor"
   }
 
-  # Exclude source code of all functions that are set to "off"
+  sql_key_vault_name = format("kv-%s-sqlmonitor-01", local.customer_code)
+
+  # Exclude source code of all functions that are not specified or specifically set to "off"
   excluded_functions = [for key, path in local.all_functions : path if lookup(var.functions_config, "stage_${key}", "off") == "off"]
 
-  key_vault_name = format("kv-%s-sqlmonitor-01", local.customer_code)
+  # Checks that the event pipeline and at least one function is enabled
+  enable_functions = var.event_pipeline_config.enabled && length(local.excluded_functions) < length(local.all_functions)
 }
