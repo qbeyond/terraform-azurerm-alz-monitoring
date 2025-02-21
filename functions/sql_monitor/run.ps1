@@ -121,7 +121,6 @@ function Test-DatabaseConnection {
 function Invoke-DatabaseMonitoring {
     param()
 
-    Connect-AzAccount -Identity
     try {
         $dbs = $(Get-QbyDatabasesInTenant)
     } catch {

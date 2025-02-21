@@ -13,3 +13,5 @@ foreach ($module in $modules) {
         Write-Host "Failed to import module: $module - $_"
     }
 }
+
+Connect-AzAccount -Identity
