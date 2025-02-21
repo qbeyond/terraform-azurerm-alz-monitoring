@@ -42,7 +42,11 @@ Resources
 | extend server = tostring(split(id, "/")[8]), name = tostring(split(id, "/")[10])
 | project name, server, id
 "@
-    $databases = Search-AzGraph -Query $query -ManagementGroup $env:ROOT_MANAGEMENT_GROUP_ID -AllowPartialScope
+    try {
+        $databases = Search-AzGraph -Query $query -ManagementGroup $env:ROOT_MANAGEMENT_GROUP_ID -AllowPartialScope -ErrorAction Stop
+    } catch {
+        throw $_
+    }
 
     # AzGraph returns a list, but we want a map for faster search and deletion
     # Key = "[name].[server]"
@@ -62,9 +66,13 @@ function Get-PlainTextSecrets {
 
     Write-Host "Getting connection strings from keyvault ..."
 
-    return Get-AzKeyVaultSecret $KeyVault | Foreach-Object {
-        $secret = Get-AzKeyVaultSecret $KeyVault -Name $_.Name
-        [System.Net.NetworkCredential]::new("", $secret.SecretValue).Password
+    try {
+        return Get-AzKeyVaultSecret $KeyVault | Foreach-Object {
+            $secret = Get-AzKeyVaultSecret $KeyVault -Name $_.Name
+            [System.Net.NetworkCredential]::new("", $secret.SecretValue).Password
+        }
+    } catch {
+        throw $_
     }
 }
 
@@ -114,15 +122,25 @@ function Invoke-DatabaseMonitoring {
     param()
 
     Connect-AzAccount -Identity
-    $dbs = $(Get-QbyDatabasesInTenant)
+    try {
+        $dbs = $(Get-QbyDatabasesInTenant)
+    } catch {
+        $dbs = @{}
+        # TODO: What resource id?
+        Send-MonitoringEvent -Message "Cannot read databases from customer tenant: $($_.Exception.Message)"`
+            -State "CRITICAL"`
+            -ResourceID "n/a"`
+            -AffectedEntity "n/a"`
+            -AffectedObject "n/a"
+    }
 
     try {
         $con_strings = Get-PlainTextSecrets -KeyVault $env:SQL_MONITORING_KEY_VAULT -ErrorAction Stop
     } catch {
         # TODO: What resource id?
-        Send-MonitoringEvent -Message "Cannot access sql connection strings from keyvault: $(§_.Exception.Message)"`
+        Send-MonitoringEvent -Message "Cannot access sql connection strings from keyvault: $($_.Exception.Message)"`
             -State "CRITICAL"`
-            -ResourceID ""`
+            -ResourceID "n/a"`
             -AffectedEntity "SQL Monitoring Connectionstrings"`
             -AffectedObject $env:SQL_MONITORING_KEY_VAULTi`
 
@@ -191,6 +209,8 @@ function Invoke-DatabaseMonitoring {
 Initialize-QbyMonitoring -Package "MSSQL Monitor"`
     -Description "This script regularly checks MSSQL databases for availability"`
     -Name "MSSQL Monitor"`
+    -ScriptName "sql_monitor"`
+    -ScriptVersion "1.0"`
     -ServiceUri $env:SQL_SERVICE_URI
 
 Write-Host "Service URI: $($env:SQL_SERVICE_URI)"
