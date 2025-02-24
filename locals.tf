@@ -83,7 +83,8 @@ locals {
 
   # Exclude source code of all functions that are not specified or specifically set to "off"
   excluded_functions = [for key, path in local.all_functions : path if lookup(var.functions_config, "stage_${key}", "off") == "off"]
+  enabled_functions = [for key, path in local.all_functions : key if lookup(var.functions_config, "stage_${key}", "off") != "off"]
 
   # Checks that the event pipeline and at least one function is enabled
-  enable_functions = var.event_pipeline_config.enabled && length(local.excluded_functions) < length(local.all_functions)
+  enable_function_app = var.event_pipeline_config.enabled && length(local.excluded_functions) < length(local.all_functions)
 }
