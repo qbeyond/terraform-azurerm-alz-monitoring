@@ -5,7 +5,7 @@
 data "azurerm_client_config" "current" {}
 
 data "archive_file" "function_package" {
-  count       = local.enable_functions ? 1 : 0
+  count       = local.enable_function_app ? 1 : 0
   type        = "zip"
   source_dir  = "${path.module}/functions"
   output_path = "function_app.zip"
@@ -14,7 +14,7 @@ data "archive_file" "function_package" {
 }
 
 resource "azurerm_service_plan" "asp_func_app" {
-  count               = local.enable_functions ? 1 : 0
+  count               = local.enable_function_app ? 1 : 0
   name                = "asp-monitor-dev-01"
   resource_group_name = var.log_analytics_workspace.resource_group_name
   location            = var.log_analytics_workspace.location
@@ -24,7 +24,7 @@ resource "azurerm_service_plan" "asp_func_app" {
 }
 
 resource "azurerm_key_vault" "sql_monitor" {
-  count                       = local.enable_functions && var.functions_config.stage_sql != "off" ? 1 : 0
+  count                       = local.enable_function_app && var.functions_config.stage_sql != "off" ? 1 : 0
   name                        = local.sql_key_vault_name
   resource_group_name         = var.log_analytics_workspace.resource_group_name
   location                    = var.log_analytics_workspace.location
@@ -53,8 +53,14 @@ resource "azurerm_key_vault" "sql_monitor" {
   }
 }
 
+resource "azurerm_role_assignment" "blob_contributor" {
+  scope                 = azurerm_storage_account.sa_func_app[0].id
+  role_definition_name  = "Storage Blob Data Contributor"
+  principal_id          = azurerm_windows_function_app.func_app[0].identity[0].principal_id
+}
+
 resource "azurerm_storage_account" "sa_func_app" {
-  count                    = local.enable_functions ? 1 : 0
+  count                    = local.enable_function_app ? 1 : 0
   name                     = format("samonitor01%s", lower(local.customer_code))
   resource_group_name      = var.log_analytics_workspace.resource_group_name
   location                 = var.log_analytics_workspace.location
@@ -63,14 +69,21 @@ resource "azurerm_storage_account" "sa_func_app" {
 }
 
 resource "azurerm_storage_container" "storage_container_func" {
-  count                 = local.enable_functions ? 1 : 0
-  name                  = "sc-monitoring-01"
+  count                 = local.enable_function_app ? 1 : 0
+  name                  = "sc-monitoring-code-01"
   storage_account_name  = azurerm_storage_account.sa_func_app[0].name
   container_access_type = "blob"
 }
 
-resource "azurerm_storage_blob" "storage_blob_function" {
-  count                  = local.enable_functions ? 1 : 0
+resource "azurerm_storage_container" "storage_container_state" {
+  count                 = local.enable_function_app ? 1 : 0
+  name                  = "sc-monitoring-state-01"
+  storage_account_name  = azurerm_storage_account.sa_func_app[0].name
+  container_access_type = "blob"
+}
+
+resource "azurerm_storage_blob" "storage_blob_function_code" {
+  count                  = local.enable_function_app ? 1 : 0
   name                   = format("function-blob-%s-%s.zip", local.customer_code, data.archive_file.function_package[0].output_md5)
   storage_account_name   = azurerm_storage_account.sa_func_app[0].name
   storage_container_name = azurerm_storage_container.storage_container_func[0].name
@@ -79,8 +92,16 @@ resource "azurerm_storage_blob" "storage_blob_function" {
   content_md5            = data.archive_file.function_package[0].output_md5
 }
 
+resource "azurerm_storage_blob" "storage_blob_function_state" {
+  for_each               = toset(local.enabled_functions)
+  name                   = format("state-blob-%s-%s", each.key, local.customer_code)
+  storage_account_name   = azurerm_storage_account.sa_func_app[0].name
+  storage_container_name = azurerm_storage_container.storage_container_state[0].name
+  type                   = "Block"
+}
+
 resource "azurerm_windows_function_app" "func_app" {
-  count               = local.enable_functions ? 1 : 0
+  count               = local.enable_function_app ? 1 : 0
   name                = format("func-dev-Monitoring-%s-01", local.customer_code)
   resource_group_name = var.log_analytics_workspace.resource_group_name
   location            = var.log_analytics_workspace.location
@@ -104,7 +125,7 @@ resource "azurerm_windows_function_app" "func_app" {
 
   app_settings = merge(
     {
-      WEBSITE_RUN_FROM_PACKAGE       = azurerm_storage_blob.storage_blob_function[0].url
+      WEBSITE_RUN_FROM_PACKAGE       = azurerm_storage_blob.storage_blob_function_code[0].url
       FUNCTIONS_WORKER_RUNTIME       = "powershell"
       APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.appi[0].instrumentation_key
       SQL_MONITORING_KEY_VAULT       = var.functions_config.stage_sql == "off" ? "" : local.sql_key_vault_name
@@ -116,12 +137,16 @@ resource "azurerm_windows_function_app" "func_app" {
       for func_key, stage in var.functions_config :
       upper("${replace(func_key, "stage_", "")}_SERVICE_URI") => stage == "prd" ? local.service_uri : local.service_uri_integration
       if stage != "off"
+    },
+    {
+      # For each function, set an environment variable <func>_STATE with the url to the state blob
+      for k, v in azurerm_storage_blob.storage_blob_function_state : upper("${k}_STATE") => v.url
     }
   )
 }
 
 resource "azurerm_application_insights" "appi" {
-  count               = local.enable_functions ? 1 : 0
+  count               = local.enable_function_app ? 1 : 0
   name                = format("appi-Monitoring-dev")
   resource_group_name = var.log_analytics_workspace.resource_group_name
   location            = var.log_analytics_workspace.location

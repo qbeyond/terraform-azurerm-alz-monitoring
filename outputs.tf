@@ -23,6 +23,6 @@ output "vminsights_dcr_id" {
 }
 
 output "function_app" {
-  value       = local.enable_functions ? azurerm_windows_function_app.func_app[0] : null
+  value       = local.enable_function_app ? azurerm_windows_function_app.func_app[0] : null
   description = "The function app that executes PowerShell scripts for resource monitorings"
 }
