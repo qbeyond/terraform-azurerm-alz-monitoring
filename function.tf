@@ -35,6 +35,7 @@ resource "azurerm_key_vault" "sql_monitor" {
 
   sku_name = "standard"
 
+  # Function App Managed Identity
   access_policy {
     tenant_id = data.azurerm_client_config.current.tenant_id
     object_id = azurerm_windows_function_app.func_app[0].identity[0].principal_id
@@ -51,6 +52,25 @@ resource "azurerm_key_vault" "sql_monitor" {
       "Get", "List",
     ]
   }
+
+  # User running terraform
+  access_policy {
+    tenant_id = data.azurerm_client_config.current.tenant_id
+    object_id = data.azurerm_client_config.current.object_id
+
+    key_permissions = [
+      "Get", "List",
+    ]
+
+    secret_permissions = [
+      "Get", "List",
+    ]
+
+    storage_permissions = [
+      "Get", "List",
+    ]
+  }
+
 }
 
 resource "azurerm_role_assignment" "blob_contributor" {

@@ -114,6 +114,59 @@ function Test-DatabaseConnection {
     return $true
 }
 
+function Send-TimedMonitoringEvent {
+    param(
+        # Required parameters
+        [Parameter(Mandatory=$true)]
+        [string]$Message,
+
+        [Parameter(Mandatory=$true)]
+        [ValidateSet("OK", "CRITICAL", "WARNING")]
+        [string]$State,
+
+        [Parameter(Mandatory=$true)]
+        [string]$ResourceID,
+
+        # Optional parameters
+        [string]$AffectedEntity = "n/a",
+        [string]$AffectedObject = "n/a",
+        [string]$Threshold = "n/a",
+        [string]$Value = "n/a",
+
+        # Parameters needed for TimedMonitoring
+        [Parameter(Mandatory=$true)]
+        [string]$BlobURL
+    )
+
+    try {
+        $response = Invoke-RestMethod -Uri $BlobURL -Method Get
+        $state = $response | ConvertFrom-JSON
+    } catch {
+        Write-Warning "Failed to retrieve state from blob: $_"
+        $state = @{}
+    }
+
+    if ($state.ContainsKey($ResourceID)) {
+        Write-Output "Previous state for $ResourceID found"
+        $state[$ResourceID] | ConvertTo-Json | Write-Output
+    }
+    else {
+        Write-Output "No previous state found for $ResourceID. Assuming first event."
+        $state[$ResourceID] = @{ Severity = $null; LastSent = $null }
+    }
+
+    $jsonState = $state | ConvertTo-Json -Depth 10
+    try {
+        Invoke-RestMethod -Uri $BlobURL -Method Put -Headers @{
+            "x-ms-blob-type" = "BlockBlob"
+            "Content-Type" = "application/json"
+        } -Body $jsonState
+        Write-Output "State successfully updated in the blob."
+    } catch {
+        Write-Warning "Failed to update state in blob: $_"
+    }
+}
+
 function Invoke-DatabaseMonitoring {
     param()
 
@@ -142,11 +195,12 @@ function Invoke-DatabaseMonitoring {
                 Test-DatabaseConnection -ConnectionString $con
 
                 if (![string]::IsNullOrWhiteSpace($dbKey) -and $dbs.ContainsKey($dbKey)) {
-                    Send-MonitoringEvent -Message "Connection successful"`
+                    Send-TimedMonitoringEvent -Message "Connection successful"`
                         -State "OK"`
                         -ResourceID $dbs[$dbKey].Id`
                         -AffectedEntity $dbs[$dbKey].Name`
-                        -AffectedObject $dbs[$dbKey].Server
+                        -AffectedObject $dbs[$dbKey].Server`
+                        -BlobURL $env:SQL_STATE
 
                     $dbs.Remove($dbKey)
                 }
