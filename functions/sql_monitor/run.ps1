@@ -42,11 +42,7 @@ Resources
 | extend server = tostring(split(id, "/")[8]), name = tostring(split(id, "/")[10])
 | project name, server, id
 "@
-    try {
-        $databases = Search-AzGraph -Query $query -ManagementGroup $env:ROOT_MANAGEMENT_GROUP_ID -AllowPartialScope -ErrorAction Stop
-    } catch {
-        throw $_
-    }
+    $databases = Search-AzGraph -Query $query -ManagementGroup $env:ROOT_MANAGEMENT_GROUP_ID -ErrorAction Stop
 
     # AzGraph returns a list, but we want a map for faster search and deletion
     # Key = "[name].[server]"
@@ -121,17 +117,7 @@ function Test-DatabaseConnection {
 function Invoke-DatabaseMonitoring {
     param()
 
-    try {
-        $dbs = $(Get-QbyDatabasesInTenant)
-    } catch {
-        $dbs = @{}
-        # TODO: What resource id?
-        Send-MonitoringEvent -Message "Cannot read databases from customer tenant: $($_.Exception.Message)"`
-            -State "CRITICAL"`
-            -ResourceID "n/a"`
-            -AffectedEntity "n/a"`
-            -AffectedObject "n/a"
-    }
+    $dbs = Get-QbyDatabasesInTenant
 
     try {
         $con_strings = Get-PlainTextSecrets -KeyVault $env:SQL_MONITORING_KEY_VAULT -ErrorAction Stop
@@ -141,7 +127,7 @@ function Invoke-DatabaseMonitoring {
             -State "CRITICAL"`
             -ResourceID "n/a"`
             -AffectedEntity "SQL Monitoring Connectionstrings"`
-            -AffectedObject $env:SQL_MONITORING_KEY_VAULTi`
+            -AffectedObject $env:SQL_MONITORING_KEY_VAULT`
 
         $con_strings = @()
     }
