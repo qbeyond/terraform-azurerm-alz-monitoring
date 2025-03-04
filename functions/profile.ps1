@@ -1,17 +1,29 @@
-# Import required Az and Microsoft Graph modules
-$modules = @(
-    'Az.Accounts',
-    'Az.ResourceGraph',
-    'Az.KeyVault'
-)
+# Path to the requirements.psd1 file (assuming it's in the same directory as profile.ps1)
+$requirementsPath = Join-Path $PSScriptRoot "requirements.psd1"
 
-foreach ($module in $modules) {
+# Read and parse the requirements.psd1 file
+if (Test-Path $requirementsPath) {
     try {
-        Import-Module $module -ErrorAction Stop
-        Write-Host "Successfully imported module: $module"
+        $moduleRequirements = Invoke-Expression -Command (Get-Content $requirementsPath -Raw)
+
+        # Extract module names from the hashtable
+        $modules = $moduleRequirements.Keys
+
+        # Import each module
+        foreach ($module in $modules) {
+            try {
+                Import-Module $module -ErrorAction Stop
+                Write-Host "Successfully imported module: $module"
+            } catch {
+                Write-Host "Failed to import module: $module - $_"
+            }
+        }
     } catch {
-        Write-Host "Failed to import module: $module - $_"
+        Write-Host "Failed to parse requirements.psd1: $_"
     }
+} else {
+    Write-Host "requirements.psd1 not found! Skipping module import."
 }
 
+# Authenticate using the managed identity
 Connect-AzAccount -Identity
