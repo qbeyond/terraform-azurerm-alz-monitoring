@@ -102,7 +102,5 @@ module "monitor" {
     "MyTagName" = "MyTagValue"
   }
 
-  functions_config = {
-    enable_sql = true
-  }
+  # TODO: Add code to test monitoring function app
 }

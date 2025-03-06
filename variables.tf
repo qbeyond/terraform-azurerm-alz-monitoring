@@ -112,26 +112,27 @@ variable "active_services" {
 
 variable "functions_config" {
   type = object({
-    stage_sql = optional(string, "off")
+    subnet_id = optional(string, null)
+    stages = object({
+      sql = optional(string, "off")
+    })
   })
   description = <<-DOC
   ```
-  A configuration object for each function stage setting, where each function can be set to:
-  - "prd" for production event pipeline
-  - "int" for integration event pipeline
-  - "off" to disable the function
-
   {
-    stage_sql = This function monitors MSSQL databases managed by q.beyond
+    subnet_id = The id of the subnet that the Monitoring Function App should be connected to.
+    stages = A configuration object for each function. Set their stages to either "prd", "int" or "off" {
+      sql = This function monitors MSSQL databases managed by q.beyond
+    }
   }
   ```
   DOC
 
-  default = {}
+  default = { stages = {} }
 
   validation {
     condition = alltrue([
-      for v in values(var.functions_config) : v == "prd" || v == "int" || v == "off"
+      for v in values(var.functions_config.stages) : v == "prd" || v == "int" || v == "off"
     ])
     error_message = "Each function stage value must be one of 'prd', 'int', or 'off'."
   }
