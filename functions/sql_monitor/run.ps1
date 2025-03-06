@@ -98,8 +98,7 @@ function Test-DatabaseConnection {
 
     try {
         $connection.Open()
-        if ($connection.State -eq "Open") {
-        } else {
+        if ($connection.State -ne "Open") {
             throw "Wrong connection state: $($connection.State)"
         }
     } catch {
@@ -114,59 +113,6 @@ function Test-DatabaseConnection {
     return $true
 }
 
-function Send-TimedMonitoringEvent {
-    param(
-        # Required parameters
-        [Parameter(Mandatory=$true)]
-        [string]$Message,
-
-        [Parameter(Mandatory=$true)]
-        [ValidateSet("OK", "CRITICAL", "WARNING")]
-        [string]$State,
-
-        [Parameter(Mandatory=$true)]
-        [string]$ResourceID,
-
-        # Optional parameters
-        [string]$AffectedEntity = "n/a",
-        [string]$AffectedObject = "n/a",
-        [string]$Threshold = "n/a",
-        [string]$Value = "n/a",
-
-        # Parameters needed for TimedMonitoring
-        [Parameter(Mandatory=$true)]
-        [string]$BlobURL
-    )
-
-    try {
-        $response = Invoke-RestMethod -Uri $BlobURL -Method Get
-        $state = $response | ConvertFrom-JSON
-    } catch {
-        Write-Warning "Failed to retrieve state from blob: $_"
-        $state = @{}
-    }
-
-    if ($state.ContainsKey($ResourceID)) {
-        Write-Output "Previous state for $ResourceID found"
-        $state[$ResourceID] | ConvertTo-Json | Write-Output
-    }
-    else {
-        Write-Output "No previous state found for $ResourceID. Assuming first event."
-        $state[$ResourceID] = @{ Severity = $null; LastSent = $null }
-    }
-
-    $jsonState = $state | ConvertTo-Json -Depth 10
-    try {
-        Invoke-RestMethod -Uri $BlobURL -Method Put -Headers @{
-            "x-ms-blob-type" = "BlockBlob"
-            "Content-Type" = "application/json"
-        } -Body $jsonState
-        Write-Output "State successfully updated in the blob."
-    } catch {
-        Write-Warning "Failed to update state in blob: $_"
-    }
-}
-
 function Invoke-DatabaseMonitoring {
     param()
 
@@ -175,12 +121,13 @@ function Invoke-DatabaseMonitoring {
     try {
         $con_strings = Get-PlainTextSecrets -KeyVault $env:SQL_MONITORING_KEY_VAULT -ErrorAction Stop
     } catch {
-        # TODO: What resource id?
-        Send-MonitoringEvent -Message "Cannot access sql connection strings from keyvault: $($_.Exception.Message)"`
+        # TODO: Function App CI
+        Send-TimedMonitoringEvent -Message "Cannot access sql connection strings from keyvault: $($_.Exception.Message)"`
             -State "CRITICAL"`
             -ResourceID "n/a"`
             -AffectedEntity "SQL Monitoring Connectionstrings"`
             -AffectedObject $env:SQL_MONITORING_KEY_VAULT`
+            -Timespan "00:02:00"
 
         $con_strings = @()
     }
@@ -200,7 +147,7 @@ function Invoke-DatabaseMonitoring {
                         -ResourceID $dbs[$dbKey].Id`
                         -AffectedEntity $dbs[$dbKey].Name`
                         -AffectedObject $dbs[$dbKey].Server`
-                        -BlobURL $env:SQL_STATE
+                        -Timespan "00:02:00"
 
                     $dbs.Remove($dbKey)
                 }
@@ -226,32 +173,39 @@ function Invoke-DatabaseMonitoring {
             continue
         }
         
-        Send-MonitoringEvent -Message "Error while connecting to $dbKey - $($db_errors[$dbKey])"`
+        Send-TimedMonitoringEvent -Message "Error while connecting to $dbKey - $($db_errors[$dbKey])"`
             -State "CRITICAL"`
             -ResourceID $dbs[$dbKey].Id`
             -AffectedEntity $dbs[$dbKey].Name`
-            -AffectedObject $dbs[$dbKey].Server
+            -AffectedObject $dbs[$dbKey].Server`
+            -Timespan "00:02:00"
 
         $dbs.Remove($dbKey)
     }
 
     # Go over remaining list of unmonitored databases
     foreach ($db in $dbs.GetEnumerator()) {
-        Send-MonitoringEvent -Message "Database is not being monitored! $($db.Value.Id)"`
+        Send-TimedMonitoringEvent -Message "Database is not being monitored! $($db.Value.Id)"`
             -State "WARNING"`
             -ResourceID $db.Value.Id`
             -AffectedEntity $db.Value.Name`
-            -AffectedObject $db.Value.Server
+            -AffectedObject $db.Value.Server`
+            -Timespan "00:02:00"
     }
 }
 
-Initialize-QbyMonitoring -Package "MSSQL Monitor"`
-    -Description "This script regularly checks MSSQL databases for availability"`
-    -Name "MSSQL Monitor"`
-    -ScriptName "sql_monitor"`
-    -ScriptVersion "1.0"`
-    -ServiceUri $env:SQL_SERVICE_URI
+$MonitoringParameters = @{
+    Package = "MSSQL Monitor"
+    Description = "This script regularly checks MSSQL databases for availability"
+    Name = "MSSQL Monitor"
+    ScriptName = "sql_monitor"
+    ScriptVersion = "1.0"
+    ServiceUri = $env:SQL_SERVICE_URI
+    BlobURL = $env:SQL_STATE
+}
 
-Write-Host "Service URI: $($env:SQL_SERVICE_URI)"
+Initialize-QbyMonitoring @MonitoringParameters
 
 Invoke-DatabaseMonitoring
+
+Stop-QbyMonitoring

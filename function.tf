@@ -119,6 +119,7 @@ resource "azurerm_storage_blob" "storage_blob_function_state" {
   storage_account_name   = azurerm_storage_account.sa_func_app[0].name
   storage_container_name = azurerm_storage_container.storage_container_state[0].name
   type                   = "Block"
+  content_type           = "application/json; charset=utf-8"
 }
 
 resource "azurerm_windows_function_app" "func_app" {
