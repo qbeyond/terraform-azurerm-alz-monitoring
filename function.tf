@@ -132,6 +132,9 @@ resource "azurerm_windows_function_app" "func_app" {
   storage_account_access_key = azurerm_storage_account.sa_func_app[0].primary_access_key
   service_plan_id            = azurerm_service_plan.asp_func_app[0].id
 
+  # Connect function app with vnet for private endpoint access
+  virtual_network_subnet_id = var.functions_config.subnet_id
+
   site_config {
     application_insights_key               = azurerm_application_insights.appi[0].instrumentation_key
     application_insights_connection_string = azurerm_application_insights.appi[0].connection_string
