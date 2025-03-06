@@ -201,7 +201,7 @@ $MonitoringParameters = @{
     ScriptName = "sql_monitor"
     ScriptVersion = "1.0"
     ServiceUri = $env:SQL_SERVICE_URI
-    BlobURL = $env:SQL_STATE
+    BlobURL = $env:SQL_STATE_URL
 }
 
 Initialize-QbyMonitoring @MonitoringParameters
