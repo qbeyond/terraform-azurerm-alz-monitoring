@@ -136,4 +136,12 @@ variable "functions_config" {
     ])
     error_message = "Each function stage value must be one of 'prd', 'int', or 'off'."
   }
+
+  validation {
+    condition = (var.functions_config.subnet_id == null || can(regex(
+      "^/subscriptions/[0-9a-fA-F-]+/resourceGroups/[a-zA-Z0-9-_]+/providers/Microsoft.Network/virtualNetworks/[a-zA-Z0-9-_]+/subnets/[a-zA-Z0-9-_]+$",
+      var.functions_config.subnet_id
+    )))
+    error_message = "The subnet_id must be either null or a valid Azure subnet resource ID."
+  }
 }
