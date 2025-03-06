@@ -24,7 +24,7 @@ resource "azurerm_service_plan" "asp_func_app" {
 }
 
 resource "azurerm_key_vault" "sql_monitor" {
-  count                       = local.enable_function_app && var.functions_config.stage_sql != "off" ? 1 : 0
+  count                       = local.enable_function_app && var.functions_config.stages.sql != "off" ? 1 : 0
   name                        = local.sql_key_vault_name
   resource_group_name         = var.log_analytics_workspace.resource_group_name
   location                    = var.log_analytics_workspace.location
@@ -150,19 +150,19 @@ resource "azurerm_windows_function_app" "func_app" {
       WEBSITE_RUN_FROM_PACKAGE       = azurerm_storage_blob.storage_blob_function_code[0].url
       FUNCTIONS_WORKER_RUNTIME       = "powershell"
       APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.appi[0].instrumentation_key
-      SQL_MONITORING_KEY_VAULT       = var.functions_config.stage_sql == "off" ? "" : local.sql_key_vault_name
+      SQL_MONITORING_KEY_VAULT       = var.functions_config.stages.sql == "off" ? "" : local.sql_key_vault_name
       TENANT_ID                      = data.azurerm_client_config.current.tenant_id
       ROOT_MANAGEMENT_GROUP_ID       = var.root_management_group_id
     },
     {
       # For each function, set an environment variable <func>_SERVICE_URI, which is either the prd or the int event pipeline
-      for func_key, stage in var.functions_config :
-      upper("${replace(func_key, "stage_", "")}_SERVICE_URI") => stage == "prd" ? local.service_uri : local.service_uri_integration
+      for func_key, stage in var.functions_config.stages :
+      "${upper(func_key)}_SERVICE_URI" => stage == "prd" ? local.service_uri : local.service_uri_integration
       if stage != "off"
     },
     {
       # For each function, set an environment variable <func>_STATE with the url to the state blob
-      for k, v in azurerm_storage_blob.storage_blob_function_state : upper("${k}_STATE") => v.url
+      for k, v in azurerm_storage_blob.storage_blob_function_state : upper("${k}_STATE_URL") => v.url
     }
   )
 }
