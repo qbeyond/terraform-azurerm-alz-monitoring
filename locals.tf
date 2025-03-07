@@ -76,7 +76,7 @@ locals {
   # Note: the <name> must correspond to the variable function_config.stage_<name>
   # Note: the directory is the name of the subdirectory in /functions where the function code is located
   all_functions = [
-    "sql"
+    "mssql"
   ]
 
   sql_key_vault_name = format("kv-%s-sqlmonitor-01", local.customer_code)
