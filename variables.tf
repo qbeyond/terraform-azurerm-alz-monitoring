@@ -114,7 +114,7 @@ variable "functions_config" {
   type = object({
     subnet_id = optional(string, null)
     stages = object({
-      sql = optional(string, "off")
+      mssql = optional(string, "off")
     })
   })
   description = <<-DOC
@@ -122,7 +122,7 @@ variable "functions_config" {
   {
     subnet_id = The id of the subnet that the Monitoring Function App should be connected to.
     stages = A configuration object for each function. Set their stages to either "prd", "int" or "off" {
-      sql = This function monitors MSSQL databases managed by q.beyond
+      mssql = This function monitors MSSQL databases managed by q.beyond
     }
   }
   ```

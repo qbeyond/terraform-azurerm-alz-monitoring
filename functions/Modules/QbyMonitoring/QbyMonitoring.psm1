@@ -6,6 +6,7 @@ including initialization and sending monitoring data to a specified service.
 .DESCRIPTION  
 This module includes two functions:
 
+# TODO: Update
 1. Initialize-Monitoring: Initializes monitoring settings, including description, name, package, and service URI. It also parses the script name and version to set monitoring-related global settings.
 2. Send-MonitoringEvent: Sends a monitoring event (OK, CRITICAL or WARNING) with additional details.
 
@@ -17,7 +18,7 @@ Date: 2025-02-18
 Version: 1.0  
 #>
 
-function Initialize-QbyMonitoring {
+function Start-QbyMonitoring {
     <#
     .SYNOPSIS  
     Initializes monitoring settings for a script.
@@ -377,5 +378,5 @@ function Stop-QbyMonitoring {
     Set-BlobContent -BlobURL $global:stateBlobURL -Content $content
 }
 
-Export-ModuleMember -Function Initialize-QbyMonitoring, Stop-QbyMonitoring, Send-MonitoringEvent, Send-TimedMonitoringEvent
+Export-ModuleMember -Function Start-QbyMonitoring, Stop-QbyMonitoring, Send-MonitoringEvent, Send-TimedMonitoringEvent
 
