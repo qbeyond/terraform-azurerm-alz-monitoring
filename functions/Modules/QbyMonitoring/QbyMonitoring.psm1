@@ -220,10 +220,9 @@ function Send-MonitoringEvent {
 
     $jsonString = $body | ConvertTo-Json -Depth 3
 
-    #$headers = @{"Content-Type" = "application/json"}
+    $headers = @{"Content-Type" = "application/json"}
 
-    #Invoke-RestMethod -Method POST -Uri $global:QbyMonitoringSettings.ServiceUri -Body $jsonString -Headers $headers
-    Write-Host $jsonString
+    Invoke-RestMethod -Method POST -Uri $global:QbyMonitoringSettings.ServiceUri -Body $jsonString -Headers $headers
 }
 
 function Send-TimedMonitoringEvent {
