@@ -24,7 +24,7 @@ resource "azurerm_service_plan" "asp_func_app" {
 }
 
 resource "azurerm_key_vault" "sql_monitor" {
-  count                       = local.enable_function_app && var.functions_config.stages.sql != "off" ? 1 : 0
+  count                       = local.enable_function_app && var.functions_config.stages.mssql != "off" ? 1 : 0
   name                        = local.sql_key_vault_name
   resource_group_name         = var.log_analytics_workspace.resource_group_name
   location                    = var.log_analytics_workspace.location
@@ -153,7 +153,7 @@ resource "azurerm_windows_function_app" "func_app" {
       WEBSITE_RUN_FROM_PACKAGE       = azurerm_storage_blob.storage_blob_function_code[0].url
       FUNCTIONS_WORKER_RUNTIME       = "powershell"
       APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.appi[0].instrumentation_key
-      SQL_MONITORING_KEY_VAULT       = var.functions_config.stages.sql == "off" ? "" : local.sql_key_vault_name
+      SQL_MONITORING_KEY_VAULT       = var.functions_config.stages.mssql == "off" ? "" : local.sql_key_vault_name
       TENANT_ID                      = data.azurerm_client_config.current.tenant_id
       ROOT_MANAGEMENT_GROUP_ID       = var.root_management_group_id
     },
