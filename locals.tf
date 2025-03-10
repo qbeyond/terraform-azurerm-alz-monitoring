@@ -1,7 +1,7 @@
 locals {
   path                    = "${path.module}/queries"
   service_uri             = replace(var.event_pipeline_config.service_uri, "{{secret}}", var.secret)
-  service_uri_integration = replace(var.event_pipeline_config.service_uri, "{{secret}}", var.secret_integration)
+  service_uri_integration = replace(var.event_pipeline_config.service_uri_integration, "{{secret}}", var.secret_integration)
 
   rules = merge({
     "alr-prd-Heartbeat-ux-law-metric-crit-01" : {

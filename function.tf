@@ -165,7 +165,7 @@ resource "azurerm_windows_function_app" "func_app" {
     },
     {
       # For each function, set an environment variable <func>_STATE with the url to the state blob
-      for k, v in azurerm_storage_blob.storage_blob_function_state : upper("${k}_STATE_URL") => v.url
+      for k, v in azurerm_storage_blob.storage_blob_function_state : upper("${k}_STATE_URI") => v.url
     }
   )
 }
