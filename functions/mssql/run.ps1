@@ -62,13 +62,9 @@ function Get-PlainTextSecrets {
 
     Write-Host "Getting connection strings from keyvault ..."
 
-    try {
-        return Get-AzKeyVaultSecret $KeyVault | Foreach-Object {
-            $secret = Get-AzKeyVaultSecret $KeyVault -Name $_.Name
-            [System.Net.NetworkCredential]::new("", $secret.SecretValue).Password
-        }
-    } catch {
-        throw $_
+    return Get-AzKeyVaultSecret $KeyVault | Foreach-Object {
+        $secret = Get-AzKeyVaultSecret $KeyVault -Name $_.Name
+        [System.Net.NetworkCredential]::new("", $secret.SecretValue).Password
     }
 }
 
@@ -117,17 +113,8 @@ function Invoke-DatabaseMonitoring {
     param()
 
     $dbs = Get-QbyDatabasesInTenant
-
-    try {
-        $con_strings = Get-PlainTextSecrets -KeyVault $env:SQL_MONITORING_KEY_VAULT -ErrorAction Stop
-    } catch {
-        # TODO: Function App CI
-        Send-TimedMonitoringEvent -Message "Cannot access sql connection strings from keyvault: $($_.Exception.Message)"`
-            -State "CRITICAL"`
-            -ResourceID "n/a"`
-            -AffectedEntity "SQL Monitoring Connectionstrings"`
-            -AffectedObject $env:SQL_MONITORING_KEY_VAULT
-
+    $con_strings = Get-PlainTextSecrets -KeyVault $env:SQL_MONITORING_KEY_VAULT -ErrorAction Stop
+    if ($null -eq $con_strings) {
         $con_strings = @()
     }
 
