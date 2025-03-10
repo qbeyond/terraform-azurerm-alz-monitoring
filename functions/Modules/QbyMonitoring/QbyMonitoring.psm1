@@ -72,7 +72,10 @@ function Start-QbyMonitoring {
         [string]$ScriptVersion = $null,
 
         # Optional, enables state for Send-TimedMonitoringEvent
-        [string]$BlobURL = $null
+        [string]$BlobURL = $null,
+
+        # Optional, sets a default timespan for Send-TimedMonitoringEvent
+        [timespan]$Timespan = "01:00:00"
     )
 
     function Get-BlobContent {
@@ -117,6 +120,7 @@ function Start-QbyMonitoring {
         ScriptName = $ScriptName
         ScriptVersion = $ScriptVersion
         ServiceUri = $ServiceUri
+        Timespan = $Timespan
     }
 
     $global:stateData = @{}
@@ -279,7 +283,7 @@ function Send-TimedMonitoringEvent {
         [string]$Value = "n/a",
 
         # Parameters needed for TimedMonitoring
-        [timespan]$Timespan = "01:00:00"
+        [timespan]$Timespan = $global:QbyMonitoringSettings.Timespan
     )
     
     function Test-SendEvent {

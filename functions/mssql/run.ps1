@@ -126,8 +126,7 @@ function Invoke-DatabaseMonitoring {
             -State "CRITICAL"`
             -ResourceID "n/a"`
             -AffectedEntity "SQL Monitoring Connectionstrings"`
-            -AffectedObject $env:SQL_MONITORING_KEY_VAULT`
-            -Timespan "00:02:00"
+            -AffectedObject $env:SQL_MONITORING_KEY_VAULT
 
         $con_strings = @()
     }
@@ -146,8 +145,7 @@ function Invoke-DatabaseMonitoring {
                         -State "OK"`
                         -ResourceID $dbs[$dbKey].Id`
                         -AffectedEntity $dbs[$dbKey].Name`
-                        -AffectedObject $dbs[$dbKey].Server`
-                        -Timespan "00:02:00"
+                        -AffectedObject $dbs[$dbKey].Server
 
                     $dbs.Remove($dbKey)
                 }
@@ -177,8 +175,7 @@ function Invoke-DatabaseMonitoring {
             -State "CRITICAL"`
             -ResourceID $dbs[$dbKey].Id`
             -AffectedEntity $dbs[$dbKey].Name`
-            -AffectedObject $dbs[$dbKey].Server`
-            -Timespan "00:02:00"
+            -AffectedObject $dbs[$dbKey].Server
 
         $dbs.Remove($dbKey)
     }
@@ -189,8 +186,7 @@ function Invoke-DatabaseMonitoring {
             -State "WARNING"`
             -ResourceID $db.Value.Id`
             -AffectedEntity $db.Value.Name`
-            -AffectedObject $db.Value.Server`
-            -Timespan "00:02:00"
+            -AffectedObject $db.Value.Server
     }
 }
 
@@ -202,6 +198,7 @@ $MonitoringParameters = @{
     ScriptVersion = "1.0"
     ServiceUri = $env:MSSQL_SERVICE_URI
     BlobURL = $env:MSSQL_STATE_URI
+    Timespan = "00:07:00"
 }
 
 Start-QbyMonitoring @MonitoringParameters
