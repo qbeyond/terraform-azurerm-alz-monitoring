@@ -4,17 +4,16 @@ Provides functions for sending monitoring events from Azure Functions to the q.b
 including initialization and sending monitoring data to a specified service.
 
 .DESCRIPTION  
-This module includes two functions:
-
-# TODO: Update
+This module includes the functions:
 1. Initialize-Monitoring: Initializes monitoring settings, including description, name, package, and service URI. It also parses the script name and version to set monitoring-related global settings.
 2. Send-MonitoringEvent: Sends a monitoring event (OK, CRITICAL or WARNING) with additional details.
+3. Send-TimedMonitoringEvent: Uses a state remembered from a blob storage to decide whether new event should be sent or not.
 
 These functions facilitate integration with external monitoring systems, allowing to log and report events from within Azure Functions.
 
 .NOTES  
 Author: Mauricé Ricardo Bärisch 
-Date: 2025-02-18  
+Date: 2025-03-10
 Version: 1.0  
 #>
 

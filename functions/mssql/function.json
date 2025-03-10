@@ -5,6 +5,13 @@
       "type": "timerTrigger",
       "direction": "in",
       "schedule": "0 */5 * * * *"
+    },
+    {
+      "name": "BlobContent",
+      "type": "blobTrigger",
+      "direction": "in",
+      "path": "%MSSQL_BLOB_PATH%",
+      "connection": "%STORAGE_ACCOUNT_URI%"
     }
   ]
 }

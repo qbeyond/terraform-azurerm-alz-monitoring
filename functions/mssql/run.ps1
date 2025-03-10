@@ -17,9 +17,16 @@
         Send a warning, because we are currently not monitoring those databases.
 #>
 
-param(
-    $Timer
-)
+param($Timer, $BlobContent, $TriggerMetadata)
+
+# Output metadata for debugging
+Write-Host "Blob Name: $($TriggerMetadata.Name)"
+Write-Host "Blob Path: $($TriggerMetadata.BlobTrigger)"
+Write-Host "Blob Size: $($TriggerMetadata.Length)"
+
+# Process blob content
+Write-Host "Blob Content:"
+Write-Host $BlobContent
 
 #region helper_functions
 function Get-QbyDatabasesInTenant {
