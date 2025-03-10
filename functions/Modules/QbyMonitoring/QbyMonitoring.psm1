@@ -116,7 +116,7 @@ function Start-QbyMonitoring {
         Package = $Package
         ScriptName = $ScriptName
         ScriptVersion = $ScriptVersion
-        Uri = $ServiceUri
+        ServiceUri = $ServiceUri
     }
 
     $global:stateData = @{}
