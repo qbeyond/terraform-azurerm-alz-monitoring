@@ -198,7 +198,7 @@ $MonitoringParameters = @{
     ScriptVersion = "1.0"
     ServiceUri = $env:MSSQL_SERVICE_URI
     BlobURL = $env:MSSQL_STATE_URI
-    Timespan = "00:07:00"
+    Timespan = "01:00:00"
 }
 
 Start-QbyMonitoring @MonitoringParameters
