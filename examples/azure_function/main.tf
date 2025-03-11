@@ -24,7 +24,7 @@ resource "azurerm_automation_account" "example" {
 
 resource "azurerm_resource_group" "test_sql" {
   name     = "rg-sql-monitoring-dev-01"
-  location = "northeurope"
+  location = "westeurope"
 }
 
 resource "azurerm_virtual_network" "test_vnet" {
@@ -32,36 +32,66 @@ resource "azurerm_virtual_network" "test_vnet" {
   address_space       = ["10.0.0.0/16"]
   location            = azurerm_resource_group.test_sql.location
   resource_group_name = azurerm_resource_group.test_sql.name
+  dns_servers = [
+    "10.0.1.5"
+  ]
+}
+
+resource "azurerm_virtual_network" "test_vnet2" {
+  name                = "vnet-10-1-0-0-16-northeurope"
+  address_space       = ["10.1.0.0/16"]
+  location            = azurerm_resource_group.test_sql.location
+  resource_group_name = azurerm_resource_group.test_sql.name
+  dns_servers = [
+    "10.0.1.5"
+  ]
+}
+
+resource "azurerm_virtual_network_peering" "peer1to2" {
+  name                      = "peer1to2"
+  resource_group_name       = azurerm_resource_group.test_sql.name
+  virtual_network_name      = azurerm_virtual_network.test_vnet.name
+  remote_virtual_network_id = azurerm_virtual_network.test_vnet2.id
+}
+
+resource "azurerm_virtual_network_peering" "peer2to1" {
+  name                      = "peer2to1"
+  resource_group_name       = azurerm_resource_group.test_sql.name
+  virtual_network_name      = azurerm_virtual_network.test_vnet2.name
+  remote_virtual_network_id = azurerm_virtual_network.test_vnet.id
 }
 
 resource "azurerm_subnet" "test_subnet" {
-  name                 = "snet-10-0-1-0-24-sql-monitoring"
+  name                 = "snet-10-0-1-0-24-sql-func-monitoring"
   virtual_network_name = azurerm_virtual_network.test_vnet.name
   resource_group_name  = azurerm_resource_group.test_sql.name
   address_prefixes     = ["10.0.1.0/24"]
 }
 
-resource "azurerm_private_endpoint" "private_endpoint_funcapp" {
-  name                = format("pe-10-0-1-0-24-sql-monitoring-%s", module.monitor.function_app.name)
-  location            = azurerm_resource_group.test_sql.location
-  resource_group_name = azurerm_resource_group.test_sql.name
-  subnet_id           = azurerm_subnet.test_subnet.id
+resource "azurerm_subnet" "func_subnet" {
+  name                 = "snet-10-1-0-0-24-sql-func-monitoring"
+  virtual_network_name = azurerm_virtual_network.test_vnet2.name
+  resource_group_name  = azurerm_resource_group.test_sql.name
+  address_prefixes     = ["10.1.0.0/24"]
 
-  private_service_connection {
-    name                           = format("psc-sql-monitoring-%s", module.monitor.function_app.name)
-    private_connection_resource_id = module.monitor.function_app.id
-    subresource_names              = ["sites"]
-    is_manual_connection           = false
+  delegation {
+    name = "functionapp-delegation"
+
+    service_delegation {
+      name    = "Microsoft.Web/serverFarms"
+      actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
+    }
   }
 }
 
 resource "azurerm_mssql_server" "example" {
-  name                         = "sql-cust2-dev-monitor-01"
-  resource_group_name          = azurerm_resource_group.test_sql.name
-  location                     = azurerm_resource_group.test_sql.location
-  version                      = "12.0"
-  administrator_login          = "sqladmin"
-  administrator_login_password = "H@Sh1CoR3!"
+  name                          = "sql-cust2-dev-monitor-01"
+  resource_group_name           = azurerm_resource_group.test_sql.name
+  location                      = azurerm_resource_group.test_sql.location
+  version                       = "12.0"
+  administrator_login           = "sqladmin"
+  public_network_access_enabled = false
+  administrator_login_password  = "H@Sh1CoR3!"
 }
 
 resource "azurerm_mssql_database" "example" {
@@ -84,23 +114,26 @@ resource "azurerm_private_endpoint" "private_endpoint_sql" {
 }
 
 module "monitor" {
-  source                  = "../.."
+  source                  = "../../"
   log_analytics_workspace = azurerm_log_analytics_workspace.example
-
-  additional_regions = ["northeurope"]
   event_pipeline_config = {
     enabled                 = true
     name                    = "QBY EventPipeline"
-    service_uri             = "https://qbeyond.de/Webhook?code={{secret}}}&clientid=fctkey-cust-prd-eventpipeline-01"
-    service_uri_integration = "https://qbeyond.de/WebhookIntegration?code={{secret}}}&clientid=fctkey-cust2-int-eventpipeline-01"
+    service_uri             = "https://webhook.site/1c887da5-e97e-4da3-bf79-2608c10c7e00?code={{secret}}&clientid=fctkey-PCMSD1-dev-eventpipeline-01"
+    service_uri_integration = "https://webhook.site/1c887da5-e97e-4da3-bf79-2608c10c7e00?code={{secret}}&clientid=fctkey-PCMSD1-dev-eventpipeline-01"
+  }
+  automation_account = azurerm_automation_account.example
+  secret             = "secret"
+  secret_integration = "secret_integration"
+
+  functions_config = {
+    subnet_id = azurerm_subnet.func_subnet.id
+    stages = {
+      mssql = "int"
+    }
   }
 
-  automation_account = azurerm_automation_account.example
-  secret             = "impressum"
-  secret_integration = "integration"
   tags = {
     "MyTagName" = "MyTagValue"
   }
-
-  # TODO: Add code to test monitoring function app
 }
