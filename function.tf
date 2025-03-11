@@ -156,7 +156,6 @@ resource "azurerm_windows_function_app" "func_app" {
       SQL_MONITORING_KEY_VAULT       = var.functions_config.stages.mssql == "off" ? "" : local.sql_key_vault_name
       TENANT_ID                      = data.azurerm_client_config.current.tenant_id
       ROOT_MANAGEMENT_GROUP_ID       = var.root_management_group_id
-      STORAGE_ACCOUNT_URI            = azurerm_storage_account.sa_func_app[0].primary_blob_endpoint
     },
     {
       # For each function, set an environment variable <func>_SERVICE_URI, which is either the prd or the int event pipeline
@@ -165,13 +164,8 @@ resource "azurerm_windows_function_app" "func_app" {
       if stage != "off"
     },
     {
-      # For each function, set an environment variable <func>_STATE_URI with the url to the state blob
+      # For each function, set an environment variable <func>_STATE with the url to the state blob
       for k, v in azurerm_storage_blob.storage_blob_function_state : upper("${k}_STATE_URI") => v.url
-    },
-    {
-      # For each function, set an environment variable <func>_BLOB_PATH with the path to the state blob
-      for k, v in azurerm_storage_blob.storage_blob_function_state : upper("${k}_BLOB_PATH") => format(
-        "%s/%s", azurerm_storage_container.storage_container_state[0].name, azurerm_storage_blob.storage_blob_function_state[k].name)
     }
   )
 }
