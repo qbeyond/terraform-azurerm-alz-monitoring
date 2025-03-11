@@ -86,18 +86,8 @@ function Start-QbyMonitoring {
 
         Write-Host "Retrieving state ..."
         try {
-            # Get an access token for Azure Storage using Managed Identity
-            $token = (Get-AzAccessToken -ResourceUrl "https://storage.azure.com/").Token
-
-            # Call the blob storage REST API with the access token
-            $headers = @{
-                "Authorization" = "Bearer $token"
-                "x-ms-version"  = "2025-01-05"  # Ensure compatibility with latest Storage API version
-            }
-
-            # Read the blob content into memory
-            $response = Invoke-WebRequest -URI $BlobUrl -Headers $headers -Method Get
-            return $response.Content
+            Get-AzStorageBlobContent -Uri $BlobUrl -Destination "./state.json"
+            return Get-Content -Path "./state.json"
         } catch {
             Write-Error "Failed to read blob: $_"
             return $null
