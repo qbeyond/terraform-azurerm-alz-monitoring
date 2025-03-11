@@ -6,15 +6,15 @@ including initialization and sending monitoring data to a specified service.
 .DESCRIPTION  
 This module includes two functions:
 
-# TODO: Update
-1. Initialize-Monitoring: Initializes monitoring settings, including description, name, package, and service URI. It also parses the script name and version to set monitoring-related global settings.
+1. Start-QbyMonitoring: Initializes monitoring settings, including description, name, package, and service URI. It also parses the script name and version to set monitoring-related global settings.
 2. Send-MonitoringEvent: Sends a monitoring event (OK, CRITICAL or WARNING) with additional details.
+3. Send-TimedMonitoringEvent: Sends a monitoring event only if the state of the resource id has changed or a certain timespan has elapsed.
 
 These functions facilitate integration with external monitoring systems, allowing to log and report events from within Azure Functions.
 
 .NOTES  
 Author: Mauricé Ricardo Bärisch 
-Date: 2025-02-18  
+Date: 2025-03-11
 Version: 1.0  
 #>
 
@@ -44,6 +44,12 @@ function Start-QbyMonitoring {
 
     .PARAMETER ScriptVersion  
     The version of the script, extracted from the script name if not provided.
+
+    .PARAMETER BlobURL
+    The url to the blob containing the function state. Used by `Send-TimedMonitoringEvent` to determine whether a new event should already be sent.
+
+    .PARAMETER Timespan
+    The default timespan that should elapse until `Send-TimedMonitoringEvent` sends a new monitoring event of the same state.
 
     .EXAMPLE  
     Initialize-Monitoring -Description "Server health check" -Name "HealthCheckScript" -Package "AZ_BS_HealthCheck" -ServiceUri "https://monitoring.example.com/api"
@@ -138,8 +144,7 @@ function Start-QbyMonitoring {
         $stateObject.PSObject.Properties | ForEach-Object {
             $global:stateData[$_.Name] = $_.Value
         }
-    }
-    catch {
+    } catch {
         Write-Warning "Failed to retrieve state from blob: $_"
     }
 }
@@ -259,7 +264,10 @@ function Send-TimedMonitoringEvent {
 
     .PARAMETER Value  
     The current value of the monitored resource. Default is "n/a".
-    
+
+    .PARAMETER Timespan
+    The timespan that should elapse until a new monitoring event of the same state should be sent.
+
     .EXAMPLE  
     Send-TimedMonitoringEvent -Message "Disk space critical" -State "CRITICAL" -ResourceID "server123" -AffectedEntity "Disk C:\" -AffectedObject "CUSTDCP001" -Threshold "10%" -Value "5%"
     #>
@@ -339,6 +347,22 @@ function Send-TimedMonitoringEvent {
 }
 
 function Stop-QbyMonitoring {
+    <#
+    .SYNOPSIS
+    Stops the Qby monitoring process and saves the current state to an Azure Blob Storage.
+
+    .DESCRIPTION
+    This function writes the monitoring state to an Azure Storage Blob when stopping the Qby monitoring process.
+    It uses Managed Identity authentication to securely access the storage account.
+
+    .PARAMETERS
+    None
+
+    .NOTES
+    - Requires Azure Accounts PowerShell module (`Az.Accounts`).
+    - Uses Managed Identity to obtain an access token for Azure Storage.
+    - Ensures data integrity by converting state data to JSON before uploading.
+    #>
     param()
 
     function Set-BlobContent {
@@ -370,10 +394,12 @@ function Stop-QbyMonitoring {
     Write-Host "Writing state ..."
 
     if ([string]::IsNullOrWhiteSpace($global:stateBlobURL)) {
+        Write-Warning "State blob URL is not set. Skipping state write."
         return
     }
 
     if ($null -eq $global:stateData) {
+        Write-Warning "No state data found. Skipping state write."
         return
     }
 
@@ -382,4 +408,3 @@ function Stop-QbyMonitoring {
 }
 
 Export-ModuleMember -Function Start-QbyMonitoring, Stop-QbyMonitoring, Send-MonitoringEvent, Send-TimedMonitoringEvent
-
