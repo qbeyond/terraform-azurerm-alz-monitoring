@@ -175,5 +175,6 @@ resource "azurerm_application_insights" "appi" {
   name                = format("appi-Monitoring-dev")
   resource_group_name = var.log_analytics_workspace.resource_group_name
   location            = var.log_analytics_workspace.location
+  workspace_id        = var.log_analytics_workspace.id
   application_type    = "web"
 }
