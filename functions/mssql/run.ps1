@@ -28,18 +28,12 @@ function Get-QbyDatabasesInTenant {
     Write-Host "Search tenant for MSSQL databases ..."
 
     # Go to the resource graph and get databases via Kusto query
-    #     $query = @"
-    # Resources
-    # | where type =~ 'microsoft.sql/servers/databases'
-    # | extend server = tostring(split(id, "/")[8]), name = tostring(split(id, "/")[10])
-    # | where tags['alerting'] == 'enabled'
-    # | where tags['managedby'] == 'q.beyond'
-    # | project name, server, id
-    # "@
     $query = @"
 Resources
 | where type =~ 'microsoft.sql/servers/databases'
 | extend server = tostring(split(id, "/")[8]), name = tostring(split(id, "/")[10])
+| where tags['alerting'] == 'enabled'
+| where tags['managedby'] == 'q.beyond'
 | project name, server, id
 "@
     $databases = Search-AzGraph -Query $query -ManagementGroup $env:ROOT_MANAGEMENT_GROUP_ID -ErrorAction Stop
