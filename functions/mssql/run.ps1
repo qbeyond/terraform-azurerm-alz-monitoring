@@ -181,10 +181,9 @@ $MonitoringParameters = @{
     Package = "MSSQL Monitor"
     Description = "This script regularly checks MSSQL databases for availability"
     Name = "MSSQL Monitor"
-    ScriptName = "sql_monitor"
+    ScriptName = "mssql"
     ScriptVersion = "1.0"
     ServiceUri = $env:MSSQL_SERVICE_URI
-    BlobURL = $env:MSSQL_STATE_URI
     Timespan = "01:00:00"
 }
 

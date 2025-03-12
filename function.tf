@@ -18,9 +18,8 @@ resource "azurerm_service_plan" "asp_func_app" {
   name                = "asp-monitor-dev-01"
   resource_group_name = var.log_analytics_workspace.resource_group_name
   location            = var.log_analytics_workspace.location
-  #TODO: Is Linux possible? Do we need Premium?
-  os_type  = "Windows"
-  sku_name = "EP1"
+  os_type             = "Windows"
+  sku_name            = "EP1"
 }
 
 resource "azurerm_key_vault" "sql_monitor" {
@@ -73,10 +72,10 @@ resource "azurerm_key_vault" "sql_monitor" {
 
 }
 
-resource "azurerm_role_assignment" "blob_contributor" {
+resource "azurerm_role_assignment" "share_contributor" {
   count                = local.enable_function_app ? 1 : 0
   scope                = azurerm_storage_account.sa_func_app[0].id
-  role_definition_name = "Storage Blob Data Contributor"
+  role_definition_name = "Storage File Data SMB Share Contributor"
   principal_id         = azurerm_windows_function_app.func_app[0].identity[0].principal_id
 }
 
@@ -96,11 +95,11 @@ resource "azurerm_storage_container" "storage_container_func" {
   container_access_type = "blob"
 }
 
-resource "azurerm_storage_container" "storage_container_state" {
-  count                 = local.enable_function_app ? 1 : 0
-  name                  = "sc-monitoring-state-01"
-  storage_account_name  = azurerm_storage_account.sa_func_app[0].name
-  container_access_type = "blob"
+resource "azurerm_storage_share" "state" {
+  count                = local.enable_function_app ? 1 : 0
+  name                 = "states"
+  storage_account_name = azurerm_storage_account.sa_func_app[0].name
+  quota                = 1
 }
 
 resource "azurerm_storage_blob" "storage_blob_function_code" {
@@ -111,15 +110,6 @@ resource "azurerm_storage_blob" "storage_blob_function_code" {
   type                   = "Block"
   source                 = data.archive_file.function_package[0].output_path
   content_md5            = data.archive_file.function_package[0].output_md5
-}
-
-resource "azurerm_storage_blob" "storage_blob_function_state" {
-  for_each               = toset(local.enabled_functions)
-  name                   = format("state-blob-%s-%s", each.key, local.customer_code)
-  storage_account_name   = azurerm_storage_account.sa_func_app[0].name
-  storage_container_name = azurerm_storage_container.storage_container_state[0].name
-  type                   = "Block"
-  content_type           = "application/json; charset=utf-8"
 }
 
 resource "azurerm_windows_function_app" "func_app" {
@@ -134,6 +124,15 @@ resource "azurerm_windows_function_app" "func_app" {
 
   # Connect function app with vnet for private endpoint access
   virtual_network_subnet_id = var.functions_config.subnet_id
+
+  storage_account {
+    name         = azurerm_storage_share.state[0].name
+    type         = "AzureFiles"
+    account_name = azurerm_storage_account.sa_func_app[0].name
+    share_name   = azurerm_storage_share.state[0].name
+    access_key   = azurerm_storage_account.sa_func_app[0].primary_access_key
+    mount_path   = "/mounts/${azurerm_storage_share.state[0].name}"
+  }
 
   site_config {
     application_insights_key               = azurerm_application_insights.appi[0].instrumentation_key
@@ -162,10 +161,6 @@ resource "azurerm_windows_function_app" "func_app" {
       for func_key, stage in var.functions_config.stages :
       "${upper(func_key)}_SERVICE_URI" => stage == "prd" ? local.service_uri : local.service_uri_integration
       if stage != "off"
-    },
-    {
-      # For each function, set an environment variable <func>_STATE with the url to the state blob
-      for k, v in azurerm_storage_blob.storage_blob_function_state : upper("${k}_STATE_URI") => v.url
     }
   )
 }

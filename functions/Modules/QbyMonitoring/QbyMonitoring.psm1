@@ -26,6 +26,7 @@ function Start-QbyMonitoring {
     .DESCRIPTION  
     This function sets up the global monitoring settings, including description, name, package, and service URI.
     If the script name and version are not provided, the script name is inferred from the script's filename, and the version is extracted from the script name.
+    Also downloads the state of previous runs from mounted Azure File Share.
 
     .PARAMETER Description  
     A brief description of the monitoring script and what it aims to measure.
@@ -44,9 +45,6 @@ function Start-QbyMonitoring {
 
     .PARAMETER ScriptVersion  
     The version of the script, extracted from the script name if not provided.
-
-    .PARAMETER BlobURL
-    The url to the blob containing the function state. Used by `Send-TimedMonitoringEvent` to determine whether a new event should already be sent.
 
     .PARAMETER Timespan
     The default timespan that should elapse until `Send-TimedMonitoringEvent` sends a new monitoring event of the same state.
@@ -77,38 +75,9 @@ function Start-QbyMonitoring {
         # Optional if script version ends with [maj_version].[min_version].ps1  
         [string]$ScriptVersion = $null,
 
-        # Optional, enables state for Send-TimedMonitoringEvent
-        [string]$BlobURL = $null,
-
         # Optional, sets a default timespan for Send-TimedMonitoringEvent
         [timespan]$Timespan = "01:00:00"
     )
-
-    function Get-BlobContent {
-        param (
-            [Parameter(Mandatory=$true)]
-            [string]$BlobUrl
-        )
-
-        Write-Host "Retrieving state ..."
-        try {
-            # Get an access token for Azure Storage using Managed Identity
-            $token = (Get-AzAccessToken -ResourceUrl "https://storage.azure.com/").Token
-
-            # Call the blob storage REST API with the access token
-            $headers = @{
-                "Authorization" = "Bearer $token"
-                "x-ms-version"  = "2025-01-05"  # Ensure compatibility with latest Storage API version
-            }
-
-            # Read the blob content into memory
-            $response = Invoke-WebRequest -URI $BlobUrl -Headers $headers -Method Get
-            return $response.Content
-        } catch {
-            Write-Error "Failed to read blob: $_"
-            return $null
-        }
-    }
 
     if (-not $ScriptVersion) {
         if ($ScriptName -match "\b\d+\.\d+(\.\d+)?\b") {
@@ -131,21 +100,15 @@ function Start-QbyMonitoring {
 
     $global:stateData = @{}
 
-    if ($null -eq $BlobURL) {
-        return
-    }
-
-    $global:stateBlobURL = $BlobURL
     try {
-        # Download StateData from blob
-        $stateObject = Get-BlobContent -BlobURL $BlobURL | ConvertFrom-JSON
+        $stateObject = Get-Content -Path "/mounts/states/$($ScriptName).json" -ErrorAction Stop | ConvertFrom-JSON
 
         # Turn PSCustomObject into hashtable
         $stateObject.PSObject.Properties | ForEach-Object {
             $global:stateData[$_.Name] = $_.Value
         }
     } catch {
-        Write-Warning "Failed to retrieve state from blob: $_"
+        Write-Host "No state file found."
     }
 }
 
@@ -352,8 +315,7 @@ function Stop-QbyMonitoring {
     Stops the Qby monitoring process and saves the current state to an Azure Blob Storage.
 
     .DESCRIPTION
-    This function writes the monitoring state to an Azure Storage Blob when stopping the Qby monitoring process.
-    It uses Managed Identity authentication to securely access the storage account.
+    This function writes the monitoring state to an Azure File Share.
 
     .PARAMETERS
     None
@@ -364,39 +326,8 @@ function Stop-QbyMonitoring {
     - Ensures data integrity by converting state data to JSON before uploading.
     #>
     param()
-
-    function Set-BlobContent {
-        param (
-            [Parameter(Mandatory=$true)]
-            [string]$BlobUrl,
-            
-            [Parameter(Mandatory=$true)]
-            [string]$Content
-        )
-
-        try {
-            # Get an access token for Azure Storage using Managed Identity
-            $token = (Get-AzAccessToken -ResourceUrl "https://storage.azure.com").Token
-
-            # Call the blob storage REST API with the access token
-            $headers = @{
-                "Authorization" = "Bearer $token"
-                "x-ms-version"  = "2025-01-05"  # Ensure compatibility with latest Storage API version
-                "x-ms-blob-type"= "BlockBlob"
-            }
-
-            Invoke-WebRequest -URI $BlobUrl -Headers $headers -Method Put -Body $Content -ContentType "application/json; charset=utf-8" | Out-Null
-        } catch {
-            Write-Error "Failed to write blob: $_"
-        }
-    }
-
+    
     Write-Host "Writing state ..."
-
-    if ([string]::IsNullOrWhiteSpace($global:stateBlobURL)) {
-        Write-Warning "State blob URL is not set. Skipping state write."
-        return
-    }
 
     if ($null -eq $global:stateData) {
         Write-Warning "No state data found. Skipping state write."
@@ -404,7 +335,7 @@ function Stop-QbyMonitoring {
     }
 
     $content = $global:stateData | ConvertTo-JSON -Depth 3
-    Set-BlobContent -BlobURL $global:stateBlobURL -Content $content
+    Set-Content -Path "/mounts/states/$($global:QbyMonitoringSettings.ScriptName).json" -Value $content
 }
 
 Export-ModuleMember -Function Start-QbyMonitoring, Stop-QbyMonitoring, Send-MonitoringEvent, Send-TimedMonitoringEvent
