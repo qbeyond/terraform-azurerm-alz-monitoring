@@ -1,0 +1,10 @@
+# TODO: Implement properly
+AppRequests
+| where Success == false  // Filter for failed requests
+| project TimeGenerated, OperationId, Name, ResultCode  // Select relevant columns
+| join kind=inner ( 
+    AppTraces
+    | where Message startswith "ERROR:" or Message startswith "EXCEPTION:"
+    | project OperationId, Message, SeverityLevel
+) on OperationId  // Join with traces to get error messages
+| order by TimeGenerated desc  // Show most recent first

@@ -7,6 +7,17 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased] - yyyy-mm-dd
 
+## [6.1.0] - 2025-3-10
+
+### Added
+
+A massive PR, covering the addition of
+
+- a monitoring function app that is disabled by default
+- a mssql monitoring function
+- the proper use of service_uri_integration
+- a PowerShell module QbyMonitoring that can be used by monitoring functions to send events
+
 ## [6.0.1] - 2025-2-11
 
 ### Changed
