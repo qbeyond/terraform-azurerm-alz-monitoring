@@ -15,6 +15,7 @@ resources
 	"microsoft.compute/virtualmachinescalesets",
 	"microsoft.Network/virtualWans",
 	"microsoft.Network/vpngateways",
-	"microsoft.hybridcompute/machines"
+	"microsoft.Hybridcompute/machines",
+    "microsoft.Web/sites"
 )
 | project id, name, type, tenantId, location, resourceGroup, subscriptionId, tags, properties

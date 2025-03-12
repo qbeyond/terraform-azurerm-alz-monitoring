@@ -4,6 +4,13 @@ locals {
   service_uri_integration = replace(var.event_pipeline_config.service_uri_integration, "{{secret}}", var.secret_integration)
 
   rules = merge({
+    # TODO: Verify with monitoring colleagues
+    "alr-prd-Function-winux-law-logsea-crit-01": {
+      description = "Alert when function app failed"
+      query_path  = "${local.path}/function_app.kusto"
+      time_window = "P2D"
+      frequency   = "PT5M"
+    }
     "alr-prd-Heartbeat-ux-law-metric-crit-01" : {
       description = "Alert when Heartbeat of unix machines Stopped"
       query_path  = "${local.path}/unix_heartbeat.kusto"
