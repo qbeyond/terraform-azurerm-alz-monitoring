@@ -1,4 +1,3 @@
-# TODO: Implement properly
 AppRequests
 | where Success == false  // Filter for failed requests
 | project TimeGenerated, OperationId, Name, ResultCode  // Select relevant columns
