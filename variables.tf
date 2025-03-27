@@ -117,7 +117,7 @@ variable "functions_config" {
       mssql             = optional(string, "off")
       intune_expiration = optional(string, "off")
     })
-    env_vars = map(string)
+    env_vars = optional(map(string), null)
   })
   description = <<-DOC
   ```
