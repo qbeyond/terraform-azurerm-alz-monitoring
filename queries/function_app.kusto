@@ -1,9 +1,33 @@
 AppRequests
-| where Success == false  // Filter for failed requests
-| project TimeGenerated, OperationId, Name, ResultCode  // Select relevant columns
-| join kind=inner ( 
+| where Success == false
+| extend affected_object = toupper(AppRoleName)
+| summarize LH = arg_max(TimeGenerated, *) by affected_object
+| where LH < ago(5m)
+| project OperationId, ResultCode, affected_object, LH
+| join kind=inner (
+    // Join with traces to get error messages
     AppTraces
     | where Message startswith "ERROR:" or Message startswith "EXCEPTION:"
     | project OperationId, Message, SeverityLevel
-) on OperationId  // Join with traces to get error messages
-| order by TimeGenerated desc  // Show most recent first
+) on OperationId
+| extend additional_information = Message
+| join kind=leftouter (
+    // Join with Monitoring Resources to get ResourceId
+    MonitoringResources_CL 
+    | where type_s in~ ("microsoft.Web/sites")
+    | extend AppName = toupper(name_s)
+    | project AppName, _ResourceId = toupper(ResourceId), TimeGenerated, tags_managedby_s, tags_alerting_s
+    | summarize arg_max(TimeGenerated, *) by _ResourceId
+) on $left.affected_object == $right.AppName
+| where tags_managedby_s =~ "q.beyond" or isempty(tags_managedby_s)
+| where tags_alerting_s =~ "enabled" or isempty(tags_alerting_s)
+| project affected_object, _ResourceId, additional_information, LH
+| extend monitor_package = "AZ_FUNCTIONAPP"
+| extend monitor_name = "AZ_FUNCTIONAPP"
+| extend monitor_description = "Retrieves errors from function apps"
+| extend script_name = "n/a"
+| extend script_version = "n/a"
+| extend threshold = "00:05:00"
+| extend value = LH
+| extend state = iff(datetime_diff("second", now(), LH) >= 300, "CRITICAL", "OK")
+| project _ResourceId, RawData = strcat("TimeGenerated:", now(), ";_ResourceId:", _ResourceId, ";state:", state, ";affected_object:", affected_object, ";monitor_package:", monitor_package, ";monitor_name:", monitor_name, ";monitor_description:", monitor_description, ";script_name:", script_name, ";script_version:", script_version, ";threshold:", threshold, ";value:", value, ";affected_entity:", affected_object, ";additional_information:", additional_information)
