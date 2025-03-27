@@ -161,7 +161,8 @@ resource "azurerm_windows_function_app" "func_app" {
       for func_key, stage in var.functions_config.stages :
       "${upper(func_key)}_SERVICE_URI" => stage == "prd" ? local.service_uri : local.service_uri_integration
       if stage != "off"
-    }
+    },
+    var.functions_config.env_vars
   )
 }
 

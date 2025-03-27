@@ -114,8 +114,10 @@ variable "functions_config" {
   type = object({
     subnet_id = optional(string, null)
     stages = object({
-      mssql = optional(string, "off")
+      mssql             = optional(string, "off")
+      intune_expiration = optional(string, "off")
     })
+    env_vars = map(string)
   })
   description = <<-DOC
   ```
@@ -123,7 +125,9 @@ variable "functions_config" {
     subnet_id = The id of the subnet that the Monitoring Function App should be connected to.
     stages = A configuration object for each function. Set their stages to either "prd", "int" or "off" {
       mssql = This function monitors MSSQL databases managed by q.beyond
+      intune_expiration = This script checks whether any licenses are expiring in Intune
     }
+    env_vars = Additional environment variables that can be accessed by functions
   }
   ```
   DOC
