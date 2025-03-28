@@ -1,6 +1,6 @@
 AppRequests
 | where Success == false
-| where TimeGenerated > ago(120m)
+| where TimeGenerated > ago(15m)
 | extend affected_object = toupper(AppRoleName)
 | project OperationId, ResultCode, affected_object, affected_entity = OperationName
 | join kind=inner (
