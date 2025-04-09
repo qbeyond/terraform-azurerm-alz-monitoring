@@ -146,7 +146,7 @@ AddonAzureBackupJobs
 | <a name="input_additional_queries"></a> [additional\_queries](#input\_additional\_queries) | List of additional alert rule queries to create with a file path, description and time\_window. | <pre>map(object({<br/>    query_path     = string<br/>    description    = string<br/>    time_window    = string<br/>    frequency      = string<br/>    non_productive = optional(bool, false)<br/>  }))</pre> | `{}` | no |
 | <a name="input_additional_regions"></a> [additional\_regions](#input\_additional\_regions) | Regions for additional data collection endpoints outside of the LAWs region. | `set(string)` | `[]` | no |
 | <a name="input_event_pipeline_config"></a> [event\_pipeline\_config](#input\_event\_pipeline\_config) | <pre>{<br/>    enabled       = Enable the action group if you want to send data to a monitoring service.<br/>    name          = Name of the alert webhook.<br/>    service_uri   = Link to the webhook receiver URL. Must contain the placeholder \"{{secret}}\". This placeholder will be replaced by the secret value from var.secret. This is used to add authentication to the webhook URL as a query parameter.<br/>    service_uri_integration   = Same as service_uri for non productive monitoring alerts, the secret value from var.secret_integration will be used here.<br/>}</pre> | <pre>object({<br/>    enabled                 = bool<br/>    name                    = optional(string, "QBY EventPipeline")<br/>    service_uri             = optional(string)<br/>    service_uri_integration = optional(string)<br/>  })</pre> | <pre>{<br/>  "enabled": false<br/>}</pre> | no |
-| <a name="input_functions_config"></a> [functions\_config](#input\_functions\_config) | <pre>{<br/>  subnet_id = The id of the subnet that the Monitoring Function App should be connected to.<br/>  stages = A configuration object for each function. Set their stages to either "prd", "int" or "off" {<br/>    mssql = This function monitors MSSQL databases managed by q.beyond<br/>    intune_expiration = This script checks whether any licenses are expiring in Intune<br/>  }<br/>  env_vars = Additional environment variables that can be accessed by functions<br/>}</pre> | <pre>object({<br/>    subnet_id = optional(string, null)<br/>    stages = object({<br/>      mssql             = optional(string, "off")<br/>      intune_expiration = optional(string, "off")<br/>    })<br/>    env_vars = optional(map(string), null)<br/>  })</pre> | <pre>{<br/>  "stages": {}<br/>}</pre> | no |
+| <a name="input_functions_config"></a> [functions\_config](#input\_functions\_config) | <pre>{<br/>  subnet_id = The id of the subnet that the Monitoring Function App should be connected to.<br/>  stages = A configuration object for each function. Set their stages to either "prd", "int" or "off" {<br/>    mssql = This function monitors MSSQL databases managed by q.beyond<br/>    intune_expiration = This script checks whether any licenses are expiring in Intune<br/>  }<br/>  env_vars = Additional environment variables that can be accessed by functions<br/>}</pre> | <pre>object({<br/>    subnet_id = optional(string, null)<br/>    location  = optional(string, null)<br/>    stages = object({<br/>      mssql             = optional(string, "off")<br/>      intune_expiration = optional(string, "off")<br/>    })<br/>    env_vars = optional(map(string), null)<br/>  })</pre> | <pre>{<br/>  "stages": {}<br/>}</pre> | no |
 | <a name="input_root_management_group_id"></a> [root\_management\_group\_id](#input\_root\_management\_group\_id) | The management group that will be scanned by the Import-ResourceGraphToLogAnalytics runbook. | `string` | `"alz"` | no |
 | <a name="input_secret"></a> [secret](#input\_secret) | Value that will replace the placeholder `{{secret}}` in `event_pipeline_config.service_uri`. | `string` | `""` | no |
 | <a name="input_secret_integration"></a> [secret\_integration](#input\_secret\_integration) | Value that will replace the placeholder `{{secret}}` in `event_pipeline_config.service_uri_integration`. | `string` | `""` | no |
@@ -164,7 +164,7 @@ AddonAzureBackupJobs
 
       | Type | Used |
       |------|-------|
-        | [azapi_resource](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource) | 3 |
+        | [azapi_resource](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource) | 4 |
         | [azurerm_application_insights](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_insights) | 1 |
         | [azurerm_automation_job_schedule](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_job_schedule) | 1 |
         | [azurerm_automation_module](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_module) | 2 |
@@ -176,13 +176,12 @@ AddonAzureBackupJobs
         | [azurerm_monitor_data_collection_endpoint](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_endpoint) | 2 |
         | [azurerm_monitor_data_collection_rule](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | 4 |
         | [azurerm_monitor_scheduled_query_rules_alert_v2](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_scheduled_query_rules_alert_v2) | 1 |
-        | [azurerm_role_assignment](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | 1 |
+        | [azurerm_role_assignment](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | 2 |
         | [azurerm_service_plan](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) | 1 |
         | [azurerm_storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) | 1 |
         | [azurerm_storage_blob](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_blob) | 1 |
         | [azurerm_storage_container](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_container) | 1 |
         | [azurerm_storage_share](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_share) | 1 |
-        | [azurerm_windows_function_app](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/windows_function_app) | 1 |
         | [time_static](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/static) | 1 |
 
       **`Used` only includes resource blocks.** `for_each` and `count` meta arguments, as well as resource blocks of modules are not considered.
@@ -214,15 +213,16 @@ No modules.
 
             | Name | Type |
             |------|------|
+                  | [azapi_resource.func_app](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource) | resource |
                   | [azurerm_application_insights.appi](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_insights) | resource |
                   | [azurerm_key_vault.sql_monitor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault) | resource |
+                  | [azurerm_role_assignment.fa-storage-blob_owner](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
                   | [azurerm_role_assignment.share_contributor](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
                   | [azurerm_service_plan.asp_func_app](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/service_plan) | resource |
                   | [azurerm_storage_account.sa_func_app](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) | resource |
                   | [azurerm_storage_blob.storage_blob_function_code](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_blob) | resource |
                   | [azurerm_storage_container.storage_container_func](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_container) | resource |
                   | [azurerm_storage_share.state](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_share) | resource |
-                  | [azurerm_windows_function_app.func_app](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/windows_function_app) | resource |
                   | [archive_file.function_package](https://registry.terraform.io/providers/hashicorp/archive/latest/docs/data-sources/file) | data source |
                   | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) | data source |
 
