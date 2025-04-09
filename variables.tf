@@ -113,6 +113,7 @@ variable "active_services" {
 variable "functions_config" {
   type = object({
     subnet_id = optional(string, null)
+    location  = optional(string, null)
     stages = object({
       mssql             = optional(string, "off")
       intune_expiration = optional(string, "off")
@@ -147,5 +148,26 @@ variable "functions_config" {
       var.functions_config.subnet_id
     )))
     error_message = "The subnet_id must be either null or a valid Azure subnet resource ID."
+  }
+
+  validation {
+    condition = !(local.enable_function_app) || contains(
+      [
+        "northeurope",
+        "southeastasia",
+        "eastasia",
+        "eastus2",
+        "southcentralus",
+        "australiaeast",
+        "eastus",
+        "westus2",
+        "uksouth",
+        "eastus2euap",
+        "westus3",
+        "swedencentral"
+      ],
+      var.functions_config.location
+    )
+    error_message = "Function App uses Flex Consumption plan, which can only be deployed to specific regions."
   }
 }

@@ -17,7 +17,7 @@ resource "azurerm_service_plan" "asp_func_app" {
   count               = local.enable_function_app ? 1 : 0
   name                = "asp-monitor-dev-01"
   resource_group_name = var.log_analytics_workspace.resource_group_name
-  location            = var.log_analytics_workspace.location
+  location            = var.functions_config.location
   os_type             = "Windows"
   sku_name            = "EP1"
 }
@@ -26,7 +26,7 @@ resource "azurerm_key_vault" "sql_monitor" {
   count                       = local.enable_function_app && var.functions_config.stages.mssql != "off" ? 1 : 0
   name                        = local.sql_key_vault_name
   resource_group_name         = var.log_analytics_workspace.resource_group_name
-  location                    = var.log_analytics_workspace.location
+  location                    = var.functions_config.location
   enabled_for_disk_encryption = true
   tenant_id                   = data.azurerm_client_config.current.tenant_id
   soft_delete_retention_days  = 7
@@ -37,7 +37,7 @@ resource "azurerm_key_vault" "sql_monitor" {
   # Function App Managed Identity
   access_policy {
     tenant_id = data.azurerm_client_config.current.tenant_id
-    object_id = azurerm_windows_function_app.func_app[0].identity[0].principal_id
+    object_id = azapi_resource.func_app[0].identity[0].principal_id
 
     key_permissions = [
       "Get", "List",
@@ -76,14 +76,14 @@ resource "azurerm_role_assignment" "share_contributor" {
   count                = local.enable_function_app ? 1 : 0
   scope                = azurerm_storage_account.sa_func_app[0].id
   role_definition_name = "Storage File Data SMB Share Contributor"
-  principal_id         = azurerm_windows_function_app.func_app[0].identity[0].principal_id
+  principal_id         = azapi_resource.func_app[0].identity[0].principal_id
 }
 
 resource "azurerm_storage_account" "sa_func_app" {
   count                    = local.enable_function_app ? 1 : 0
   name                     = format("samonitor01%s", lower(local.customer_code))
   resource_group_name      = var.log_analytics_workspace.resource_group_name
-  location                 = var.log_analytics_workspace.location
+  location                 = var.functions_config.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
 }
@@ -112,45 +112,13 @@ resource "azurerm_storage_blob" "storage_blob_function_code" {
   content_md5            = data.archive_file.function_package[0].output_md5
 }
 
-resource "azurerm_windows_function_app" "func_app" {
-  count               = local.enable_function_app ? 1 : 0
-  name                = format("func-dev-Monitoring-%s-01", local.customer_code)
-  resource_group_name = var.log_analytics_workspace.resource_group_name
-  location            = var.log_analytics_workspace.location
+# See https://learn.microsoft.com/en-us/azure/templates/microsoft.web/sites?pivots=deployment-language-terraform
+# Also https://solideogloria.tech/azure/deploy-a-flex-consumption-function-app-with-terraform/
 
-  storage_account_name       = azurerm_storage_account.sa_func_app[0].name
-  storage_account_access_key = azurerm_storage_account.sa_func_app[0].primary_access_key
-  service_plan_id            = azurerm_service_plan.asp_func_app[0].id
-
-  # Connect function app with vnet for private endpoint access
-  virtual_network_subnet_id = var.functions_config.subnet_id
-
-  storage_account {
-    name         = azurerm_storage_share.state[0].name
-    type         = "AzureFiles"
-    account_name = azurerm_storage_account.sa_func_app[0].name
-    share_name   = azurerm_storage_share.state[0].name
-    access_key   = azurerm_storage_account.sa_func_app[0].primary_access_key
-    mount_path   = "/mounts/${azurerm_storage_share.state[0].name}"
-  }
-
-  site_config {
-    application_insights_key               = azurerm_application_insights.appi[0].instrumentation_key
-    application_insights_connection_string = azurerm_application_insights.appi[0].connection_string
-
-    cors {
-      allowed_origins = ["https://portal.azure.com"]
-    }
-  }
-
-  identity {
-    type = "SystemAssigned"
-  }
-
+locals {
   app_settings = merge(
     {
       WEBSITE_RUN_FROM_PACKAGE       = azurerm_storage_blob.storage_blob_function_code[0].url
-      FUNCTIONS_WORKER_RUNTIME       = "powershell"
       APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.appi[0].instrumentation_key
       SQL_MONITORING_KEY_VAULT       = var.functions_config.stages.mssql == "off" ? "" : local.sql_key_vault_name
       TENANT_ID                      = data.azurerm_client_config.current.tenant_id
@@ -166,11 +134,106 @@ resource "azurerm_windows_function_app" "func_app" {
   )
 }
 
+resource "azapi_resource" "func_app" {
+  count     = local.enable_function_app ? 1 : 0
+  type      = "Microsoft.Web/sites@2023-12-01"
+  name      = format("func-dev-Monitoring-%s-01", local.customer_code)
+  parent_id = "/subscriptions/${data.azurerm_client_config.current.subscription_id}/resourceGroups/${var.log_analytics_workspace.resource_group_name}"
+  location  = var.functions_config.location
+
+  body = jsonencode({
+    kind = "functionapp,linux"
+    properties = {
+      serverFarmId = azurerm_service_plan.asp_func_app[0].id
+      httpsOnly    = true
+
+      functionAppConfig = {
+        deployment = {
+          storage = {
+            type  = "blobContainer"
+            value = "${azurerm_storage_account.sa_func_app[0].primary_blob_endpoint}${azurerm_storage_container.storage_container_func[0].name}"
+            authentication = {
+              type = "SystemAssignedIdentity"
+            }
+          }
+        }
+        runtime = {
+          name    = "powershell"
+          version = "7.4"
+        }
+        scaleAndConcurrency = {
+          instanceMemoryMB     = 2048
+          maximumInstanceCount = 40
+        }
+      }
+
+      siteConfig = {
+        appSettings = concat([
+          {
+            # Is ignored, but will be added if we don't provide it
+            name  = "FUNCTIONS_EXTENSION_VERSION"
+            value = "~4"
+          },
+          # WebJobs Configuration
+          {
+            name  = "AzureWebJobsDashboard__accountName"
+            value = azurerm_storage_account.sa_func_app[0].name
+          },
+          {
+            name  = "AzureWebJobsStorage__accountName"
+            value = azurerm_storage_account.sa_func_app[0].name
+          },
+          {
+            name  = "AzureWebJobsFeatureFlags"
+            value = "EnableWorkerIndexing"
+          },
+          # Application Insights
+          {
+            name  = "APPLICATIONINSIGHTS_CONNECTION_STRING",
+            value = azurerm_application_insights.appi[0].connection_string
+          }
+          ], [
+          # App settings specified in local.app_settings above
+          for k, v in local.app_settings : { name = k, value = v }
+        ])
+
+        azureStorageAccounts = {
+          format("%s", azurerm_storage_share.state[0].name) = {
+            type        = "AzureFiles"
+            accountName = azurerm_storage_account.sa_func_app[0].name
+            shareName   = azurerm_storage_share.state[0].name
+            accessKey   = azurerm_storage_account.sa_func_app[0].primary_access_key
+            mountPath   = "/mounts/${azurerm_storage_share.state[0].name}"
+            protocol    = "Smb"
+          }
+        }
+        cors = {
+          allowedOrigins = ["https://portal.azure.com"]
+        }
+      }
+
+      virtualNetworkSubnetId = var.functions_config.subnet_id
+    }
+  })
+
+  identity {
+    type = "SystemAssigned"
+  }
+}
+
+# Grant the Function App permissions to the storage account
+resource "azurerm_role_assignment" "fa-storage-blob_owner" {
+  count                = local.enable_function_app ? 1 : 0
+  principal_id         = azapi_resource.func_app[0].identity[0].principal_id
+  role_definition_name = "Storage Blob Data Owner"
+  scope                = azurerm_storage_account.sa_func_app[0].id
+}
+
 resource "azurerm_application_insights" "appi" {
   count               = local.enable_function_app ? 1 : 0
   name                = format("appi-Monitoring-dev")
   resource_group_name = var.log_analytics_workspace.resource_group_name
-  location            = var.log_analytics_workspace.location
+  location            = var.functions_config.location
   workspace_id        = var.log_analytics_workspace.id
   application_type    = "web"
 }
