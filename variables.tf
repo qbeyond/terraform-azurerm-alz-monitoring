@@ -151,7 +151,7 @@ variable "functions_config" {
   }
 
   validation {
-    condition = !(local.enable_function_app) || contains(
+    condition = var.functions_conifg.location == null || contains(
       [
         "northeurope",
         "southeastasia",
