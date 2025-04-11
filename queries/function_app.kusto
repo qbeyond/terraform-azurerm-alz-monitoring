@@ -1,0 +1,32 @@
+AppRequests
+| where Success == false
+| where TimeGenerated > ago(15m)
+| extend affected_object = toupper(AppRoleName)
+| project OperationId, ResultCode, affected_object, affected_entity = OperationName
+| join kind=inner (
+    // Join with traces to get error messages
+    AppTraces
+    | where Message startswith "ERROR:" or Message startswith "EXCEPTION:"
+    | project OperationId, Message, SeverityLevel
+) on OperationId
+| extend additional_information = split(Message, "\n")[0]
+| join kind=leftouter (
+    // Join with Monitoring Resources to get ResourceId
+    MonitoringResources_CL 
+    | where type_s in~ ("microsoft.Web/sites")
+    | extend AppName = toupper(name_s)
+    | project AppName, _ResourceId = toupper(ResourceId), TimeGenerated, tags_managedby_s, tags_alerting_s
+    | summarize arg_max(TimeGenerated, *) by _ResourceId
+) on $left.affected_object == $right.AppName
+| where tags_managedby_s =~ "q.beyond" or isempty(tags_managedby_s)
+| where tags_alerting_s =~ "enabled" or isempty(tags_alerting_s)
+| project affected_object, _ResourceId, additional_information, affected_entity
+| extend monitor_package = "AZ_SC_ManagedAzure"
+| extend monitor_name = "AZ_FUNCTIONAPP_MONITOR"
+| extend monitor_description = "Retrieves errors from function app requests"
+| extend script_name = "n/a"
+| extend script_version = "n/a"
+| extend threshold = "n/a"
+| extend value = "n/a"
+| extend state = "CRITICAL"
+| project _ResourceId, RawData = strcat("TimeGenerated:", now(), ";_ResourceId:", _ResourceId, ";state:", state, ";affected_object:", affected_object, ";monitor_package:", monitor_package, ";monitor_name:", monitor_name, ";monitor_description:", monitor_description, ";script_name:", script_name, ";script_version:", script_version, ";threshold:", threshold, ";value:", value, ";affected_entity:", affected_entity, ";additional_information:", additional_information)

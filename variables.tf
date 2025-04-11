@@ -109,3 +109,65 @@ variable "active_services" {
   })
   default = {}
 }
+
+variable "functions_config" {
+  type = object({
+    subnet_id = optional(string, null)
+    location  = optional(string, null)
+    stages = object({
+      mssql             = optional(string, "off")
+      intune_expiration = optional(string, "off")
+    })
+    env_vars = optional(map(string), null)
+  })
+  description = <<-DOC
+  ```
+  {
+    subnet_id = The id of the subnet that the Monitoring Function App should be connected to.
+    stages = A configuration object for each function. Set their stages to either "prd", "int" or "off" {
+      mssql = This function monitors MSSQL databases managed by q.beyond
+      intune_expiration = This script checks whether any licenses are expiring in Intune
+    }
+    env_vars = Additional environment variables that can be accessed by functions
+  }
+  ```
+  DOC
+
+  default = { stages = {} }
+
+  validation {
+    condition = alltrue([
+      for v in values(var.functions_config.stages) : v == "prd" || v == "int" || v == "off"
+    ])
+    error_message = "Each function stage value must be one of 'prd', 'int', or 'off'."
+  }
+
+  validation {
+    condition = (var.functions_config.subnet_id == null || can(regex(
+      "^/subscriptions/[0-9a-fA-F-]+/resourceGroups/[a-zA-Z0-9-_]+/providers/Microsoft.Network/virtualNetworks/[a-zA-Z0-9-_]+/subnets/[a-zA-Z0-9-_]+$",
+      var.functions_config.subnet_id
+    )))
+    error_message = "The subnet_id must be either null or a valid Azure subnet resource ID."
+  }
+
+  validation {
+    condition = var.functions_config.location == null || contains(
+      [
+        "northeurope",
+        "southeastasia",
+        "eastasia",
+        "eastus2",
+        "southcentralus",
+        "australiaeast",
+        "eastus",
+        "westus2",
+        "uksouth",
+        "eastus2euap",
+        "westus3",
+        "swedencentral"
+      ],
+      var.functions_config.location
+    )
+    error_message = "Function App uses Flex Consumption plan, which can only be deployed to specific regions."
+  }
+}
