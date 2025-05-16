@@ -88,7 +88,7 @@ resource "azurerm_monitor_data_collection_rule" "syslog" {
   location            = var.log_analytics_workspace.location
   kind                = "Linux"
   tags                = var.tags
-  description         = "Collect syslog data for security monitoring"
+  description         = "Collect syslog data for monitoring - Loglevel Debug"
 
   destinations {
     log_analytics {
@@ -101,11 +101,46 @@ resource "azurerm_monitor_data_collection_rule" "syslog" {
     syslog {
       name           = "Syslog"
       streams        = ["Microsoft-Syslog"]
-      facility_names = ["auth", "authpriv", "cron", "daemon", "mark", "kern", "user"]
+      facility_names = ["auth", "authpriv", "cron", "daemon", "mark", "kern", "user", "syslog"]
       log_levels     = ["*"]
     }
   }
 
+  data_flow {
+    streams      = ["Microsoft-Syslog"]
+    destinations = [var.log_analytics_workspace.name]
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
+}
+
+
+resource "azurerm_monitor_data_collection_rule" "syslog_notice" {
+  name                = "dcr-prd-ux-Syslog-02"
+  resource_group_name = var.log_analytics_workspace.resource_group_name
+  location            = var.log_analytics_workspace.location
+  kind                = "Linux"
+  tags                = var.tags
+  description         = "Collect syslog data for monitoring - Loglevel Notice"
+
+  destinations {
+    log_analytics {
+      workspace_resource_id = var.log_analytics_workspace.id
+      name                  = var.log_analytics_workspace.name
+    }
+  }
+
+  data_sources {
+    syslog {
+      name           = "Syslog"
+      streams        = ["Microsoft-Syslog"]
+      facility_names = ["lpr", "mail", "news", "syslog", "uucp", "local0", "local1", "local2", "local3", "local4", "local5", "local6", "local7", "ftp", "clock"]
+      log_levels     = ["notice"]
+  }
+}
+       
   data_flow {
     streams      = ["Microsoft-Syslog"]
     destinations = [var.log_analytics_workspace.name]
