@@ -7,6 +7,12 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased] - yyyy-mm-dd
 
+## [6.1.0] - 2025-05-16
+
+### Added
+
+- Added more syslog data collection
+
 ## [6.0.1] - 2025-2-11
 
 ### Changed
