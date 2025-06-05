@@ -68,6 +68,6 @@ locals {
     length(local.selected_events) > 0 ? local.event_rule : {}
   )
 
-  customer_code = upper(split("-", regex("fctkey-[^-]+", var.event_pipeline_config.service_uri_integration))[1])
+  customer_code = upper(coalesce(var.customer_code, split("-", regex("fctkey-[^-]+", var.event_pipeline_config.service_uri_integration))[1]))
 
 }

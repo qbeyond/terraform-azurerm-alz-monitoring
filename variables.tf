@@ -109,3 +109,9 @@ variable "active_services" {
   })
   default = {}
 }
+
+variable "customer_code" {
+  description = "Customer code used as an identifier in monitoring alerts. Must be specified when no service URI with customer code is given."
+  type        = string
+  default     = ""
+}
