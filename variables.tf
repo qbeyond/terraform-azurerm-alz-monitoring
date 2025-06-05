@@ -53,8 +53,8 @@ variable "event_pipeline_config" {
   type = object({
     enabled                 = bool
     name                    = optional(string, "QBY EventPipeline")
-    service_uri             = optional(string)
-    service_uri_integration = optional(string)
+    service_uri             = optional(string, "")
+    service_uri_integration = optional(string, "")
   })
 
   description = <<-DOC
