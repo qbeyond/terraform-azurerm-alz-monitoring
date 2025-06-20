@@ -7,6 +7,16 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased] - yyyy-mm-dd
 
+## [6.2.0] - 2025-06-20
+
+### Added
+
+- Made the customer code an optional parameter so that a service URI is not strictly required
+
+### Fixed
+
+- Spelling mistake for DCR category
+
 ## [6.1.0] - 2025-05-16
 
 ### Added
