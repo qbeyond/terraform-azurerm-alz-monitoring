@@ -137,7 +137,7 @@ resource "azurerm_monitor_data_collection_rule" "syslog_notice" {
       name           = "Syslog"
       streams        = ["Microsoft-Syslog"]
       facility_names = ["lpr", "mail", "news", "syslog", "uucp", "local0", "local1", "local2", "local3", "local4", "local5", "local6", "local7", "ftp", "clock"]
-      log_levels     = ["notice"]
+      log_levels     = ["Notice"]
   }
 }
        

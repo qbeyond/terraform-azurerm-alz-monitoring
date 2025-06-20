@@ -53,8 +53,8 @@ variable "event_pipeline_config" {
   type = object({
     enabled                 = bool
     name                    = optional(string, "QBY EventPipeline")
-    service_uri             = optional(string)
-    service_uri_integration = optional(string)
+    service_uri             = optional(string, "")
+    service_uri_integration = optional(string, "")
   })
 
   description = <<-DOC
@@ -108,4 +108,10 @@ variable "active_services" {
     mssql            = optional(bool, false)
   })
   default = {}
+}
+
+variable "customer_code" {
+  description = "Customer code used as an identifier in monitoring alerts. Must be specified when no service URI with customer code is given."
+  type        = string
+  default     = ""
 }
