@@ -1,7 +1,7 @@
 AzureMetrics
 | where ResourceProvider == "MICROSOFT.SQL" // /DATABASES
 | where MetricName == "availability"
-| where TimeGenerated >= ago(12min)
+| where TimeGenerated >= ago(15min)
 | summarize arg_max(TimeGenerated, db=Resource, value=Total) by _ResourceId
 | join kind=inner (
     // Join with Monitoring Resources to get ResourceId
@@ -9,7 +9,7 @@ AzureMetrics
     | where type_s in~ ("microsoft.Sql/servers/databases")
     | distinct tags_managedby_s, tags_alerting_s, _ResourceId = tolower(id_s)
 ) on _ResourceId
-| where tags_managedby_s =~ "q.beyond" or isempty(tags_managedby_s)
+| where tags_managedby_s =~ "q.beyond"
 | where tags_alerting_s =~ "enabled" or isempty(tags_alerting_s)
 | extend affected_object = extract("(^.*/servers/[^/]+)", 1, _ResourceId)
 | extend affected_entity = _ResourceId

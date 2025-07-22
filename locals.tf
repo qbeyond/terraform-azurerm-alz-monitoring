@@ -11,6 +11,12 @@ locals {
       time_window = "P2D"
       frequency   = "PT5M"
     }
+    "alr-prd-AzureserviceSQL-win-law-metric-crit-01": {
+      description = "Alerts when Azure SQL DB is not available"
+      query_path  = "${local.path}/sql_availability.kusto"
+      time_window = "P2D"
+      frequency   = "PT5M"
+    }
     "alr-prd-Heartbeat-ux-law-metric-crit-01" : {
       description = "Alert when Heartbeat of unix machines Stopped"
       query_path  = "${local.path}/unix_heartbeat.kusto"
