@@ -3,6 +3,14 @@ AzureMetrics
 | where MetricName == "availability"
 | where TimeGenerated >= ago(12min)
 | summarize arg_max(TimeGenerated, db=Resource, value=Total) by _ResourceId
+| join kind=inner (
+    // Join with Monitoring Resources to get ResourceId
+    MonitoringResources_CL
+    | where type_s in~ ("microsoft.Sql/servers/databases")
+    | distinct tags_managedby_s, tags_alerting_s, _ResourceId = tolower(id_s)
+) on _ResourceId
+| where tags_managedby_s =~ "q.beyond" or isempty(tags_managedby_s)
+| where tags_alerting_s =~ "enabled" or isempty(tags_alerting_s)
 | extend affected_object = extract("(^.*/servers/[^/]+)", 1, _ResourceId)
 | extend affected_entity = _ResourceId
 | extend state = iff(value != 100, "CRITICAL", "OK")
