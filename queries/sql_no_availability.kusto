@@ -16,8 +16,8 @@ AzureMetrics
 | extend affected_entity = _ResourceId
 | extend state = "CRITICAL"
 | extend additional_information = "No availability metric for the last 15min available"
-| extend monitor_package = "AZ_BS_ManagedSQL"
-| extend monitor_name = "AZ_AZURESERVICE_SQL_SC"
+| extend monitor_package = "AZ_SC_ManagedSQL"
+| extend monitor_name = "AZ_AZURESERVICE_SQL_METRICS_MISSING"
 | extend monitor_description = "Checks that availability metrics continuously arrive"
 | extend script_name = "n/a"
 | extend script_version = "n/a"
