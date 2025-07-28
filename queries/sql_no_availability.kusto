@@ -1,0 +1,25 @@
+AzureMetrics
+| where ResourceProvider == "MICROSOFT.SQL" // /DATABASES
+| where MetricName == "availability"
+| where TimeGenerated >= ago(60min)
+| summarize arg_max(TimeGenerated, value=Total, affected_entity=Resource) by _ResourceId
+| join kind=inner (
+    // Join with Monitoring Resources to get ResourceId
+    MonitoringResources_CL
+    | where type_s in~ ("microsoft.Sql/servers/databases")
+    | distinct tags_managedby_s, tags_alerting_s, _ResourceId = tolower(id_s)
+) on _ResourceId
+| where tags_managedby_s =~ "q.beyond"
+| where tags_alerting_s =~ "enabled" or isempty(tags_alerting_s)
+| where TimeGenerated <= ago(15min)     // CRITICAL if no availability metric within 15min
+| extend affected_object = extract("(^.*/servers/[^/]+)", 1, _ResourceId)
+| extend state = "CRITICAL"
+| extend additional_information = "No availability metric for the last 15min available"
+| extend monitor_package = "AZ_SC_ManagedMSSQL"
+| extend monitor_name = "AZ_AZURESERVICE_MSSQL_METRICS_MISSING"
+| extend monitor_description = "Checks that availability metrics for Azure SQL DBs continuously arrive"
+| extend script_name = "n/a"
+| extend script_version = "n/a"
+| extend threshold = "n/a"
+| extend value = "n/a"
+| project _ResourceId, RawData = strcat("TimeGenerated:", now(), ";_ResourceId:", _ResourceId, ";state:", state, ";affected_object:", affected_object, ";monitor_package:", monitor_package, ";monitor_name:", monitor_name, ";monitor_description:", monitor_description, ";script_name:", script_name, ";script_version:", script_version, ";threshold:", threshold, ";value:", value, ";affected_entity:", affected_entity, ";additional_information:", additional_information)
