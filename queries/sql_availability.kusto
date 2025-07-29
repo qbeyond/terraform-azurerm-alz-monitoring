@@ -19,7 +19,7 @@ AzureMetrics
   ": The database ",
   affected_entity,
   " on the server ",
-  affected_object,
+  split(affected_object, "/")[array_length(split(affected_object, "/")) - 1],
   iff(state == "OK", " is available.", " is not available.")
 )
 | extend monitor_package = "AZ_BS_ManagedMSSQL"
@@ -28,4 +28,5 @@ AzureMetrics
 | extend script_name = "n/a"
 | extend script_version = "n/a"
 | extend threshold = "100"
+| extend _ResourceId = affected_object
 | project _ResourceId, RawData = strcat("TimeGenerated:", now(), ";_ResourceId:", _ResourceId, ";state:", state, ";affected_object:", affected_object, ";monitor_package:", monitor_package, ";monitor_name:", monitor_name, ";monitor_description:", monitor_description, ";script_name:", script_name, ";script_version:", script_version, ";threshold:", threshold, ";value:", value, ";affected_entity:", affected_entity, ";additional_information:", additional_information)
