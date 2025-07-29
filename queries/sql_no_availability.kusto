@@ -20,7 +20,8 @@ AzureMetrics
   affected_entity,
   " on the server ",
   split(affected_object, "/")[array_length(split(affected_object, "/")) - 1],
-  " in the last 15min."
+  " in the last 15min. Managed by: ",
+  tags_managedby_s
 )
 | extend monitor_package = "AZ_SC_ManagedMSSQL"
 | extend monitor_name = "AZ_AZURESERVICE_MSSQL_METRICS_MISSING"
