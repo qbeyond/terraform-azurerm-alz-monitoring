@@ -14,7 +14,14 @@ AzureMetrics
 | where TimeGenerated <= ago(15min)     // CRITICAL if no availability metric within 15min
 | extend affected_object = extract("(^.*/servers/[^/]+)", 1, _ResourceId)
 | extend state = "CRITICAL"
-| extend additional_information = "No availability metric for the last 15min available"
+| extend additional_information = strcat(
+  state,
+  ": No availability metrics for the database ",
+  affected_entity,
+  " on the server ",
+  split(affected_object, "/")[array_length(split(affected_object, "/")) - 1],
+  " in the last 15min."
+)
 | extend monitor_package = "AZ_SC_ManagedMSSQL"
 | extend monitor_name = "AZ_AZURESERVICE_MSSQL_METRICS_MISSING"
 | extend monitor_description = "Checks that availability metrics for Azure SQL DBs continuously arrive"
@@ -22,4 +29,5 @@ AzureMetrics
 | extend script_version = "n/a"
 | extend threshold = "n/a"
 | extend value = "n/a"
+| extend _ResourceId = affected_object
 | project _ResourceId, RawData = strcat("TimeGenerated:", now(), ";_ResourceId:", _ResourceId, ";state:", state, ";affected_object:", affected_object, ";monitor_package:", monitor_package, ";monitor_name:", monitor_name, ";monitor_description:", monitor_description, ";script_name:", script_name, ";script_version:", script_version, ";threshold:", threshold, ";value:", value, ";affected_entity:", affected_entity, ";additional_information:", additional_information)
