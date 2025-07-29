@@ -20,7 +20,9 @@ AzureMetrics
   affected_entity,
   " on the server ",
   split(affected_object, "/")[array_length(split(affected_object, "/")) - 1],
-  iff(state == "OK", " is available.", " is not available.")
+  iff(state == "OK", " is available.", " is not available. "),
+  "Managed by: ",
+  tags_managedby_s
 )
 | extend monitor_package = "AZ_BS_ManagedMSSQL"
 | extend monitor_name = "AZ_AZURESERVICE_MSSQL_SC"
