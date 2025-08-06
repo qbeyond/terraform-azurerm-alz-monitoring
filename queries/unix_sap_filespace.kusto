@@ -1,37 +1,43 @@
 // Alert when SAP mountpoints used diskspace exceeds the defined threshold.
+let warning = 85;
+let critical = 95;
 let config = dynamic([
-    {"mountpoint": "/SAPINST$", "warning": 90, "critical": 95},
+    {"mountpoint": "/SAPINST$", "warning": 93, "critical": 95},
     {"mountpoint": "^/hana/log/[A-Za-z0-9]{3}", "warning": 50, "critical": 70},
     {"mountpoint": "^/oracle/[A-Za-z0-9]{3}/oraarch$", "warning": 50, "critical": 70},
-    {"mountpoint": "^/oracle/[A-Za-z0-9]{3}/(orig|mirr)log[A-B]$", "warning": 90, "critical": 95},
-    {"mountpoint": "^/oracle/[A-Za-z0-9]{3}/sapdata", "warning": 90, "critical": 95}
-]);
-let excludes = dynamic(["/", "/var", "/boot", "/tmp", "/home", "/opt", "/backup"]);
+    {"mountpoint": "^/oracle/[A-Za-z0-9]{3}/(orig|mirr)log[A-B]$", "warning": 50, "critical": 70},
+    {"mountpoint": "^/oracle/[A-Za-z0-9]{3}/sapdata", "warning": 90, "critical": 95},
+    {"mountpoint": "^/abcxyz", "warning": 99, "critical": 100}
+    ]);
+let excludes = dynamic(["/", "/var", "/boot", "/tmp", "/home", "/opt", "/backup", "/mdestock","/az_backup"]);
 let VMs = MonitoringResources_CL 
-| where TimeGenerated > ago(13h)
-| where type_s in~ ("microsoft.compute/virtualmachines", "microsoft.hybridcompute/machines", "microsoft.compute/virtualmachinescalesets")
-| summarize arg_max(TimeGenerated,*) by id_s
-| project TimeGenerated, vm_resource_id = tolower(id_s), name = name_s, managed_by = tags_managedby_s, alerting = tags_alerting_s;
+    | where TimeGenerated > ago(13h)
+    | where type_s in~ ("microsoft.compute/virtualmachines", "microsoft.hybridcompute/machines", "microsoft.compute/virtualmachinescalesets")
+    | summarize arg_max(TimeGenerated, *) by id_s
+    | project TimeGenerated, vm_resource_id = tolower(id_s), name = name_s, managed_by = tags_managedby_s, alerting = tags_alerting_s;
 InsightsMetrics
 | where Namespace == "LogicalDisk"
 | where Name == "FreeSpacePercentage"
 | extend InverseVal = (100 - Val)
 | extend Mountpoint = tostring(parse_json(Tags)["vm.azm.ms/mountId"])
+| where Mountpoint contains "/"
 | where Mountpoint !in (excludes)
-| summarize arg_max(TimeGenerated, *) by Mountpoint
+| summarize arg_max(TimeGenerated, *) by Mountpoint, Computer
 // 2 iff statements are needed for each monitored path due to a kusto constriant that the regex must be a constant
-| extend warning = iff(Mountpoint matches regex tostring(config[0]["mountpoint"]), config[0]["warning"], -1)
+| extend warning = iff(Mountpoint matches regex tostring(config[0]["mountpoint"]), config[0]["warning"], warning)
 | extend warning = iff(Mountpoint matches regex tostring(config[1]["mountpoint"]), config[1]["warning"], warning)
 | extend warning = iff(Mountpoint matches regex tostring(config[2]["mountpoint"]), config[2]["warning"], warning)
 | extend warning = iff(Mountpoint matches regex tostring(config[3]["mountpoint"]), config[3]["warning"], warning)
 | extend warning = iff(Mountpoint matches regex tostring(config[4]["mountpoint"]), config[4]["warning"], warning)
-| extend critical = iff(Mountpoint matches regex tostring(config[0]["mountpoint"]), config[0]["critical"], -1)
+| extend warning = iff(Mountpoint matches regex tostring(config[5]["mountpoint"]), config[5]["warning"], warning)
+| extend critical = iff(Mountpoint matches regex tostring(config[0]["mountpoint"]), config[0]["critical"], critical)
 | extend critical = iff(Mountpoint matches regex tostring(config[1]["mountpoint"]), config[1]["critical"], critical)
 | extend critical = iff(Mountpoint matches regex tostring(config[2]["mountpoint"]), config[2]["critical"], critical)
 | extend critical = iff(Mountpoint matches regex tostring(config[3]["mountpoint"]), config[3]["critical"], critical)
 | extend critical = iff(Mountpoint matches regex tostring(config[4]["mountpoint"]), config[4]["critical"], critical)
+| extend critical = iff(Mountpoint matches regex tostring(config[5]["mountpoint"]), config[5]["critical"], critical)
 | extend threshold = case(InverseVal >= critical, critical, InverseVal >= warning, warning, -1)
-| where threshold != -1
+| where threshold >= warning or threshold >= critical
 | extend _ResourceId = tolower(_ResourceId)
 | join kind = leftouter VMs on $left._ResourceId == $right.vm_resource_id
 | extend state = case(InverseVal >= critical, "Critical", InverseVal >= warning, "Warning", "")
@@ -44,7 +50,8 @@ InsightsMetrics
 | extend script_name = "n/a"
 | extend script_version = "n/a"
 | extend value = round(InverseVal, 2)
-| extend affected_entity =Mountpoint
-| extend additional_information = strcat("More or equal than ", (threshold), "% Diskspace used (Unix). Managed by: ",(managed_by),".")
-| project _ResourceId, RawData = strcat("TimeGenerated:", now(), ";_ResourceId:", _ResourceId, ";state:", state, ";affected_object:", affected_object, ";monitor_package:", monitor_package, ";monitor_name:", monitor_name, ";monitor_description:", monitor_description, ";script_name:", script_name, ";script_version:", script_version, ";threshold:", threshold, ";value:", value , ";affected_entity:", affected_entity, ";additional_information:", additional_information)
-
+| extend affected_entity = Mountpoint
+| extend additional_information = strcat("Hostname: ", (Computer), ". More or equal than ", (threshold), "% Diskspace used (Unix)", ". Managed by: ", (managed_by), ".")
+| project
+    _ResourceId,
+    RawData = strcat("TimeGenerated:", now(), ";_ResourceId:", _ResourceId, ";state:", state, ";affected_object:", affected_object, ";monitor_package:", monitor_package, ";monitor_name:", monitor_name, ";monitor_description:", monitor_description, ";script_name:", script_name, ";script_version:", script_version, ";threshold:", threshold, ";value:", value, ";affected_entity:", affected_entity, ";additional_information: ", additional_information)
