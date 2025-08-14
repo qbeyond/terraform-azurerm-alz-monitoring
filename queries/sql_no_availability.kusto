@@ -11,9 +11,9 @@ AzureMetrics
 ) on _ResourceId
 | where tags_managedby_s =~ "q.beyond"
 | where tags_alerting_s =~ "enabled" or isempty(tags_alerting_s)
-| where TimeGenerated <= ago(15min)     // CRITICAL if no availability metric within 15min
+| where TimeGenerated <= ago(15min)     // WARNING if no availability metric within 15min
 | extend affected_object = extract("(^.*/servers/[^/]+)", 1, _ResourceId)
-| extend state = "CRITICAL"
+| extend state = "WARNING"
 | extend additional_information = strcat(
   state,
   ": No availability metrics for the database ",
