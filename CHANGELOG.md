@@ -7,6 +7,13 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased] - yyyy-mm-dd
 
+## [6.3.0] - 2025-07-29
+
+### Added
+
+- Alert rule for monitoring the availability of Azure SQL Databases
+- Alert rule that triggers when availability metrics are no longer received
+
 ## [6.2.0] - 2025-06-20
 
 ### Added
