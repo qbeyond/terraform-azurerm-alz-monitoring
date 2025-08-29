@@ -13,11 +13,17 @@ variable "log_analytics_workspace" {
 
 variable "additional_queries" {
   type = map(object({
-    query_path     = string
-    description    = string
-    time_window    = string
-    frequency      = string
-    non_productive = optional(bool, false)
+    query_path                = string
+    description               = string
+    time_window               = string
+    frequency                 = string
+    non_productive            = optional(bool, false)
+    display_name              = optional(string)
+    query_time_range_override = optional(string)
+    include_failing_periods   = optional(object({
+      minimum_failing_periods_to_trigger_alert = number
+      number_of_evaluation_periods             = number
+    }))
   }))
   description = "List of additional alert rule queries to create with a file path, description and time_window."
   default     = {}
