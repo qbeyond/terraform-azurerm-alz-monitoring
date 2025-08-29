@@ -32,7 +32,7 @@ resource "azurerm_monitor_action_group" "optional" {
 resource "azurerm_monitor_scheduled_query_rules_alert_v2" "this" {
   for_each            = local.rules
   name                = each.key
-  display_name        = lookup(each.value, "display_name", each.key)
+  display_name        = lookup(each.value, "display_name", null)
   location            = var.log_analytics_workspace.location
   resource_group_name = var.log_analytics_workspace.resource_group_name
   tags                = var.tags
