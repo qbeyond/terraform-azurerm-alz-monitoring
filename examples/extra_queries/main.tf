@@ -42,6 +42,12 @@ module "monitor" {
       description = "Example of monitoring for failed backup jobs"
       time_window = "PT15M"
       frequency   = "PT15M"
+      display_name              = "alr-prd-diskspace-bkp-law-logsea-warn-01"
+      query_time_range_override = "P2D"
+      include_failing_periods = {
+        minimum_failing_periods_to_trigger_alert = 1
+        number_of_evaluation_periods             = 1
+      }
     }
   }
   active_services = {

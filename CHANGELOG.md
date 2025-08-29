@@ -7,6 +7,12 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased] - yyyy-mm-dd
 
+## [6.4.0] - 2025-09-01
+
+### Added
+
+- Optional parameters in additional_queries variable.
+
 ## [6.3.0] - 2025-07-29
 
 ### Added
