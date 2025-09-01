@@ -49,7 +49,7 @@ locals {
       description = "Alert when a backup job fails"
       query_path  = "${local.path}/backup.kusto.tftpl"
       time_window = "P2D"
-      frequency   = "PT5M"
+      frequency   = "PT1H"
     }
     "alr-int-CustLogJson-winux-law-logsea-warn-01" : {
       description    = "Alert for custom json monitoring logs"
