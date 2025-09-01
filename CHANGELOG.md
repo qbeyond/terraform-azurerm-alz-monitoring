@@ -13,6 +13,12 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 - Optional parameters in additional_queries variable.
 
+## [6.3.1] - 2025-09-01
+
+### Changed
+
+- Backup alert rule now runs every hour instead of every two days
+
 ## [6.3.0] - 2025-07-29
 
 ### Added
