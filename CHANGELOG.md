@@ -217,7 +217,7 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [6.0.0] - 2025-01-15
 
-### Added 
+### Added
 
 - generic windows event kusto query terraform template
 - optional event alert rule
@@ -225,14 +225,14 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ### Changed
 
-- non_productive attribute in alert rules default set to false 
+- non_productive attribute in alert rules default set to false
 
 ### Removed
 
 - windows event ID 6008 kusto query
 - windows event ID 55 kusto query
-- windows event ID 6008 EventLog alert rule 
-- windows event ID 55 EventLog alert rule 
+- windows event ID 6008 EventLog alert rule
+- windows event ID 55 EventLog alert rule
 
 ### Fixed
 
