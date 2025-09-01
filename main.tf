@@ -32,22 +32,24 @@ resource "azurerm_monitor_action_group" "optional" {
 resource "azurerm_monitor_scheduled_query_rules_alert_v2" "this" {
   for_each            = local.rules
   name                = each.key
+  display_name        = lookup(each.value, "display_name", null)
   location            = var.log_analytics_workspace.location
   resource_group_name = var.log_analytics_workspace.resource_group_name
   tags                = var.tags
+
+  scopes                    = [var.log_analytics_workspace.id]
+  description               = each.value.description
+  enabled                   = true
+  severity                  = 0
+  skip_query_validation     = true
+  evaluation_frequency      = each.value.frequency
+  window_duration           = each.value.time_window
+  query_time_range_override = lookup(each.value, "query_time_range_override", null)
 
   action {
     action_groups = lookup(each.value, "non_productive", false) ? azurerm_monitor_action_group.optional[*].id : azurerm_monitor_action_group.eventpipeline[*].id
   }
 
-  scopes                = [var.log_analytics_workspace.id]
-  description           = each.value.description
-  enabled               = true
-  severity              = 0
-  skip_query_validation = true
-
-  evaluation_frequency = each.value.frequency
-  window_duration      = each.value.time_window
   criteria {
     query = templatefile(each.value.query_path, {
       "tenant" = local.customer_code
@@ -63,8 +65,17 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "this" {
       values   = ["*"]
     }
 
+    dynamic "failing_periods" {
+      for_each = contains(keys(each.value), "include_failing_periods") && each.value.include_failing_periods != null ? [each.value.include_failing_periods] : []
+      content {
+        minimum_failing_periods_to_trigger_alert = failing_periods.value.minimum_failing_periods_to_trigger_alert
+        number_of_evaluation_periods             = failing_periods.value.number_of_evaluation_periods
+      }
+    }
+
     resource_id_column = "_ResourceId"
   }
+
   target_resource_types = [
     "microsoft.compute/virtualmachines",
     "microsoft.hybridcompute/machines",
