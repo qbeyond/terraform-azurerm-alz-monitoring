@@ -253,7 +253,7 @@ variable "additional_data_collection_rules" {
       })), [])
     }), {})
 
-    data_flows = list(object({
+    data_flow = list(object({
       streams      = list(string)
       destinations = list(string)
     }))
@@ -348,7 +348,7 @@ variable "additional_data_collection_rules" {
         for df in v.data_flows: 
         contains(df.destinations, try(v.destinations.azure_monitor_metrics.name, "")) ?
           length(setsubtract(toset(df.streams), toset(["Microsoft-InsightsMetrics"]))) == 0
-        :  true
+        :   true
       ])
     ])
     error_message = "When routing to 'azure_monitor_metrics', streams must be only 'Microsoft-InsightsMetrics'."
