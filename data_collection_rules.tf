@@ -328,7 +328,7 @@ resource "azurerm_monitor_data_collection_rule" "additional_data_collection_rule
   }
 
   dynamic "data_flow" {
-    for_each = each.value.data_flows
+    for_each = each.value.data_flow
     content {
       streams      = data_flow.value.streams
       destinations = data_flow.value.destinations
