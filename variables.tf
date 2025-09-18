@@ -259,9 +259,9 @@ variable "additional_data_collection_rules" {
     }))
 
     identity = optional(object({
-      type         = string
-      identity_ids = optional(list(string))
-    }), { type = "SystemAssigned" })
+      type         = optional(string, "SystemAssigned")
+      identity_ids = optional(list(string), [])
+    }), {})
   }))
 
   default = {}
