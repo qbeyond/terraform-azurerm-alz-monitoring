@@ -175,7 +175,7 @@ variable "additional_data_collection_rules" {
   type = map(object({
     name        = string
     kind        = optional(string, "Linux")
-    description = optional(string, "Collect syslog/event data")
+    description = optional(string)
     tags        = optional(map(string), {})
 
     destinations = object({
