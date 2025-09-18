@@ -314,7 +314,7 @@ variable "additional_data_collection_rules" {
   }
 
   validation {
-    condition     = alltrue([for _, v in var.additional_data_collection_rules : length(v.data_flows) > 0])
+    condition     = alltrue([for _, v in var.additional_data_collection_rules : length(v.data_flow) > 0])
     error_message = "Each DCR must define at least one data_flow."
   }
 
@@ -322,7 +322,7 @@ variable "additional_data_collection_rules" {
     condition = alltrue([
       for _, v in var.additional_data_collection_rules: 
       alltrue([
-        for df in v.data_flows: 
+        for df in v.data_flow: 
         length(setsubtract(
           toset(df.destinations),
           toset(compact(concat(
@@ -345,7 +345,7 @@ variable "additional_data_collection_rules" {
     condition = alltrue([
       for _, v in var.additional_data_collection_rules: 
       alltrue([
-        for df in v.data_flows: 
+        for df in v.data_flow: 
         contains(df.destinations, try(v.destinations.azure_monitor_metrics.name, "")) ?
           length(setsubtract(toset(df.streams), toset(["Microsoft-InsightsMetrics"]))) == 0
         :   true
@@ -565,7 +565,7 @@ variable "additional_data_collection_rules" {
       ]
     }
 
-    data_flows = [
+    data_flow = [
       {
         streams      = List of streams to route. E.g. ["Microsoft-Event"].
         destinations = List of destination names to which data will be sent.
