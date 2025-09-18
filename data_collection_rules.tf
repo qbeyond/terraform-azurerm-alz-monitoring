@@ -41,7 +41,6 @@ resource "azurerm_monitor_data_collection_rule" "vm_insight" {
   identity {
     type = "SystemAssigned"
   }
-
 }
 
 resource "azurerm_monitor_data_collection_rule" "event_log" {
