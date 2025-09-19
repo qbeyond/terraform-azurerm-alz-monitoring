@@ -174,7 +174,7 @@ variable "customer_code" {
 variable "additional_data_collection_rules" {
   type = map(object({
     name        = string
-    kind        = optional(string, "Linux")
+    kind        = optional(string)
     description = optional(string)
     tags        = optional(map(string), {})
 
