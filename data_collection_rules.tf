@@ -163,7 +163,7 @@ resource "azurerm_monitor_data_collection_rule" "additional_data_collection_rule
     dynamic "azure_monitor_metrics" {
       for_each = try(each.value.destinations.azure_monitor_metrics, null) != null ? [each.value.destinations.azure_monitor_metrics] : []
       content { 
-        name = azure_monitor_metrics.value.name 
+        name = azure_monitor_metrics.value.name
       }
     }
 

@@ -191,23 +191,25 @@ variable "additional_data_collection_rules" {
 
     data_sources = optional(object({
       data_import = optional(object({
-        event_hub_data_sources = list(object({
+        event_hub_data_sources = object({
           name           = string
           stream         = string
-          consumer_group = string
-        }))
+          consumer_group = optional(string)
+        })
       }), null)
 
       extension = optional(list(object({
-        extension_name = string
-        name           = string
-        streams        = list(string)
+        extension_name     = string
+        name               = string
+        streams            = list(string)
+        extension_json     = optional(string)
+        input_data_sources = optional(list(string))
       })), [])
 
       iis_log = optional(list(object({
         name            = string
         streams         = list(string)
-        log_directories = list(string)
+        log_directories = optional(list(string))
       })), [])
 
       log_file = optional(list(object({
@@ -236,9 +238,9 @@ variable "additional_data_collection_rules" {
 
       syslog = optional(list(object({
         name           = string
-        streams        = optional(list(string))
-        facility_names = optional(list(string))
-        log_levels     = optional(list(string))
+        streams        = list(string)
+        facility_names = list(string)
+        log_levels     = list(string)
       })), [])
 
       windows_event_log = optional(list(object({
@@ -262,7 +264,7 @@ variable "additional_data_collection_rules" {
     }))
 
     identity = optional(object({
-      type         = optional(string)
+      type         = string
       identity_ids = optional(list(string), [])
     }), null)
   }))
