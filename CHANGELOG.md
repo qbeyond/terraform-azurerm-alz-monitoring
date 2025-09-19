@@ -7,6 +7,8 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [6.5.0] - 2025-09-19
 
+### Added
+
 - Additional Data Collection Rules (DCRs) via additional_data_collection_rules
 - Input validations
 
