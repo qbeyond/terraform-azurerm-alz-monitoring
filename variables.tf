@@ -574,6 +574,9 @@ variable "additional_data_collection_rules" {
       {
         streams      = List of streams to route. E.g. ["Microsoft-Event"].
         destinations = List of destination names to which data will be sent.
+        built_in_transform = Built-in transform to apply to the input stream.
+        transform_kql = KQL query that transform the input stream. Used instead of "built_in_transform"
+        output_stream = Name of the output stream after the transform.
       }
     ]
 
