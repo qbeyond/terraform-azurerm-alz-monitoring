@@ -335,8 +335,11 @@ resource "azurerm_monitor_data_collection_rule" "additional_data_collection_rule
     }
   }
 
-  identity {
-    type         = each.value.identity.type
-    identity_ids = try(each.value.identity.identity_ids, null)
+  dynamic "identity" {
+    for_each = try(each.value.identity.type, null) != null ? [each.value.identity] : []
+    content {
+      type         = identity.value.type
+      identity_ids = length(try(identity.value.identity_ids, [])) > 0 ? identity.value.identity_ids : null
+    }
   }
 }
