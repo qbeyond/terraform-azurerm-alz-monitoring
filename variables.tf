@@ -328,29 +328,6 @@ variable "additional_data_collection_rules" {
       for _, v in var.additional_data_collection_rules: 
       alltrue([
         for df in v.data_flow: 
-        length(setsubtract(
-          toset(df.destinations),
-          toset(compact(concat(
-            [try(v.destinations.azure_monitor_metrics.name, null)],
-            [try(v.destinations.event_hub.name, null)],
-            [try(v.destinations.event_hub_direct.name, null)],
-            [try(v.destinations.log_analytics.name, null)],
-            [try(v.destinations.monitor_account.name, null)],
-            [try(v.destinations.storage_blob.name, null)],
-            [try(v.destinations.storage_blob_direct.name, null)],
-            [try(v.destinations.storage_table_direct.name, null)]
-          )))
-        )) == 0
-      ])
-    ])
-    error_message = "Each data_flow.destinations must reference names defined under 'destinations'."
-  }
-
-  validation {
-    condition = alltrue([
-      for _, v in var.additional_data_collection_rules: 
-      alltrue([
-        for df in v.data_flow: 
         contains(df.destinations, try(v.destinations.azure_monitor_metrics.name, "")) ?
           length(setsubtract(toset(df.streams), toset(["Microsoft-InsightsMetrics"]))) == 0
         :   true
