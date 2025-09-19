@@ -332,6 +332,9 @@ resource "azurerm_monitor_data_collection_rule" "additional_data_collection_rule
     content {
       streams      = data_flow.value.streams
       destinations = data_flow.value.destinations
+      built_in_transform = try(data_flow.value.built_in_transform, null)
+      output_stream      = try(data_flow.value.output_stream, null)
+      transform_kql      = try(data_flow.value.transform_kql, null)
     }
   }
 
