@@ -264,7 +264,7 @@ variable "additional_data_collection_rules" {
     identity = optional(object({
       type         = optional(string)
       identity_ids = optional(list(string), [])
-    }), {})
+    }), null)
   }))
 
   default = {}
@@ -398,7 +398,7 @@ variable "additional_data_collection_rules" {
   validation {
     condition = alltrue([
       for _, v in var.additional_data_collection_rules :
-      v.identity == null || v.identity.type == null ||
+      v.identity == null || v.identity.type == null ? true :
       contains(["systemassigned","userassigned"], lower(v.identity.type))
     ])
     error_message = "identity.type must be 'SystemAssigned' or 'UserAssigned' when provided."
@@ -407,12 +407,12 @@ variable "additional_data_collection_rules" {
   validation {
     condition = alltrue([
       for _, v in var.additional_data_collection_rules :
-      v.identity == null || v.identity.type == null ||
+      v.identity == null || v.identity.type == null ? true :
       (
-        lower(v.identity.type) == "systemassigned" && length(v.identity.identity_ids) == 0
-      ) || (
-        lower(v.identity.type) == "userassigned" && length(v.identity.identity_ids) == 1
-        && alltrue([for id in v.identity.identity_ids : length(trim(id)) > 0])
+        lower(v.identity.type) == "systemassigned" ? length(v.identity.identity_ids) == 0 :
+        lower(v.identity.type) == "userassigned"  ? (length(v.identity.identity_ids) == 1
+          && alltrue([for id in v.identity.identity_ids : length(trim(id)) > 0])) :
+        false
       )
     ])
     error_message = "For UserAssigned provide exactly one non-empty identity_id; for SystemAssigned don't provide identity_ids."
