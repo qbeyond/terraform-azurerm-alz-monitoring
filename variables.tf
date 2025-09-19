@@ -254,12 +254,15 @@ variable "additional_data_collection_rules" {
     }), {})
 
     data_flow = list(object({
-      streams      = list(string)
-      destinations = list(string)
+      streams            = list(string)
+      destinations       = list(string)
+      output_stream      = optional(string)
+      built_in_transform = optional(string)
+      transform_kql      = optional(string)
     }))
 
     identity = optional(object({
-      type         = optional(string, "SystemAssigned")
+      type         = optional(string)
       identity_ids = optional(list(string), [])
     }), {})
   }))
