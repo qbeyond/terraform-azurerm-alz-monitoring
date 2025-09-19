@@ -5,7 +5,10 @@ All notable changes to this module will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - yyyy-mm-dd
+## [6.5.0] - 2025-09-19
+
+- Additional Data Collection Rules (DCRs) via additional_data_collection_rules
+- Input validations
 
 ## [6.4.0] - 2025-09-01
 
