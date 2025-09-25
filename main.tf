@@ -66,7 +66,7 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "this" {
     }
 
     dynamic "failing_periods" {
-      for_each = contains(keys(each.value), "include_failing_periods") && each.value.include_failing_periods != null ? [each.value.include_failing_periods] : []
+      for_each = try(each.value.include_failing_periods, null) != null ? [each.value.include_failing_periods] : []
       content {
         minimum_failing_periods_to_trigger_alert = failing_periods.value.minimum_failing_periods_to_trigger_alert
         number_of_evaluation_periods             = failing_periods.value.number_of_evaluation_periods
