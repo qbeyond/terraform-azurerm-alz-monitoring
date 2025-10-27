@@ -4,7 +4,7 @@ resource "azurerm_automation_module" "az_accounts" {
   automation_account_name = var.automation_account.name
 
   module_link {
-    uri = "https://psg-prod-eastus.azureedge.net/packages/az.accounts.3.0.5.nupkg"
+    uri = "https://cdn.powershellgallery.com/packages/az.accounts.5.3.0.nupkg"
   }
 }
 
