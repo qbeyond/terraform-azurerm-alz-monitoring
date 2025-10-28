@@ -5,6 +5,12 @@ All notable changes to this module will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.5.2] - 2025-10-27
+
+### Fixed
+
+- Fixed error calling URI in azurerm_automation_module az_accounts due to retired URI (https://learn.microsoft.com/en-us/powershell/gallery/how-to/getting-support/troubleshooting-cmdlets?view=powershellget-3.x#required-network-endpoints)
+
 ## [6.5.1] - 2025-09-25
 
 ### Fixed
