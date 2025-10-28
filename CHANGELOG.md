@@ -9,7 +9,7 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ### Fixed
 
-- Fixed failing calling URI in azurerm_automation_module az_accounts.
+- Fixed error calling URI in azurerm_automation_module az_accounts due to retired URI (https://learn.microsoft.com/en-us/powershell/gallery/how-to/getting-support/troubleshooting-cmdlets?view=powershellget-3.x#required-network-endpoints)
 
 ## [6.5.1] - 2025-09-25
 
