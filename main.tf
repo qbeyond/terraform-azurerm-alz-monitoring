@@ -52,7 +52,7 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "this" {
 
   criteria {
     query = templatefile(each.value.query_path, {
-      "tenant" = local.customer_code
+      "tenant"     = local.customer_code
       "all_events" = local.selected_events
     })
     time_aggregation_method = "Count"
@@ -96,4 +96,24 @@ resource "azurerm_monitor_data_collection_endpoint" "additional_dces" {
   resource_group_name = var.log_analytics_workspace.resource_group_name
   location            = each.value
   tags                = var.tags
+}
+
+data "azurerm_logic_app_workflow" "example" {
+  name                = ""
+  resource_group_name = "rg-Management-prd-01"
+}
+
+resource "azurerm_monitor_action_group" "eventparser" {
+  name                = "ag-${customer_code}-prd-eventparser"
+  resource_group_name = "rg-Management-prd-01"
+  short_name          = "agprdparser"
+
+  logic_app_receiver {
+    name                    = "QBY EventParser"
+    resource_id             = data.azurerm_logic_app_workflow.eventparser.id
+    callback_url            = data.azurerm_logic_app_workflow.eventparser.access_endpoint
+    use_common_alert_schema = true
+  }
+
+  tags = local.tags
 }

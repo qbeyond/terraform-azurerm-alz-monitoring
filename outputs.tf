@@ -18,6 +18,11 @@ output "linux_dcr_ids" {
 }
 
 output "vminsights_dcr_id" {
-  value = azurerm_monitor_data_collection_rule.vm_insight.id
+  value       = azurerm_monitor_data_collection_rule.vm_insight.id
   description = "Resource ID of the VM-Insights DCR that should be associated with every VM."
+}
+
+output "access_endpoint" {
+  value       = data.azurerm_logic_app_workflow.eventparser.access_endpoint
+  description = "The access endpoint of the Logic App workflow."
 }
