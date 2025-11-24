@@ -32,7 +32,7 @@ variable "additional_queries" {
     non_productive            = optional(bool, false)
     display_name              = optional(string)
     query_time_range_override = optional(string)
-    include_failing_periods = optional(object({
+    include_failing_periods   = optional(object({
       minimum_failing_periods_to_trigger_alert = number
       number_of_evaluation_periods             = number
     }))
@@ -138,11 +138,6 @@ variable "tags" {
   type        = map(string)
   description = "Tags that will be assigned to all resources."
   default     = {}
-}
-
-variable "event_pipeline_key" {
-  description = "Secret key for the event pipeline."
-  type        = string
 }
 
 variable "additional_regions" {
@@ -278,16 +273,16 @@ variable "additional_data_collection_rules" {
 
   validation {
     condition = alltrue([
-      for _, v in var.additional_data_collection_rules :
+      for _, v in var.additional_data_collection_rules: 
       (
         try(v.destinations.azure_monitor_metrics.name, "") != "" ||
-        try(v.destinations.event_hub.name, "") != "" ||
-        try(v.destinations.event_hub_direct.name, "") != "" ||
-        try(v.destinations.log_analytics.name, "") != "" ||
-        try(v.destinations.monitor_account.name, "") != "" ||
-        try(v.destinations.storage_blob.name, "") != "" ||
-        try(v.destinations.storage_blob_direct.name, "") != "" ||
-        try(v.destinations.storage_table_direct.name, "") != ""
+        try(v.destinations.event_hub.name, "")             != "" ||
+        try(v.destinations.event_hub_direct.name, "")      != "" ||
+        try(v.destinations.log_analytics.name, "")         != "" ||
+        try(v.destinations.monitor_account.name, "")       != "" ||
+        try(v.destinations.storage_blob.name, "")          != "" ||
+        try(v.destinations.storage_blob_direct.name, "")   != "" ||
+        try(v.destinations.storage_table_direct.name, "")  != ""
       )
     ])
     error_message = "Each DCR must declare at least one destination."
@@ -295,7 +290,7 @@ variable "additional_data_collection_rules" {
 
   validation {
     condition = alltrue([
-      for _, v in var.additional_data_collection_rules :
+      for _, v in var.additional_data_collection_rules: 
       length(
         toset(compact(concat(
           [try(v.destinations.azure_monitor_metrics.name, null)],
@@ -307,7 +302,7 @@ variable "additional_data_collection_rules" {
           [try(v.destinations.storage_blob_direct.name, null)],
           [try(v.destinations.storage_table_direct.name, null)]
         )))
-        ) == length(
+      ) == length(
         compact(concat(
           [try(v.destinations.azure_monitor_metrics.name, null)],
           [try(v.destinations.event_hub.name, null)],
@@ -330,12 +325,12 @@ variable "additional_data_collection_rules" {
 
   validation {
     condition = alltrue([
-      for _, v in var.additional_data_collection_rules :
+      for _, v in var.additional_data_collection_rules: 
       alltrue([
-        for df in v.data_flow :
+        for df in v.data_flow: 
         contains(df.destinations, try(v.destinations.azure_monitor_metrics.name, "")) ?
-        length(setsubtract(toset(df.streams), toset(["Microsoft-InsightsMetrics"]))) == 0
-        : true
+          length(setsubtract(toset(df.streams), toset(["Microsoft-InsightsMetrics"]))) == 0
+        :   true
       ])
     ])
     error_message = "When routing to 'azure_monitor_metrics', streams must be only 'Microsoft-InsightsMetrics'."
@@ -343,7 +338,7 @@ variable "additional_data_collection_rules" {
 
   validation {
     condition = alltrue([
-      for _, v in var.additional_data_collection_rules :
+      for _, v in var.additional_data_collection_rules: 
       contains(["linux", "windows", "agentdirecttostore", "workspacetransforms"], lower(v.kind))
     ])
     error_message = "kind must be one of: Linux, Windows, AgentDirectToStore, WorkspaceTransforms."
@@ -351,7 +346,7 @@ variable "additional_data_collection_rules" {
 
   validation {
     condition = alltrue([
-      for _, v in var.additional_data_collection_rules :
+      for _, v in var.additional_data_collection_rules: 
       lower(v.kind) != "linux" || length(try(v.data_sources.windows_event_log, [])) == 0
     ])
     error_message = "For kind 'Linux', 'windows_event_log' data sources are not allowed."
@@ -359,7 +354,7 @@ variable "additional_data_collection_rules" {
 
   validation {
     condition = alltrue([
-      for _, v in var.additional_data_collection_rules :
+      for _, v in var.additional_data_collection_rules: 
       lower(v.kind) != "windows" || length(try(v.data_sources.syslog, [])) == 0
     ])
     error_message = "For kind 'Windows', 'syslog' data sources are not allowed."
@@ -367,11 +362,11 @@ variable "additional_data_collection_rules" {
 
   validation {
     condition = alltrue([
-      for _, v in var.additional_data_collection_rules :
+      for _, v in var.additional_data_collection_rules: 
       (
         !(
-          try(v.destinations.event_hub_direct.name, "") != "" ||
-          try(v.destinations.storage_blob_direct.name, "") != "" ||
+          try(v.destinations.event_hub_direct.name, "")     != "" ||
+          try(v.destinations.storage_blob_direct.name, "")  != "" ||
           try(v.destinations.storage_table_direct.name, "") != ""
         )
       ) || lower(v.kind) == "agentdirecttostore"
@@ -383,7 +378,7 @@ variable "additional_data_collection_rules" {
     condition = alltrue([
       for _, v in var.additional_data_collection_rules :
       v.identity == null || v.identity.type == null ? true :
-      contains(["systemassigned", "userassigned"], lower(v.identity.type))
+      contains(["systemassigned","userassigned"], lower(v.identity.type))
     ])
     error_message = "identity.type must be 'SystemAssigned' or 'UserAssigned' when provided."
   }
@@ -394,8 +389,8 @@ variable "additional_data_collection_rules" {
       v.identity == null || v.identity.type == null ? true :
       (
         lower(v.identity.type) == "systemassigned" ? length(v.identity.identity_ids) == 0 :
-        lower(v.identity.type) == "userassigned" ? (length(v.identity.identity_ids) == 1
-        && alltrue([for id in v.identity.identity_ids : length(trim(id)) > 0])) :
+        lower(v.identity.type) == "userassigned"  ? (length(v.identity.identity_ids) == 1
+          && alltrue([for id in v.identity.identity_ids : length(trim(id)) > 0])) :
         false
       )
     ])
@@ -404,7 +399,7 @@ variable "additional_data_collection_rules" {
 
   validation {
     condition = alltrue([
-      for _, v in var.additional_data_collection_rules :
+      for _, v in var.additional_data_collection_rules: 
       (
         try(v.data_sources.data_import, null) == null
         || length(try(v.data_sources.data_import.event_hub_data_sources, [])) > 0
@@ -415,10 +410,10 @@ variable "additional_data_collection_rules" {
 
   validation {
     condition = alltrue([
-      for _, v in var.additional_data_collection_rules :
+      for _, v in var.additional_data_collection_rules: 
       alltrue([
-        for pc in try(v.data_sources.performance_counter, []) :
-        contains(pc.streams, "Microsoft-InsightsMetrics") ? pc.sampling_frequency_in_seconds == 60 : true
+        for      pc in try(v.data_sources.performance_counter, [])                                : 
+        contains(pc.streams, "Microsoft-InsightsMetrics") ? pc.sampling_frequency_in_seconds == 60: true
       ])
     ])
     error_message = "performance_counter using 'Microsoft-InsightsMetrics' must set sampling_frequency_in_seconds = 60."
