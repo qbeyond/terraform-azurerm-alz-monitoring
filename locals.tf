@@ -84,11 +84,3 @@ locals {
 
 }
 
-locals {
-  default_location = "westeurope"
-  tags = {
-    "Environment" = "Production"
-    "ManagedBy"   = "q.beyond"
-    "project"     = ""
-  }
-}

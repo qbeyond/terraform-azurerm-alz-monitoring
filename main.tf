@@ -98,14 +98,14 @@ resource "azurerm_monitor_data_collection_endpoint" "additional_dces" {
   tags                = var.tags
 }
 
-data "azurerm_logic_app_workflow" "example" {
-  name                = ""
-  resource_group_name = "rg-Management-prd-01"
+data "azurerm_logic_app_workflow" "eventparser" {
+  name                = "logicwf-${local.customer_code}-prd-eventparser"
+  resource_group_name = var.log_analytics_workspace.resource_group_name
 }
 
 resource "azurerm_monitor_action_group" "eventparser" {
   name                = "ag-${customer_code}-prd-eventparser"
-  resource_group_name = "rg-Management-prd-01"
+  resource_group_name = var.log_analytics_workspace.resource_group_name
   short_name          = "agprdparser"
 
   logic_app_receiver {
@@ -115,5 +115,5 @@ resource "azurerm_monitor_action_group" "eventparser" {
     use_common_alert_schema = true
   }
 
-  tags = local.tags
+  tags = var.tags
 }
