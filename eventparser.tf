@@ -7,7 +7,7 @@ resource "azurerm_resource_group_template_deployment" "this" {
 
   parameters_content = jsonencode({
     "workflows_logicapp_name" = {
-      value = "logic-${customer_code}-prd-eventparser"
+      value = "logic-${local.customer_code}-prd-eventparser"
     }
     "tags" = {
       value = var.tags
