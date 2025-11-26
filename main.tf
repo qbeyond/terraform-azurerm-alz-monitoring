@@ -105,7 +105,7 @@ data "azurerm_logic_app_workflow" "eventparser" {
 }
 
 resource "azurerm_monitor_action_group" "eventparser" {
-  name                = "ag-${customer_code}-prd-eventparser"
+  name                = "ag-${local.customer_code}-prd-eventparser"
   resource_group_name = var.log_analytics_workspace.resource_group_name
   short_name          = "agprdparser"
 
@@ -119,5 +119,5 @@ resource "azurerm_monitor_action_group" "eventparser" {
     ignore_changes = [logic_app_receiver]
   }
   tags       = var.tags
-  depends_on = [azurerm_logic_app_workflow.eventparser]
+  depends_on = [data.azurerm_logic_app_workflow.eventparser]
 }
