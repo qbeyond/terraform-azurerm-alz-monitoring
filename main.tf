@@ -101,7 +101,7 @@ resource "azurerm_monitor_data_collection_endpoint" "additional_dces" {
 data "azurerm_logic_app_workflow" "eventparser" {
   name                = "logic-${local.customer_code}-prd-eventparser"
   resource_group_name = var.log_analytics_workspace.resource_group_name
-  depends_on          = [azurerm_monitor_action_group.eventparser]
+  # depends_on          = [azurerm_monitor_action_group.eventparser]
 }
 
 resource "azurerm_monitor_action_group" "eventparser" {
@@ -118,5 +118,6 @@ resource "azurerm_monitor_action_group" "eventparser" {
   lifecycle {
     ignore_changes = [logic_app_receiver]
   }
-  tags = var.tags
+  tags       = var.tags
+  depends_on = [azurerm_logic_app_workflow.eventparser]
 }
