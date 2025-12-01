@@ -99,20 +99,22 @@ resource "azurerm_monitor_data_collection_endpoint" "additional_dces" {
 }
 
 data "azurerm_logic_app_workflow" "eventparser" {
+  count               = var.event_parser_deployment == true ? 1 : 0
   name                = "logic-${local.customer_code}-prd-eventparser"
   resource_group_name = var.log_analytics_workspace.resource_group_name
   depends_on          = [azurerm_resource_group_template_deployment.this]
 }
 
 resource "azurerm_monitor_action_group" "eventparser" {
+  count               = var.event_parser_deployment == true ? 1 : 0
   name                = "ag-${local.customer_code}-prd-eventparser"
   resource_group_name = var.log_analytics_workspace.resource_group_name
   short_name          = "agprdparser"
 
   logic_app_receiver {
     name                    = "QBY EventParser"
-    resource_id             = data.azurerm_logic_app_workflow.eventparser.id
-    callback_url            = data.azurerm_logic_app_workflow.eventparser.access_endpoint
+    resource_id             = data.azurerm_logic_app_workflow.eventparser[0].id
+    callback_url            = data.azurerm_logic_app_workflow.eventparser[0].access_endpoint
     use_common_alert_schema = true
   }
   lifecycle {

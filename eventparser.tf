@@ -1,5 +1,6 @@
 resource "azurerm_resource_group_template_deployment" "this" {
-  name                = "terraform-arm-01"
+  count               = var.event_parser_deployment == true ? 1 : 0
+  name                = "arm-eventparser-01"
   resource_group_name = var.log_analytics_workspace.resource_group_name
   deployment_mode     = "Incremental"
 
