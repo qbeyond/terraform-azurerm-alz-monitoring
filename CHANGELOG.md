@@ -5,6 +5,13 @@ All notable changes to this module will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.6.0] - 2025-12-08
+
+### Added
+
+- Added optional consumption logic app that parses metric alerts into qbeyond alert schema for further investigation.
+- Added optional action group that sends alert to logic app.
+
 ## [6.5.2] - 2025-10-27
 
 ### Fixed
