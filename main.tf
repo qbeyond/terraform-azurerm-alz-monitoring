@@ -16,7 +16,7 @@ resource "azurerm_monitor_action_group" "eventpipeline" {
 }
 
 resource "azurerm_monitor_action_group" "optional" {
-  count               = (var.event_pipeline_config.enabled && anytrue([for k, v in local.rules : lookup(v, "non_productive", false)])) ? 1 : 0
+  count               = (var.event_pipeline_config.enabled && anytrue([for k, v in local.rules : lookup(v, "non_productive", false)]) && var.event_pipeline_config.service_uri_integration != "") ? 1 : 0
   name                = "EventPipelineCentral_AG_2"
   resource_group_name = var.log_analytics_workspace.resource_group_name
   short_name          = "monitorhook"
@@ -52,7 +52,7 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "this" {
 
   criteria {
     query = templatefile(each.value.query_path, {
-      "tenant" = local.customer_code
+      "tenant"     = local.customer_code
       "all_events" = local.selected_events
     })
     time_aggregation_method = "Count"
@@ -96,4 +96,29 @@ resource "azurerm_monitor_data_collection_endpoint" "additional_dces" {
   resource_group_name = var.log_analytics_workspace.resource_group_name
   location            = each.value
   tags                = var.tags
+}
+
+data "azurerm_logic_app_workflow" "eventparser" {
+  count               = var.event_parser_deployment == true ? 1 : 0
+  name                = "logic-${local.customer_code}-prd-eventparser"
+  resource_group_name = var.log_analytics_workspace.resource_group_name
+  depends_on          = [azurerm_resource_group_template_deployment.this]
+}
+
+resource "azurerm_monitor_action_group" "eventparser" {
+  count               = var.event_parser_deployment == true ? 1 : 0
+  name                = "ag-${local.customer_code}-prd-eventparser"
+  resource_group_name = var.log_analytics_workspace.resource_group_name
+  short_name          = "agprdparser"
+
+  logic_app_receiver {
+    name                    = "QBY EventParser"
+    resource_id             = data.azurerm_logic_app_workflow.eventparser[0].id
+    callback_url            = data.azurerm_logic_app_workflow.eventparser[0].access_endpoint
+    use_common_alert_schema = true
+  }
+  lifecycle {
+    ignore_changes = [logic_app_receiver]
+  }
+  tags = var.tags
 }
