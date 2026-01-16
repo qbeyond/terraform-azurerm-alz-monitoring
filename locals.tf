@@ -2,13 +2,13 @@ locals {
   path = "${path.module}/queries"
 
   rules = merge({
-    "alr-prd-AzureserviceSQL-win-law-metric-crit-01": {
+    "alr-prd-AzureserviceSQL-win-law-metric-crit-01" : {
       description = "Alerts when Azure SQL DB is not available"
       query_path  = "${local.path}/sql_availability.kusto"
       time_window = "P2D"
       frequency   = "PT5M"
     }
-    "alr-prd-AzureserviceSQL-win-law-metric-crit-02": {
+    "alr-prd-AzureserviceSQL-win-law-metric-crit-02" : {
       description = "Alerts when no availability metrics for Azure SQL DBs are available"
       query_path  = "${local.path}/sql_no_availability.kusto"
       time_window = "P2D"
@@ -80,6 +80,7 @@ locals {
     length(local.selected_events) > 0 ? local.event_rule : {}
   )
 
-  customer_code = var.event_pipeline_config.service_uri== "" ? var.customer_code : upper(split("-", regex("fctkey-[^-]+", var.event_pipeline_config.service_uri))[1])
+  customer_code = var.event_pipeline_config.service_uri == "" ? var.customer_code : upper(split("-", regex("fctkey-[^-]+", var.event_pipeline_config.service_uri))[1])
 
 }
+
