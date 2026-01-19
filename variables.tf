@@ -32,6 +32,10 @@ variable "additional_queries" {
     non_productive            = optional(bool, false)
     display_name              = optional(string)
     query_time_range_override = optional(string)
+    enabled                   = optional(bool)
+    severity                  = optional(number)
+    skip_query_validation     = optional(bool)
+    target_resource_types     = optional(list(string))
     include_failing_periods = optional(object({
       minimum_failing_periods_to_trigger_alert = number
       number_of_evaluation_periods             = number
@@ -50,6 +54,10 @@ variable "additional_queries" {
     "non_productive"            = If true,                                              the alert will use the non productive action group.
     "display_name"              = Optional display name for the alert rule. If not set, the resource name will be used.
     "query_time_range_override" = Optional time range override for the query,           e.g. "P1D",  "P2D". If not set, the time_window will be used.
+    "enabled"                   = Optional If the rule is enabled. Default is true.
+    "severity"                  = Optional Severity of the alert rule. Default is 0.
+    "skip_query_validation"     = Optional If true, the query validation will be skipped. Default is true.
+    "target_resource_types"     = Optional List of resource types to target. If not set, the default resource types will be used.
     "include_failing_periods"   = Optional object to include failing periods in the alert rule.
       {
         minimum_failing_periods_to_trigger_alert = number of failing periods to trigger the alert.
