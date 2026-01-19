@@ -5,6 +5,13 @@ All notable changes to this module will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.6.1] - 2026-01-19
+
+### Added
+
+- Added optional variables enabled, severity, skip_query_validation and target_resource_types to the resource azurerm_monitor_scheduled_query_rules_alert_v2
+- Added optional variables to the documentation
+
 ## [6.6.0] - 2025-12-08
 
 ### Added
