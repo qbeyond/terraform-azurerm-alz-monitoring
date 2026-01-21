@@ -11,6 +11,8 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 - Added optional variables enabled, severity, skip_query_validation and target_resource_types to the resource azurerm_monitor_scheduled_query_rules_alert_v2
 - Added optional variables to the documentation
+- Added a feature for editing values of the default_querries by writing them into the addtional_querries block
+- Added the new feature to the example extra_querries
 
 ## [6.6.0] - 2025-12-08
 
