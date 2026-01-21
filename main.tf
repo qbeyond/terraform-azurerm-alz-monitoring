@@ -39,9 +39,9 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "this" {
 
   scopes                    = [var.log_analytics_workspace.id]
   description               = each.value.description
-  enabled                   = true
-  severity                  = 0
-  skip_query_validation     = true
+  enabled                   = lookup(each.value, "enabled", true)
+  severity                  = lookup(each.value, "severity", 0)
+  skip_query_validation     = lookup(each.value, "skip_query_validation", true)
   evaluation_frequency      = each.value.frequency
   window_duration           = each.value.time_window
   query_time_range_override = lookup(each.value, "query_time_range_override", null)
@@ -76,11 +76,11 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "this" {
     resource_id_column = "_ResourceId"
   }
 
-  target_resource_types = [
+  target_resource_types = lookup(each.value, "target_resource_types",[
     "microsoft.compute/virtualmachines",
     "microsoft.hybridcompute/machines",
     "microsoft.compute/virtualmachinescalesets"
-  ]
+  ])
 }
 
 resource "azurerm_monitor_data_collection_endpoint" "dce" {

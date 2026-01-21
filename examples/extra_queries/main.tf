@@ -42,6 +42,12 @@ module "monitor" {
       description = "Example of monitoring for failed backup jobs"
       time_window = "PT15M"
       frequency   = "PT15M"
+      severity    = 2
+      enabled     = false
+      skip_query_validation = false
+      target_resource_types = [
+        "Microsoft.Storage/storageAccounts",
+      ]
       display_name              = "alr-prd-diskspace-bkp-law-logsea-warn-01"
       query_time_range_override = "P2D"
       include_failing_periods = {
@@ -49,7 +55,12 @@ module "monitor" {
         number_of_evaluation_periods             = 1
       }
     }
+    "alr-prd-CustLogText-winux-law-logsea-warn-01" : {
+      enabled     = false
+      display_name = "Test"
+    }
   }
+  
   active_services = {
     active_directory = true
     managed_os       = true
