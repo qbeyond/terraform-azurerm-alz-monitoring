@@ -36,7 +36,7 @@ variable "additional_queries" {
     severity                  = optional(number)
     skip_query_validation     = optional(bool)
     target_resource_types     = optional(list(string))
-    include_failing_periods = optional(object({
+    include_failing_periods   = optional(object({
       minimum_failing_periods_to_trigger_alert = number
       number_of_evaluation_periods             = number
     }))
