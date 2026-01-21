@@ -25,10 +25,10 @@ variable "log_analytics_workspace" {
 
 variable "additional_queries" {
   type = map(object({
-    query_path                = string
-    description               = string
-    time_window               = string
-    frequency                 = string
+    query_path                = optional(string)
+    description               = optional(string)
+    time_window               = optional(string)
+    frequency                 = optional(string)
     non_productive            = optional(bool, false)
     display_name              = optional(string)
     query_time_range_override = optional(string)
@@ -41,6 +41,16 @@ variable "additional_queries" {
       number_of_evaluation_periods             = number
     }))
   }))
+
+  validation {
+    condition = alltrue([
+      for key, val in var.additional_queries :
+        contains(keys(local.default_queries), key) ||
+        try(val.query_path, null) != null
+    ])
+    error_message = "Custom alert rules must include query_path."
+  }
+
   default     = {}
   nullable    = false
   description = <<-DOC
@@ -51,7 +61,7 @@ variable "additional_queries" {
     "description"               = Description of the alert rule.
     "time_window"               = Time window for the alert rule,                       e.g. "PT5M", "P1D",             "P2D".
     "frequency"                 = Frequency of evaluation,                              e.g. "PT5M", "PT15M".
-    "non_productive"            = If true,                                              the alert will use the non productive action group.
+    "non_productive"            = If true, the alert will use the non productive action group.
     "display_name"              = Optional display name for the alert rule. If not set, the resource name will be used.
     "query_time_range_override" = Optional time range override for the query,           e.g. "P1D",  "P2D". If not set, the time_window will be used.
     "enabled"                   = Optional If the rule is enabled. Default is true.
