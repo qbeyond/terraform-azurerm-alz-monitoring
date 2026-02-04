@@ -56,28 +56,6 @@ variable "additional_queries" {
     error_message = "Custom alert rules must include query_path."
   }
 
-  validation {
-    condition = alltrue([
-      for _, v in var.additional_queries :
-      try(v.identity, null) == null
-      || contains(["systemassigned", "userassigned"], lower(try(v.identity.type, "")))
-    ])
-    error_message = "additional_queries.identity.type must be 'SystemAssigned' or 'UserAssigned' when provided."
-  }
-
-  validation {
-    condition = alltrue([
-      for _, v in var.additional_queries :
-      try(v.identity, null) == null
-      || (
-        lower(try(v.identity.type, "")) == "userassigned"
-        ? length(trim(try(v.identity.identity_ids, ""))) > 0
-        : length(trim(try(v.identity.identity_ids, ""))) == 0
-      )
-    ])
-    error_message = "For additional_queries.identity: when type is 'UserAssigned', identity_ids must be provided and non-empty; when type is 'SystemAssigned', identity_ids must be omitted/empty."
-  }
-
   default     = {}
   nullable    = false
   description = <<-DOC
@@ -99,6 +77,12 @@ variable "additional_queries" {
       {
         minimum_failing_periods_to_trigger_alert = number of failing periods to trigger the alert.
         number_of_evaluation_periods             = number of evaluation periods to consider.
+      }
+
+    "identity"   = Optional object to include a managed identity in the additional query.
+      {
+        type = managed identity type (UserAssigned or SystemAssigned)
+        identity_ids             = An optional list with the ids of the managed identity we want to associate.
       }
   }
   ```
