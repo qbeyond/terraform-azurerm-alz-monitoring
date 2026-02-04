@@ -40,6 +40,11 @@ variable "additional_queries" {
       minimum_failing_periods_to_trigger_alert = number
       number_of_evaluation_periods             = number
     }))
+
+    identity   = optional(object({
+      type         = string
+      identity_ids = optional(string)
+    }))
   }))
 
   validation {
@@ -49,6 +54,28 @@ variable "additional_queries" {
         try(val.query_path, null) != null
     ])
     error_message = "Custom alert rules must include query_path."
+  }
+
+  validation {
+    condition = alltrue([
+      for _, v in var.additional_queries :
+      try(v.identity, null) == null
+      || contains(["systemassigned", "userassigned"], lower(v.identity.type))
+    ])
+    error_message = "additional_queries.identity.type must be 'SystemAssigned' or 'UserAssigned' when provided."
+  }
+
+  validation {
+    condition = alltrue([
+      for _, v in var.additional_queries :
+      try(v.identity, null) == null
+      || (
+        lower(v.identity.type) == "userassigned"
+        ? length(trim(try(v.identity.identity_ids, ""))) > 0
+        : length(trim(try(v.identity.identity_ids, ""))) == 0
+      )
+    ])
+    error_message = "For additional_queries.identity: when type is 'UserAssigned', identity_ids must be provided and non-empty; when type is 'SystemAssigned', identity_ids must be omitted/empty."
   }
 
   default     = {}
