@@ -43,7 +43,7 @@ variable "additional_queries" {
 
     identity   = optional(object({
       type         = string
-      identity_ids = optional(string)
+      identity_ids = optional(list(string))
     }))
   }))
 
@@ -60,7 +60,7 @@ variable "additional_queries" {
     condition = alltrue([
       for _, v in var.additional_queries :
       try(v.identity, null) == null
-      || contains(["systemassigned", "userassigned"], lower(v.identity.type))
+      || contains(["systemassigned", "userassigned"], lower(try(v.identity.type, "")))
     ])
     error_message = "additional_queries.identity.type must be 'SystemAssigned' or 'UserAssigned' when provided."
   }
@@ -70,7 +70,7 @@ variable "additional_queries" {
       for _, v in var.additional_queries :
       try(v.identity, null) == null
       || (
-        lower(v.identity.type) == "userassigned"
+        lower(try(v.identity.type, "")) == "userassigned"
         ? length(trim(try(v.identity.identity_ids, ""))) > 0
         : length(trim(try(v.identity.identity_ids, ""))) == 0
       )
