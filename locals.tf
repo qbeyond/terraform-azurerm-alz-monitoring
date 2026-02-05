@@ -82,7 +82,8 @@ locals {
       "microsoft.hybridcompute/machines",
       "microsoft.compute/virtualmachinescalesets"
     ]
-    include_failing_periods   = null
+    include_failing_periods = null
+    identity                = null
   }
 
   rules = {     
