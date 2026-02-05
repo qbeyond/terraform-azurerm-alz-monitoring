@@ -41,10 +41,10 @@ variable "additional_queries" {
       number_of_evaluation_periods             = number
     }))
 
-    identity   = optional(object({
+    identity = optional(object({
       type         = string
-      identity_ids = optional(list(string))
-    }))
+      identity_ids = optional(list(string), [])
+    }), null)
   }))
 
   validation {

@@ -73,6 +73,14 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "this" {
       }
     }
 
+    dynamic "identity" {
+      for_each = try(each.value.identity, null) != null ? [each.value.identity] : []
+      content {
+        type         = identity.value.type
+        identity_ids = lower(identity.value.type) == "userassigned" ? try(identity.value.identity_ids, []) :   null
+      }
+    }
+
     resource_id_column = "_ResourceId"
   }
 
