@@ -12,6 +12,8 @@ locals {
     "script_version"         = "string"
     "threshold"              = "string"
     "value"                  = "string"
+    "Computer"               = "string"
+    "FilePath"               = "string"
   }
   kql_types = join(", ", [for column_name, column_type in local.columns : "${column_name}:${column_type}"])
 
