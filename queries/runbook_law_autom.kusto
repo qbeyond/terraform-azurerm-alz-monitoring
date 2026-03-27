@@ -1,0 +1,38 @@
+// Failed Jobs (JobLogs)
+let Excluded = dynamic(["Completed", "Started", "Created"]); // Set exclude filter
+let MaxLenString = 500;
+let FailedJobs =
+AzureDiagnostics
+| where Category == "JobLogs"
+| where ResultType !in (Excluded)
+| project
+    TimeGenerated,
+    _ResourceId,
+    JobId = column_ifexists("JobId_g", tostring(column_ifexists("JobId", ""))),
+    RunbookName = tostring(coalesce(column_ifexists("RunbookName_s",""), column_ifexists("RunbookName",""))),
+    Status = ResultType,
+    ErrorSummary = tostring(coalesce(column_ifexists("ResultDescription",""), column_ifexists("ResultDescription_s","")));
+// Streams (JobStreams) - Error/Warning/Output
+let Streams =
+AzureDiagnostics
+| where Category == "JobStreams"
+| project
+    JobId = column_ifexists("JobId_g", tostring(column_ifexists("JobId",""))),
+    StreamType = tostring(coalesce(column_ifexists("StreamType_s",""), column_ifexists("StreamType",""))),
+    DetailedMessage = tostring(coalesce(column_ifexists("ResultDescription",""), column_ifexists("ResultDescription_s","")));
+// Join & Output
+FailedJobs
+| join kind=leftouter Streams on JobId
+| extend state = "WARNING"
+| extend affected_object = RunbookName
+| extend monitor_package = "AZ_SC_ManagedAzureSubscription"
+| extend monitor_name = "AZ_AUTOMATION_ACCOUNT_RUNBOOK"
+| extend monitor_description = "This monitors the runtime status of Azure Automation Runbooks."
+| extend script_name = "n/a"
+| extend script_version = "n/a"
+| extend threshold = "n/a"
+| extend value = "n/a"
+| extend additional_information = strcat("Please, verify the Runbook. RunbookName: ",RunbookName,". JobId: ",JobId,". Staus: ",Status,". ErrorSummary: ",ErrorSummary,". StreamType: ",StreamType,". DetailedMessage: ",substring(DetailedMessage,0,MaxLenString),".")
+| project
+    _ResourceId,
+    RawData = strcat("TimeGenerated:", now(), ";_ResourceId:", _ResourceId, ";state:", state, ";affected_object:", affected_object, ";monitor_package:", monitor_package, ";monitor_name:", monitor_name, ";monitor_description:", monitor_description, ";script_name:", script_name, ";script_version:", script_version, ";threshold:", threshold, ";value:", value, ";affected_entity:", affected_object, ";additional_information:", additional_information)
