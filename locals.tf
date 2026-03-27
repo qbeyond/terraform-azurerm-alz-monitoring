@@ -66,7 +66,7 @@ locals {
     }
     "alr-prd-runbook-law-autom-warn-01" : {
       description = "Alert for custom text monitoring logs"
-      query_path  = "${local.path}/monitoring_scripts_text.kusto"
+      query_path  = "${local.path}/runbook_law_autom.kusto"
       time_window = "PT15M"
       frequency   = "PT5M"
     }
