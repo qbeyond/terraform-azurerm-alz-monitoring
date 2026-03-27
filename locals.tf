@@ -64,6 +64,12 @@ locals {
       time_window = "PT15M"
       frequency   = "PT5M"
     }
+    "alr-prd-runbook-law-autom-warn-01" : {
+      description = "Alert for custom text monitoring logs"
+      query_path  = "${local.path}/monitoring_scripts_text.kusto"
+      time_window = "PT15M"
+      frequency   = "PT5M"
+    }
   }
 
   empty_query_object = {
