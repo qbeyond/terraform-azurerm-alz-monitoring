@@ -176,6 +176,7 @@ AddonAzureBackupJobs
 |------|-------------|
 | <a name="output_action_group_id"></a> [action\_group\_id](#output\_action\_group\_id) | The id of the action group created for the event pipeline. |
 | <a name="output_linux_dcr_ids"></a> [linux\_dcr\_ids](#output\_linux\_dcr\_ids) | Map of DCRs and their resource IDs that should be associated to linux VMs. |
+| <a name="output_scheduled_query_rules_v2"></a> [scheduled\_query\_rules\_v2](#output\_scheduled\_query\_rules\_v2) | A map of the Scheduled Query Rule Alert V2 resources. Contains the full configuration for each alert, including the rendered KQL queries, action groups, and evaluation settings. |
 | <a name="output_vminsights_dcr_id"></a> [vminsights\_dcr\_id](#output\_vminsights\_dcr\_id) | Resource ID of the VM-Insights DCR that should be associated with every VM. |
 | <a name="output_windows_dcr_ids"></a> [windows\_dcr\_ids](#output\_windows\_dcr\_ids) | Map of DCRs and their resource IDs that should be associated to windows VMs. |
 ## Resource types
