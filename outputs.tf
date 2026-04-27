@@ -21,3 +21,9 @@ output "vminsights_dcr_id" {
   value       = azurerm_monitor_data_collection_rule.vm_insight.id
   description = "Resource ID of the VM-Insights DCR that should be associated with every VM."
 }
+
+ 
+output "scheduled_query_rules_v2" {
+  description = "A map of the Scheduled Query Rule Alert V2 resources. Contains the full configuration for each alert, including the rendered KQL queries, action groups, and evaluation settings."
+  value       = azurerm_monitor_scheduled_query_rules_alert_v2.this
+}
