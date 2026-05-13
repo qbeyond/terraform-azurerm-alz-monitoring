@@ -16,7 +16,7 @@ resource "azurerm_monitor_action_group" "eventpipeline" {
 }
 
 resource "azurerm_monitor_action_group" "optional" {
-  count               = (var.event_pipeline_config.enabled && anytrue([for k, v in local.rules : lookup(v, "non_productive", false)]) && var.event_pipeline_config.service_uri_integration != "") ? 1 : 0
+  count               = (var.event_pipeline_config.enabled && anytrue([for k, v in local.all_alertrules : lookup(v, "non_productive", false)]) && var.event_pipeline_config.service_uri_integration != "") ? 1 : 0
   name                = "EventPipelineCentral_AG_2"
   resource_group_name = var.log_analytics_workspace.resource_group_name
   short_name          = "monitorhook"
@@ -30,7 +30,7 @@ resource "azurerm_monitor_action_group" "optional" {
 }
 
 resource "azurerm_monitor_scheduled_query_rules_alert_v2" "this" {
-  for_each            = local.rules
+  for_each            = local.all_alertrules
   name                = each.key
   display_name        = lookup(each.value, "display_name", null)
   location            = var.log_analytics_workspace.location
