@@ -2,8 +2,7 @@
 
 All notable changes to this module will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [6.11.0] - 2026-05-13
 
@@ -45,19 +44,19 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ### Fixed
 
-- Fixed managed identity block, adding the variable to the locals.tf file. 
+- Fixed managed identity block, adding the variable to the locals.tf file.
 
 ## [6.8.2] - 2026-02-04
 
 ### Fixed
 
-- Fixed managed identity validation since it was not working properly. 
+- Fixed managed identity validation since it was not working properly.
 
 ## [6.8.1] - 2026-02-04
 
 ### Fixed
 
-- Fixed managed identity validation 
+- Fixed managed identity validation.
 
 ## [6.8.0] - 2026-02-04
 
@@ -85,7 +84,7 @@ and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ### Fixed
 
-- Fixed error calling URI in azurerm_automation_module az_accounts due to retired URI (https://learn.microsoft.com/en-us/powershell/gallery/how-to/getting-support/troubleshooting-cmdlets?view=powershellget-3.x#required-network-endpoints)
+- Fixed error calling URI in azurerm_automation_module az_accounts due to retired URI [https://learn.microsoft.com/en-us/powershell/gallery/how-to/getting-support/troubleshooting-cmdlets?view=powershellget-3.x#required-network-endpoints]
 
 ## [6.5.1] - 2025-09-25
 
