@@ -1,3 +1,10 @@
+locals {
+  active_services = {
+    managed_os       = true
+    active_directory = true
+  }
+}
+
 provider "azurerm" {
   features {}
 }
@@ -25,6 +32,7 @@ resource "azurerm_automation_account" "example" {
 module "monitor" {
   source                  = "../.."
   log_analytics_workspace = azurerm_log_analytics_workspace.example
+  active_services         = local.active_services
 
   additional_regions = ["northeurope"]
   event_pipeline_config = {
