@@ -17,6 +17,13 @@ The webhook URL needs to point to a valid receiver for pipeline events.
 If authentication or other options are required they need to be included in the URL as path or query parameters.
 
 ```hcl
+locals {
+  active_services = {
+    managed_os       = true
+    active_directory = true
+  }
+}
+
 provider "azurerm" {
   features {}
 }
@@ -44,6 +51,7 @@ resource "azurerm_automation_account" "example" {
 module "monitor" {
   source                  = "../.."
   log_analytics_workspace = azurerm_log_analytics_workspace.example
+  active_services         = local.active_services
 
   additional_regions = ["northeurope"]
   event_pipeline_config = {
