@@ -110,9 +110,14 @@ locals {
     }
   }
 
+  event_rules_processed = {
+    for key, value in local.event_rule :
+    key => merge(local.empty_query_object, value)
+  }
+
   all_alertrules = merge(
     local.rules,
-    length(local.selected_events) > 0 ? local.event_rule : {}
+    length(local.selected_events) > 0 ? local.event_rules_processed : {}
   )
 
   customer_code = var.event_pipeline_config.service_uri == "" ? var.customer_code : upper(split("-", regex("fctkey-[^-]+", var.event_pipeline_config.service_uri))[1])
