@@ -191,7 +191,7 @@ AddonAzureBackupJobs
 
       | Type | Used |
       |------|-------|
-        | [azapi_resource](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource) | 3 |
+        | [azapi_resource](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource) | 4 |
         | [azurerm_automation_job_schedule](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_job_schedule) | 1 |
         | [azurerm_automation_module](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_module) | 2 |
         | [azurerm_automation_runbook](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/automation_runbook) | 1 |
@@ -219,6 +219,7 @@ No modules.
                   | [azapi_resource.data_collection_json_logs_table](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource) | resource |
                   | [azapi_resource.data_collection_text_logs_table](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource) | resource |
                   | [azapi_resource.dcr_custom_json_logs](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource) | resource |
+                  | [azapi_resource.dcr_custom_json_logs_win](https://registry.terraform.io/providers/azure/azapi/latest/docs/resources/resource) | resource |
                   | [azurerm_monitor_data_collection_rule.dcr_custom_text_logs](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_data_collection_rule) | resource |
 
             ### data_collection_rules.tf
