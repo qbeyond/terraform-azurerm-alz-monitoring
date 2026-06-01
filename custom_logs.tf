@@ -199,7 +199,7 @@ resource "azapi_resource" "dcr_custom_json_logs_win" {
       dataCollectionEndpointId = azurerm_monitor_data_collection_endpoint.dce.id
 
       streamDeclarations = {
-        "Custom-${azapi_resource.data_collection_json_logs_table.name}" = {
+        "${azapi_resource.data_collection_json_logs_table.name}" = {
           columns = [
             for column_name, column_type in local.columns : {
               name = column_name
@@ -212,9 +212,9 @@ resource "azapi_resource" "dcr_custom_json_logs_win" {
       dataSources = {
         logFiles = [
           {
-            name         = "Custom-${azapi_resource.data_collection_json_logs_table.name}"
+            name         = "${azapi_resource.data_collection_json_logs_table.name}"
             format       = "json"
-            streams      = ["Custom-${azapi_resource.data_collection_json_logs_table.name}"]
+            streams      = ["${azapi_resource.data_collection_json_logs_table.name}"]
             filePatterns = ["C:\\program files\\ud\\logs\\*.json"]
           }
         ]
@@ -231,10 +231,10 @@ resource "azapi_resource" "dcr_custom_json_logs_win" {
 
       dataFlows = [
         {
-          streams      = ["Custom-${azapi_resource.data_collection_json_logs_table.name}"]
+          streams      = ["${azapi_resource.data_collection_json_logs_table.name}"]
           destinations = [var.log_analytics_workspace.name]
           transformKql = "source"
-          outputStream = "Custom-${azapi_resource.data_collection_json_logs_table.name}"
+          outputStream = "${azapi_resource.data_collection_json_logs_table.name}"
         }
       ]
     }
