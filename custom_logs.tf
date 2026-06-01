@@ -185,7 +185,7 @@ resource "azurerm_monitor_data_collection_rule" "dcr_custom_text_logs" {
 }
 
 resource "azapi_resource" "dcr_custom_json_logs_win" {
-  type                      = "microsoft.insights/datacollectionrules@2023-03-11"
+  type                      = "Microsoft.insights/dataCollectionRules@2023-03-11"
   name                      = "dcr-prd-win-CustomJSONLog-01"
   parent_id                 = local.resource_group_id
   location                  = var.log_analytics_workspace.location
