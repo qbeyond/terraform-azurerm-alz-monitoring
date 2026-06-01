@@ -183,3 +183,60 @@ resource "azurerm_monitor_data_collection_rule" "dcr_custom_text_logs" {
 
   }
 }
+
+resource "azapi_resource" "dcr_custom_json_logs_win" {
+  type                      = "Microsoft.insights/dataCollectionRules@2023-03-11"
+  name                      = "dcr-prd-win-CustomJSONLog-01"
+  parent_id                 = local.resource_group_id
+  location                  = var.log_analytics_workspace.location
+  schema_validation_enabled = true
+  tags                      = var.tags
+
+  body = {
+    kind = "Windows"
+
+    properties = {
+      dataCollectionEndpointId = azurerm_monitor_data_collection_endpoint.dce.id
+
+      streamDeclarations = {
+        "Custom-${azapi_resource.data_collection_json_logs_table.name}" = {
+          columns = [
+            for column_name, column_type in local.columns : {
+              name = column_name
+              type = column_type
+            }
+          ]
+        }
+      }
+
+      dataSources = {
+        logFiles = [
+          {
+            name         = "Custom-${azapi_resource.data_collection_json_logs_table.name}"
+            format       = "json"
+            streams      = ["Custom-${azapi_resource.data_collection_json_logs_table.name}"]
+            filePatterns = ["C:\\program files\\ud\\logs\\*.json"]
+          }
+        ]
+      }
+
+      destinations = {
+        logAnalytics = [
+          {
+            name                = var.log_analytics_workspace.name
+            workspaceResourceId = var.log_analytics_workspace.id
+          }
+        ]
+      }
+
+      dataFlows = [
+        {
+          streams      = ["Custom-${azapi_resource.data_collection_json_logs_table.name}"]
+          destinations = [var.log_analytics_workspace.name]
+          transformKql = "source"
+          outputStream = "Custom-${azapi_resource.data_collection_json_logs_table.name}"
+        }
+      ]
+    }
+  }
+}
