@@ -174,7 +174,7 @@ resource "azapi_resource" "dcr_custom_json_logs_win" {
 
       dataFlows = [
         {
-          streams      = ["CustomPAPAPAPA-${azapi_resource.data_collection_json_logs_table.name}"]
+          streams      = ["Custom-${azapi_resource.data_collection_json_logs_table.name}"]
           destinations = [var.log_analytics_workspace.name]
           transformKql = "source"
           outputStream = "Custom-${azapi_resource.data_collection_json_logs_table.name}"
