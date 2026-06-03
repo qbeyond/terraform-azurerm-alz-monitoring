@@ -72,7 +72,7 @@ locals {
     }
     "alr-prd-AzureHeartbeat-law-logsea-warn-01" : {
       description = "Alert when Azure VMs stop sending heartbeat data"
-      query_path  = "${local.path}/azure_heartbeat.kusto"
+      query_path  = "${local.path}/azureheartbeat.kusto"
       time_window = "PT15M"
       frequency   = "PT5M"
     }
