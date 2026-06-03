@@ -9,6 +9,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 - New Data Collection Rule for Windows Custom Json Logs.
+- New Action Group EventPipelineForwarder_AG_1.
+- New Action Group Function to associate the required AG to an specific Alert Rule.
+- New Alert Rule alr-prd-AzureHeartbeat-law-logsea-warn-01.
 
 ## [6.11.0] - 2026-05-13
 
