@@ -29,6 +29,19 @@ resource "azurerm_monitor_action_group" "optional" {
   }
 }
 
+resource "azurerm_monitor_action_group" "forwarder" {
+  name                = "EventPipelineForwarder_AG_1"
+  resource_group_name = var.log_analytics_workspace.resource_group_name
+  short_name          = "ag-pipe-prd-01"
+  tags                = var.tags
+
+  webhook_receiver {
+    name                    = "wh-evt-prd-01"
+    service_uri             = replace(var.event_pipeline_config.service_uri_forwarder, "{{secret}}", var.secret_forwarder)
+    use_common_alert_schema = true
+  }
+}
+
 resource "azurerm_monitor_scheduled_query_rules_alert_v2" "this" {
   for_each            = local.all_alertrules
   name                = each.key
@@ -46,10 +59,20 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "this" {
   window_duration           = each.value.time_window
   query_time_range_override = lookup(each.value, "query_time_range_override", null)
 
+  # Uses the forwarder action group only for "alr-prd-AzureHeartbeat-law-logsea-warn-01"; 
+  # all other rules use either the optional or eventpipeline action group depending on the non_productive flag.
   action {
-    action_groups = lookup(each.value, "non_productive", false) ? azurerm_monitor_action_group.optional[*].id : azurerm_monitor_action_group.eventpipeline[*].id
+    action_groups = (
+      each.key == "alr-prd-AzureHeartbeat-law-logsea-warn-01" ?
+      [azurerm_monitor_action_group.forwarder.id] :
+      (
+        lookup(each.value, "non_productive", false) ?
+        azurerm_monitor_action_group.optional[*].id :
+        azurerm_monitor_action_group.eventpipeline[*].id
+      )
+    )
   }
-
+ 
   criteria {
     query = templatefile(each.value.query_path, {
       "tenant"     = local.customer_code

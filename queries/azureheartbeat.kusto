@@ -1,0 +1,41 @@
+// That is a Multi-Tenant Heartbeat Monitoring. If no heartbeat messages are received, an event will be generated.
+// This approach ensures that misconfigurations, deletions, or changes in the Action Group are detected.
+// Creates a heartbeat message for the qby event pipeline every 5 minutes via an alert rule.
+// If no heartbeat message has been received in the last 15 minutes, a ticket is created.
+//
+union isfuzzy=true     // fuzzy is required to prevent the Kusto query from terminating if a table does not exist.
+    (
+    MonitoringResources_CL
+    | where TimeGenerated > ago(13h)
+    | summarize cnt = count()
+    | extend Source = "Primary"
+    ),
+    (
+    Heartbeat     // The check on the Heartbeat table serves as a fallback check in case the “MonitoringResources_CL” table does not exist. 
+    | where TimeGenerated > ago(5m)
+    | summarize cnt = count()
+    | extend Source = "Fallback"
+    )
+| summarize
+    PrimaryCnt = sumif(cnt, Source == "Primary"),   // Number of entries in the ‘MonitoringResources_CL’ table
+    FallbackCnt = sumif(cnt, Source == "Fallback")  // Number of entries in the ‘Heartbeat’ table
+| extend ResultSource = iff(PrimaryCnt > 0, "Primary", "Fallback")
+| extend ResultCount = iff(PrimaryCnt > 0, PrimaryCnt, FallbackCnt)
+| extend TimeGenerated = now()
+| extend _ResourceId = "/subscriptions/dummy/resourcegroups/rg-management-prd-01/providers/microsoft.operationalinsights/workspaces/dummy"
+| extend severity = 1
+| extend affected_object = "n/a"
+| extend monitor_package = "n/a"
+| extend monitor_name = "AZ_TENANT_HEARTBEAT_EVENTPIPELINE"
+| extend monitor_description = "Multi-Tenant Heartbeat Monitoring via Azure Monitor Alert Rule"
+| extend script_name = "n/a"
+| extend script_version = "n/a"
+| extend threshold = iff(ResultSource == "Primary", "Number of entries in the MonitoringResources_CL table", "Number of entries in the Heartbeat table")
+| extend value = iff(ResultSource == "Primary", PrimaryCnt, FallbackCnt)
+| extend affected_entity = "n/a"
+| extend additional_information = "Once this event has been generated, no further events can be sent from the tenant to the event pipeline."
+| extend promote_to = "n/a"
+| extend event_rule_reference = "n/a"
+| project
+    _ResourceId,
+    RawData = strcat("TimeGenerated:", now(), ";_ResourceId:", _ResourceId, ";severity:", severity, ";affected_object:", affected_object, ";monitor_package:", monitor_package, ";monitor_name:", monitor_name, ";monitor_description:", monitor_description, ";script_name:", script_name, ";script_version:", script_version, ";threshold:", threshold, ";value:", value, ";affected_entity:", affected_entity, ";additional_information:", additional_information, ";promote_to:", promote_to, ";event_rule_reference:", event_rule_reference)
