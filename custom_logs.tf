@@ -155,9 +155,9 @@ resource "azapi_resource" "dcr_custom_json_logs_win" {
       dataSources = {
         logFiles = [
           {
-            name         = "${azapi_resource.data_collection_json_logs_table.name}"
+            name         = "Custom-${azapi_resource.data_collection_json_logs_table.name}"
             format       = "json"
-            streams      = ["${azapi_resource.data_collection_json_logs_table.name}"]
+            streams      = ["Custom-${azapi_resource.data_collection_json_logs_table.name}"]
             filePatterns = ["C:\\program files\\ud\\logs\\*.json"]
           }
         ]
