@@ -32,11 +32,11 @@ resource "azurerm_monitor_action_group" "optional" {
 resource "azurerm_monitor_action_group" "forwarder" {
   name                = "EventPipelineForwarder_AG_1"
   resource_group_name = var.log_analytics_workspace.resource_group_name
-  short_name          = "agepforward"
+  short_name          = "agepforwarder"
   tags                = var.tags
 
   webhook_receiver {
-    name                    = "whepforward"
+    name                    = "whepforwarder"
     service_uri             = replace(var.event_pipeline_config.service_uri_forwarder, "{{secret}}", var.secret_forwarder)
     use_common_alert_schema = true
   }
