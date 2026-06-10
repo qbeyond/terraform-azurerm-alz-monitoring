@@ -1,6 +1,10 @@
 data "azurerm_subscription" "current" {
 }
 
+data "azurerm_management_group" "root" {
+  name = "ALZ"
+}
+
 resource "azurerm_monitor_action_group" "eventpipeline" {
   count               = var.event_pipeline_config.enabled ? 1 : 0
   name                = "EventPipelineCentral_AG_1"
@@ -103,7 +107,7 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "this" {
     for_each = try(each.value.identity, null) != null ? [each.value.identity] : []
     content {
       type         = identity.value.type
-      identity_ids = lower(identity.value.type) == "userassigned" ? try(identity.value.identity_ids, []) :   null
+      identity_ids = lower(identity.value.type) == "UserAssigned" ? try(identity.value.identity_ids, []) :   null
     }
   }
 
@@ -152,4 +156,17 @@ resource "azurerm_monitor_action_group" "eventparser" {
     ignore_changes = [logic_app_receiver]
   }
   tags = var.tags
+}
+
+resource "azurerm_user_assigned_identity" "this" {
+  name                = "uami-tenantreader"
+  location            = var.log_analytics_workspace.location
+  resource_group_name = var.log_analytics_workspace.resource_group_name
+  tags                = var.tags
+}
+
+resource "azurerm_role_assignment" "this" {
+  scope                = data.azurerm_management_group.root.id
+  role_definition_name = "Reader"
+  principal_id         = azurerm_user_assigned_identity.this.principal_id
 }
