@@ -1,10 +1,6 @@
 data "azurerm_subscription" "current" {
 }
 
-data "azurerm_management_group" "root" {
-  display_name = "ALZ"
-}
-
 resource "azurerm_monitor_action_group" "eventpipeline" {
   count               = var.event_pipeline_config.enabled ? 1 : 0
   name                = "EventPipelineCentral_AG_1"
@@ -166,7 +162,7 @@ resource "azurerm_user_assigned_identity" "this" {
 }
 
 resource "azurerm_role_assignment" "this" {
-  scope                = data.azurerm_management_group.root.id
+  scope                = "/providers/Microsoft.Management/managementGroups/${var.management_group_id}"
   role_definition_name = "Reader"
   principal_id         = azurerm_user_assigned_identity.this.principal_id
 }
