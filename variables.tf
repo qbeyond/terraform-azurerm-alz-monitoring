@@ -612,3 +612,9 @@ variable "event_parser_deployment" {
   default     = false
   description = "Set to true if event parser for metric alerts should be deployed"
 }
+
+variable "management_group_id" {
+  description = "ALZ Management group ID"
+  type        = string
+  default     = "alz"
+}
