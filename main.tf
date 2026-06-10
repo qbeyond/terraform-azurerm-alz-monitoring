@@ -2,7 +2,7 @@ data "azurerm_subscription" "current" {
 }
 
 data "azurerm_management_group" "root" {
-  name = "ALZ"
+  display_name = "ALZ"
 }
 
 resource "azurerm_monitor_action_group" "eventpipeline" {
