@@ -1,0 +1,39 @@
+// This alert rule checks whether VMs have been assigned a Azure backup policy. 
+let VMs =
+    MonitoringResources_CL
+    | where TimeGenerated > ago(13h)
+    | where type_s =~ "microsoft.compute/virtualmachines"
+    | where properties_extended_instanceView_powerState_displayStatus_s == "VM running"
+    | where tags_managedby_s == "q.beyond"
+    | where tags_alerting_s in~ ("enabled", "true")
+    | where tolower(ResourceGroup) !contains "rg-avd"
+    | project vmId = tolower(id_s), VMName = name_s, tags_managedby_s, properties_storageProfile_osDisk_osType_s
+    | summarize arg_max(VMName, *) by vmId;
+let Recovery =
+    arg('').RecoveryServicesResources  // Access to the Azure Recovery Services Resources database (Azure Resource Manager) 
+    | where type =~ "microsoft.recoveryservices/vaults/backupfabrics/protectioncontainers/protecteditems"
+    | where properties.backupManagementType =~ "AzureIaasVM"
+    | project vmId = tolower(tostring(properties.virtualMachineId)),
+              VaultName = tostring(split(id, "/")[8]),
+              PolicyName = tostring(properties.policyName),
+              ProtectionStatus = tostring(properties.protectionStatus),
+              LastBackup = todatetime(properties.lastBackupTime);
+VMs
+| join kind=leftouter hint.remote=left hint.strategy=broadcast Recovery on vmId  // Join statement; VMs and Recovery variable
+| extend BackupEnabled = isnotempty(VaultName)
+| where BackupEnabled == false
+| extend _ResourceId = vmId
+| extend state = "WARNING"
+| extend affected_object = VMName
+| extend affected_entity = VMName
+| extend monitor_package = iff(properties_storageProfile_osDisk_osType_s == "Windows","AZ_SC_ManagedOSWindows", "AZ_SC_ManagedOSUnix")
+| extend monitor_name = "AZ_VM_BACKUP_POLICY"
+| extend monitor_description = strcat("Monitors the backup policy of Azure VMs")
+| extend script_name = "n/a"
+| extend script_version = "n/a"
+| extend threshold = "n/a"
+| extend value = BackupEnabled
+| extend additional_information = "Backup policy is not enabled. Please, check the backup of the Azure VM."
+| project
+    _ResourceId, VMName,
+    RawData = strcat("TimeGenerated:", now(), ";_ResourceId:", _ResourceId, ";state:", state, ";affected_object:", affected_object, ";monitor_package:", monitor_package, ";monitor_name:", monitor_name, ";monitor_description:", monitor_description, ";script_name:", script_name, ";script_version:", script_version, ";threshold:", threshold, ";value:", value, ";affected_entity:", affected_entity, ";additional_information:", additional_information)

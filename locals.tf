@@ -76,6 +76,12 @@ locals {
       time_window = "PT15M"
       frequency   = "PT5M"
     }
+    "alr-prd-bkppolicy-win-ux-law-aresm-warn-01" : {
+      description = "Alert when Azure VM has no backup policy assigned"
+      query_path  = "${local.path}/azureheartbeat.kusto"
+      time_window = "P1D"
+      frequency   = "P1D"
+    }
   }
 
   empty_query_object = {
