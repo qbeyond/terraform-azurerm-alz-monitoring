@@ -4,11 +4,15 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [6.12.0] - 2026-05-29
+## [6.12.0] - 2026-06-10
 
 ### Added
 
-- New Data Collection Rule for Windows Custom Json Logs.
+- Added Data Collection Rule for Windows Custom Json Logs.
+- Added Action Group EventPipelineForwarder_AG_1.
+- Added Action Group Function to associate the required AG to an specific Alert Rule.
+- Added Alert Rule alr-prd-AzureHeartbeat-law-logsea-warn-01 and alr-prd-bkppolicy-win-ux-law-aresm-warn-01.
+- Created uami-tenantreader User Assiged Managed Identity and the Reader role assignment. 
 
 ## [6.11.0] - 2026-05-13
 

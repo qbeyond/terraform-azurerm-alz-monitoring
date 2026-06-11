@@ -77,63 +77,6 @@ resource "azapi_resource" "data_collection_text_logs_table" {
   )
 }
 
-resource "azapi_resource" "dcr_custom_json_logs" {
-  type                      = "Microsoft.insights/dataCollectionRules@2023-03-11"
-  name                      = "dcr-prd-all-CustomJSONLog-01"
-  parent_id                 = local.resource_group_id
-  location                  = var.log_analytics_workspace.location
-  schema_validation_enabled = false
-  tags                      = var.tags
-
-  body = jsonencode(
-    {
-      properties = {
-        dataFlows = [
-          {
-            streams = [
-              "Custom-${azapi_resource.data_collection_json_logs_table.name}"
-            ],
-            destinations = [
-              "${var.log_analytics_workspace.name}"
-            ],
-            transformKql = "source"
-            outputStream = "Custom-${azapi_resource.data_collection_json_logs_table.name}"
-          }
-        ]
-        dataSources = {
-          logFiles = [
-            {
-              name         = "Custom-${azapi_resource.data_collection_json_logs_table.name}"
-              format       = "json"
-              streams      = ["Custom-${azapi_resource.data_collection_json_logs_table.name}"]
-              filePatterns = ["c:\\program files\\ud\\logs\\json\\*.log"]
-            }
-          ]
-        }
-        destinations = {
-          logAnalytics = [
-            {
-              name                = var.log_analytics_workspace.name
-              workspaceResourceId = var.log_analytics_workspace.id
-            }
-          ]
-        }
-        dataCollectionEndpointId = azurerm_monitor_data_collection_endpoint.dce.id
-        streamDeclarations = {
-          Custom-MonitoringScriptsTEXT_CL = {
-            columns = [
-              for column_name, column_type in local.columns : {
-                "name" = column_name
-                "type" = column_type
-              }
-            ]
-          }
-        }
-      }
-    }
-  )
-}
-
 resource "azurerm_monitor_data_collection_rule" "dcr_custom_text_logs" {
   name                        = "dcr-prd-all-CustomTextLog-01"
   resource_group_name         = var.log_analytics_workspace.resource_group_name

@@ -103,6 +103,13 @@ variable "secret_integration" {
   default     = ""
 }
 
+variable "secret_forwarder" {
+  type        = string
+  description = "Value that will replace the placeholder `{{secret}}` in `event_pipeline_config.service_uri_forwarder`."
+  sensitive   = true
+  default     = ""
+}
+
 variable "automation_account" {
   type = object({
     name                = string
@@ -130,6 +137,7 @@ variable "event_pipeline_config" {
     name                    = optional(string, "QBY EventPipeline")
     service_uri             = optional(string, "")
     service_uri_integration = optional(string, "")
+    service_uri_forwarder   = optional(string, "")
   })
 
   description = <<-DOC
@@ -139,6 +147,7 @@ variable "event_pipeline_config" {
     name        = Name of the alert webhook.
     service_uri = Link to the webhook receiver URL. Must contain the placeholder \"{{secret}}\". This placeholder will be replaced by the secret value from var.secret. This is used to add authentication to the webhook URL as a query parameter.
     service_uri_integration = Same as service_uri for non productive monitoring alerts, the secret value from var.secret_integration will be used here.
+    service_uri_forwarder   = Same as service_uri for forwarding alerts, the secret value from var.secret_forwarder will be used here.
   }
   ```
   DOC
@@ -602,4 +611,10 @@ variable "event_parser_deployment" {
   type        = bool
   default     = false
   description = "Set to true if event parser for metric alerts should be deployed"
+}
+
+variable "management_group_id" {
+  description = "ALZ Management group ID"
+  type        = string
+  default     = "alz"
 }
