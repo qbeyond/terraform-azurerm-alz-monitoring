@@ -1,5 +1,4 @@
-data "azurerm_subscription" "current" {
-}
+data "azurerm_subscription" "current" {}
 
 resource "azurerm_monitor_action_group" "eventpipeline" {
   count               = var.event_pipeline_config.enabled ? 1 : 0
@@ -103,7 +102,7 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "this" {
     for_each = try(each.value.identity, null) != null ? [each.value.identity] : []
     content {
       type         = identity.value.type
-      identity_ids = lower(identity.value.type) == "UserAssigned" ? try(identity.value.identity_ids, []) :   null
+      identity_ids = lower(identity.value.type) == "userassigned" ? try(identity.value.identity_ids, []) :   null
     }
   }
 
