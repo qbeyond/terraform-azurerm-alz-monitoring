@@ -1,4 +1,5 @@
 // This alert rule checks whether VMs have been assigned a Azure backup policy. 
+// If no backup policy has been assigned to a VM, a warning event is generated.
 let VMs =
     MonitoringResources_CL
     | where TimeGenerated > ago(13h)
@@ -35,5 +36,6 @@ VMs
 | extend value = BackupEnabled
 | extend additional_information = "Backup policy is not enabled. Please, check the backup of the Azure VM."
 | project
-    _ResourceId, VMName,
+    _ResourceId,
     RawData = strcat("TimeGenerated:", now(), ";_ResourceId:", _ResourceId, ";state:", state, ";affected_object:", affected_object, ";monitor_package:", monitor_package, ";monitor_name:", monitor_name, ";monitor_description:", monitor_description, ";script_name:", script_name, ";script_version:", script_version, ";threshold:", threshold, ";value:", value, ";affected_entity:", affected_entity, ";additional_information:", additional_information)
+ 
