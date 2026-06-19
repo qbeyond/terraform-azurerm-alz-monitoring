@@ -77,10 +77,16 @@ locals {
       frequency   = "PT5M"
     }
     "alr-prd-bkppolicy-win-ux-law-aresm-warn-01" : {
-      description = "Alert when Azure VM has no backup policy assigned"
-      query_path  = "${local.path}/windows_bkppolicy.kusto"
-      time_window = "P1D"
-      frequency   = "P1D"
+      description             = "Alert when Azure VM has no backup policy assigned"
+      query_path              = "${local.path}/windows_bkppolicy.kusto"
+      time_window             = "P1D"
+      frequency               = "P1D"
+
+      include_failing_periods = {
+        minimum_failing_periods_to_trigger_alert = 1
+        number_of_evaluation_periods             = 1
+      }
+      
       identity = {
         type         = "UserAssigned"
         identity_ids = [azurerm_user_assigned_identity.this.id]
