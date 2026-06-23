@@ -61,56 +61,62 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "this" {
   # Uses the forwarder action group only for "alr-prd-AzureHeartbeat-law-logsea-warn-01"; 
   # all other rules use either the optional or eventpipeline action group depending on the non_productive flag.
   action {
-    action_groups = (
-      each.key == "alr-prd-AzureHeartbeat-law-logsea-warn-01" ?
-      [azurerm_monitor_action_group.forwarder.id] :
-      (
-        lookup(each.value, "non_productive", false) ?
-        azurerm_monitor_action_group.optional[*].id :
-        azurerm_monitor_action_group.eventpipeline[*].id
-      )
-    )
+   action_groups = (
+     each.key == "alr-prd-AzureHeartbeat-law-logsea-warn-01" ?
+     [azurerm_monitor_action_group.forwarder.id] :
+     (
+       lookup(each.value, "non_productive", false) ?
+       azurerm_monitor_action_group.optional[*].id :
+       azurerm_monitor_action_group.eventpipeline[*].id
+     )
+   )
   }
- 
+
   criteria {
-    query = templatefile(each.value.query_path, {
-      "tenant"     = local.customer_code
-      "all_events" = local.selected_events
-    })
-    time_aggregation_method = "Count"
-    operator                = "GreaterThan"
-    threshold               = 0
+   query = templatefile(each.value.query_path, {
+     "tenant"     = local.customer_code
+     "all_events" = local.selected_events
+   })
+   time_aggregation_method = "Count"
+   operator                = "GreaterThan"
+   threshold               = 0
 
-    dimension {
-      name     = "RawData"
-      operator = "Include"
-      values   = ["*"]
-    }
+   dimension {
+     name     = "RawData"
+     operator = "Include"
+     values   = ["*"]
+   }
 
-    dynamic "failing_periods" {
-      for_each = try(each.value.include_failing_periods, null) != null ? [each.value.include_failing_periods] : []
-      content {
-        minimum_failing_periods_to_trigger_alert = failing_periods.value.minimum_failing_periods_to_trigger_alert
-        number_of_evaluation_periods             = failing_periods.value.number_of_evaluation_periods
-      }
-    }
+   dynamic "failing_periods" {
+     for_each = try(each.value.include_failing_periods, null) != null ? [each.value.include_failing_periods] : []
+     content {
+       minimum_failing_periods_to_trigger_alert = failing_periods.value.minimum_failing_periods_to_trigger_alert
+       number_of_evaluation_periods             = failing_periods.value.number_of_evaluation_periods
+     }
+   }
 
-    resource_id_column = "_ResourceId"
+   resource_id_column = "_ResourceId"
   }
 
   dynamic "identity" {
-    for_each = try(each.value.identity, null) != null ? [each.value.identity] : []
-    content {
-      type         = identity.value.type
-      identity_ids = lower(identity.value.type) == "userassigned" ? try(identity.value.identity_ids, []) :   null
-    }
+   for_each = try(each.value.identity, null) != null ? [each.value.identity] : []
+   content {
+     type         = identity.value.type
+     identity_ids = lower(identity.value.type) == "userassigned" ? try(identity.value.identity_ids, []) :   null
+   }
   }
 
   target_resource_types = lookup(each.value, "target_resource_types",[
-    "microsoft.compute/virtualmachines",
-    "microsoft.hybridcompute/machines",
-    "microsoft.compute/virtualmachinescalesets"
+   "microsoft.compute/virtualmachines",
+   "microsoft.hybridcompute/machines",
+   "microsoft.compute/virtualmachinescalesets"
   ])
+
+  
+  depends_on = [
+    azurerm_role_assignment.this
+  ]
+
 }
 
 resource "azurerm_monitor_data_collection_endpoint" "dce" {
