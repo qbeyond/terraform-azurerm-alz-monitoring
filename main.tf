@@ -71,7 +71,7 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "this" {
       )
     )
   }
- 
+
   criteria {
     query = templatefile(each.value.query_path, {
       "tenant"     = local.customer_code
@@ -111,6 +111,10 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "this" {
     "microsoft.hybridcompute/machines",
     "microsoft.compute/virtualmachinescalesets"
   ])
+
+  depends_on = [
+    azurerm_role_assignment.this
+  ]
 }
 
 resource "azurerm_monitor_data_collection_endpoint" "dce" {
