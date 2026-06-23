@@ -1,0 +1,30 @@
+// The kusto query checks the "MonitoringScriptsJSON_CL" table for entries transmitted by the Azure measurement clients. 
+// It displays all entries — whether OK or CRITICAL — that were written to the table within the monitoring interval. 
+// Null values are filled with "n/a" using the coalesce function.
+//
+MonitoringScriptsJSON_CL
+| extend additional_information = strcat(
+        coalesce(additional_information, "n/a"),
+        " Measurement client: ",
+        coalesce(Computer, "n/a"),
+        ". Filepath: ",
+        coalesce(FilePath, "n/a"),
+        "."
+    )
+| project
+    _ResourceId = coalesce(_ResourceId, "n/a"),
+    RawData = strcat(
+        "TimeGenerated:", now(),
+        ";_ResourceId:", coalesce(_ResourceId, "n/a"),
+        ";state:", coalesce(state, "n/a"),
+        ";affected_object:", coalesce(affected_object, "n/a"),
+        ";monitor_package:", coalesce(monitor_package, "n/a"),
+        ";monitor_name:", coalesce(monitor_name, "n/a"),
+        ";monitor_description:", coalesce(monitor_description, "n/a"),
+        ";script_name:", coalesce(script_name, "n/a"),
+        ";script_version:", coalesce(script_version, "n/a"),
+        ";threshold:", coalesce(threshold, "n/a"),
+        ";value:", coalesce(value, "n/a"),
+        ";affected_entity:", coalesce(affected_entity, "n/a"),
+        ";additional_information:", additional_information
+    )

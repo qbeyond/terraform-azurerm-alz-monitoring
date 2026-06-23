@@ -4,6 +4,13 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.2.0] - 2026-06-22
+
+### Added
+
+- Added new Kusto query custlogjson_winux_prd
+- Added depends on block for the Scheduled query alert rules. 
+
 ## [7.1.0] - 2026-06-19
 
 ### Change

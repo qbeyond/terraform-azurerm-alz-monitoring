@@ -92,6 +92,12 @@ locals {
         identity_ids = [azurerm_user_assigned_identity.this.id]
       }
     }
+    "alr-prd-CustLogJson-winux-law-logsea-crit-01" : {
+      description    = "Alert for custom json monitoring logs"
+      query_path     = "${local.path}/custlogjson_winux_prd.kusto"
+      time_window    = "PT15M"
+      frequency      = "PT5M"
+    }
   }
 
   empty_query_object = {
