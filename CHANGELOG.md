@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 - Added new Kusto query custlogjson_winux_prd
+- Added depends on block for the Scheduled query alert rules. 
 
 ## [7.1.0] - 2026-06-19
 
