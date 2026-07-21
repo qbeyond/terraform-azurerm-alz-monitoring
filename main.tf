@@ -41,6 +41,19 @@ resource "azurerm_monitor_action_group" "forwarder" {
   }
 }
 
+resource "azurerm_monitor_action_group" "forwarder_2" {
+  name                = "EventPipelineForwarder_AG_2"
+  resource_group_name = var.log_analytics_workspace.resource_group_name
+  short_name          = "agepfwd2"
+  tags                = var.tags
+
+  webhook_receiver {
+    name                    = "whepfwd2"
+    service_uri             = replace(var.event_pipeline_config.service_uri_forwarder, "{{secret}}", var.secret_forwarder)
+    use_common_alert_schema = true
+  }
+}
+
 resource "azurerm_monitor_scheduled_query_rules_alert_v2" "this" {
   for_each            = local.all_alertrules
   name                = each.key

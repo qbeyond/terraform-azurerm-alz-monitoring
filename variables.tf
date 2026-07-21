@@ -110,6 +110,13 @@ variable "secret_forwarder" {
   default     = ""
 }
 
+variable "secret_forwarder_2" {
+  type        = string
+  description = "Value that will replace the placeholder `{{secret}}` in `event_pipeline_config.service_uri_forwarder_2`."
+  sensitive   = true
+  default     = ""
+}
+
 variable "automation_account" {
   type = object({
     name                = string
