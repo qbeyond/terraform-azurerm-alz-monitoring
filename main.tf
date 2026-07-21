@@ -49,7 +49,7 @@ resource "azurerm_monitor_action_group" "forwarder_2" {
 
   webhook_receiver {
     name                    = "whepfwd2"
-    service_uri             = replace(var.event_pipeline_config.service_uri_forwarder, "{{secret}}", var.secret_forwarder)
+    service_uri             = replace(var.event_pipeline_config.service_uri_forwarder_2, "{{secret}}", var.secret_forwarder_2)
     use_common_alert_schema = true
   }
 }

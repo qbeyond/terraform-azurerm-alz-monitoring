@@ -145,6 +145,7 @@ variable "event_pipeline_config" {
     service_uri             = optional(string, "")
     service_uri_integration = optional(string, "")
     service_uri_forwarder   = optional(string, "")
+    service_uri_forwarder_2 = optional(string, "")
   })
 
   description = <<-DOC
@@ -155,6 +156,7 @@ variable "event_pipeline_config" {
     service_uri = Link to the webhook receiver URL. Must contain the placeholder \"{{secret}}\". This placeholder will be replaced by the secret value from var.secret. This is used to add authentication to the webhook URL as a query parameter.
     service_uri_integration = Same as service_uri for non productive monitoring alerts, the secret value from var.secret_integration will be used here.
     service_uri_forwarder   = Same as service_uri for forwarding alerts, the secret value from var.secret_forwarder will be used here.
+    service_uri_forwarder_2 = Same as service_uri for forwarding alerts, the secret value from var.secret_forwarder_2 will be used here.
   }
   ```
   DOC
