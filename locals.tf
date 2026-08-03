@@ -170,4 +170,3 @@ locals {
 
   customer_code = var.event_pipeline_config.service_uri == "" ? var.customer_code : upper(split("-", regex("fctkey-[^-]+", var.event_pipeline_config.service_uri))[1])
 }
-

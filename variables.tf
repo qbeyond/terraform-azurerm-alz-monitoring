@@ -637,3 +637,14 @@ variable "features" {
   })
   default = {}
 }
+
+# NOTE: Optionally deploying reservations monitoring requires you to
+# manually give the Automation Account "Reservation Reader" permissions in the tenant.
+variable "reservations" {
+  type = object({
+    enabled = bool
+    emails  = list(string)
+  })
+  description = ""
+  default     = { enabled = false, emails = [] }
+}
