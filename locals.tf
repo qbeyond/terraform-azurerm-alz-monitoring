@@ -104,8 +104,13 @@ locals {
     }
   }
 
-  selected_queries = merge([for feat, enabled in var.features : lookup(local.default_queries, feat, {})])
-
+  selected_queries = merge(
+    [
+      for feat, enabled in var.features :
+      lookup(local.default_queries, feat, {})
+      if enabled
+    ]...
+  )
 
   empty_query_object = {
     query_path                = null
