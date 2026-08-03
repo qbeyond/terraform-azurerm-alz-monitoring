@@ -633,6 +633,7 @@ variable "features" {
   type = object({
     default = optional(bool, true)
     mssql   = optional(bool, false)
+
   })
   default = {}
 }

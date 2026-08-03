@@ -104,9 +104,10 @@ locals {
     }
   }
 
+  # Selects the queries that have been chosen via var.features
+  # Defaults to the "default" alert rules only.
   selected_queries = merge(
-    [
-      for feat, enabled in var.features :
+    [for feat, enabled in var.features :
       lookup(local.default_queries, feat, {})
       if enabled
     ]...
@@ -132,12 +133,19 @@ locals {
     identity                = null
   }
 
+  # Expands each rule object to contain all attributes (using default values if not specified).
+  # If the same alert rule appears in both the selected default rules AND var.additional_queries,
+  # then the attributes from var.additional_queries override the defaults.
   rules = {
-    for key in local.selected_queries : key => merge(
-
-      local.empty_query_object,
-      lookup(local.selected_queries, key, {}),                                   # use defaults if present       
-      { for k, v in try(var.additional_queries[key], {}) : k => v if v != null } # apply overrides (empty map when missing)
+    # Iterate over all distinct keys in both selected_queries (defaults) and additional_queries (custom)
+    for key in setunion(
+      keys(local.selected_queries),
+      keys(var.additional_queries)
+    ) :
+    key => merge(
+      local.empty_query_object,             # Empty object with all default attributes
+      try(local.selected_queries[key], {}), # overridden by qby defaults, if specified
+      try(var.additional_queries[key], {})  # overridden by custom values, if specified
     )
   }
 
