@@ -1,0 +1,13 @@
+Reservations_CL
+| where ExpiryDate_t between (now() .. now(30d))
+    and ProvisioningState_s == "Succeeded"
+| project
+    BenefitStartTime_t,
+    Term_s,
+    ExpiryDate_t,
+    ExpiryDate_s = format_datetime(ExpiryDate_t, "dd/MM/yyyy"),
+    Id_s,
+    ProvisioningState_s,
+    DisplayName_s
+| distinct *
+| sort by ExpiryDate_t
