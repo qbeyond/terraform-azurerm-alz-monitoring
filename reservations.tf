@@ -26,42 +26,53 @@ resource "azurerm_automation_runbook" "reservations_to_law" {
   ]
 }
 
-resource "azurerm_log_analytics_workspace_table" "reservations" {
-  count        = var.reservations.enabled ? 1 : 0
-  workspace_id = azurerm_log_analytics_workspace.law.id
-  name         = "Reservations_CL"
+resource "azapi_resource" "reservations_table" {
+  name                      = "Reservations_CL"
+  parent_id                 = var.log_analytics_workspace.id
+  type                      = "Microsoft.OperationalInsights/workspaces/tables@2022-10-01"
+  tags                      = var.tags
+  schema_validation_enabled = false
 
-  retention_in_days = 30
+  body = jsonencode({
+    properties = {
+      schema = {
+        name = "Reservations_CL"
+        columns = [
+          {
+            name = "TimeGenerated"
+            type = "datetime"
+          },
+          {
+            name = "BenefitStartTime_t"
+            type = "datetime"
+          },
+          {
+            name = "Term_s"
+            type = "string"
+          },
+          {
+            name = "ExpiryDate_t"
+            type = "datetime"
+          },
+          {
+            name = "Id_s"
+            type = "string"
+          },
+          {
+            name = "ProvisioningState_s"
+            type = "string"
+          },
+          {
+            name = "DisplayName_s"
+            type = "string"
+          }
+        ]
+      }
 
-  schema {
-    name = "BenefitStartTime_t"
-    type = "datetime"
-  }
-
-  schema {
-    name = "Term_s"
-    type = "string"
-  }
-
-  schema {
-    name = "ExpiryDate_t"
-    type = "datetime"
-  }
-
-  schema {
-    name = "Id_s"
-    type = "string"
-  }
-
-  schema {
-    name = "ProvisioningState_s"
-    type = "string"
-  }
-
-  schema {
-    name = "DisplayName_s"
-    type = "string"
-  }
+      retentionInDays      = 30
+      totalRetentionInDays = 30
+    }
+  })
 }
 
 resource "time_static" "monthly_start" {
@@ -151,6 +162,6 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "reservationexpiry" {
 
   depends_on = [
     azurerm_role_assignment.this,
-    azurerm_log_analytics_workspace_table.reservations
+    azapi_resource.reservations_table
   ]
 }
