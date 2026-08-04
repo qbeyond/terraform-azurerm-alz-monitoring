@@ -15,11 +15,15 @@ resource "azurerm_automation_runbook" "reservation_to_law" {
   location                = var.automation_account.location
   resource_group_name     = var.automation_account.resource_group_name
   automation_account_name = var.automation_account.name
-  log_verbose             = "true"
-  log_progress            = "true"
+  log_verbose             = true
+  log_progress            = true
   description             = "This runbook imports reservations in the tenant to the log analytics workspace"
   runbook_type            = "PowerShell"
   content                 = file("${path.module}/runbooks/Import-ReservationsToLogAnalytics.ps1")
+
+  depends_on = [
+    azurerm_automation_module.az_reservations
+  ]
 }
 
 resource "time_static" "monthly_start" {
@@ -54,4 +58,60 @@ resource "azurerm_automation_job_schedule" "reservation_to_law" {
   lifecycle {
     replace_triggered_by = [azurerm_automation_runbook.reservation_to_law[0]]
   }
+}
+
+resource "azurerm_monitor_action_group" "reservationsexpiry" {
+  count               = var.reservations.enabled ? 1 : 0
+  name                = "ag-${var.customer_code}-${var.stage}-reservationsexpiry"
+  resource_group_name = var.log_analytics_workspace.resource_group_name
+  short_name          = "reservationsexpiry"
+  tags                = var.tags
+
+  dynamic "email_receiver" {
+    for_each = var.reservations.emails
+    content {
+      name          = "Reservations are about to expire"
+      email_address = email_receiver.value
+    }
+  }
+}
+
+resource "azurerm_monitor_scheduled_query_rules_alert_v2" "reservationsexpiry" {
+  count               = var.reservations.enabled ? 1 : 0
+  name                = "alr-prd-ReservationExpiry-res-law-logsea-warn-01"
+  location            = var.log_analytics_workspace.location
+  resource_group_name = var.log_analytics_workspace.resource_group_name
+  tags                = var.tags
+
+  scopes      = [var.log_analytics_workspace.id]
+  description = "Retrieves reservations in the tenant that are about to expire"
+  enabled     = true
+  severity    = 2
+
+  evaluation_frequency = "P1D"
+  window_duration      = "P2D"
+
+  action {
+    action_groups = [azurerm_monitor_action_group.reservationsexpiry[0].id]
+  }
+
+  criteria {
+    query                   = file("${path.module}/queries/reservations.kusto")
+    time_aggregation_method = "Count"
+    operator                = "GreaterThan"
+    threshold               = 0
+
+    dynamic "dimension" {
+      for_each = ["Term_s", "ExpiryDate_s", "Id_s", "DisplayName_s"]
+      content {
+        name     = dimension.value
+        operator = "Include"
+        values   = ["*"]
+      }
+    }
+  }
+
+  depends_on = [
+    azurerm_role_assignment.this
+  ]
 }
