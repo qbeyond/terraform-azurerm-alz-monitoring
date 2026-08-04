@@ -78,6 +78,11 @@ try {
 }
 
 $Reservations = Get-AzReservationOrder
+
+if (-not $Reservations) {
+    return
+}
+
 $body = $Reservations | Select-Object `
     @{Name='BenefitStartTime_t';Expression={$_.BenefitStartTime}},
     @{Name='Term_s';Expression={$_.Term}},
