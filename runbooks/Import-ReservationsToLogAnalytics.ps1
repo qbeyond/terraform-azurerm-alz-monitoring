@@ -78,11 +78,19 @@ try {
 }
 
 $Reservations = Get-AzReservationOrder
+$body = $Reservations | Select-Object `
+    @{Name='BenefitStartTime_t';Expression={$_.BenefitStartTime}},
+    @{Name='Term_s';Expression={$_.Term}},
+    @{Name='ExpiryDate_t';Expression={$_.ExpiryDate}},
+    @{Name='Id_s';Expression={$_.Id}},
+    @{Name='ProvisioningState_s';Expression={$_.ProvisioningState}},
+    @{Name='DisplayName_s';Expression={$_.DisplayName}} |
+    ConvertTo-Json -Depth 5
 
 # Write reservations to Log Analytics
 Write-Output "Start collection Backup Data from the last 24 hours.."
 try {
-	Post-LogAnalyticsData -customerId $customerId -sharedKey $sharedKey -body (($Reservations | ConvertTo-Json -Depth 10)) -logType $LogType 
+	Post-LogAnalyticsData -customerId $customerId -sharedKey $sharedKey -body $body -logType $LogType 
 } catch{
 	throw "The script execution failed with Error `n`t $($_.Exception)"
 }

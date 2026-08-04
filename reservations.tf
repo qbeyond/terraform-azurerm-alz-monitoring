@@ -26,6 +26,44 @@ resource "azurerm_automation_runbook" "reservations_to_law" {
   ]
 }
 
+resource "azurerm_log_analytics_workspace_table" "reservations" {
+  count        = var.reservations.enabled ? 1 : 0
+  workspace_id = azurerm_log_analytics_workspace.law.id
+  name         = "Reservations_CL"
+
+  retention_in_days = 30
+
+  schema {
+    name = "BenefitStartTime_t"
+    type = "datetime"
+  }
+
+  schema {
+    name = "Term_s"
+    type = "string"
+  }
+
+  schema {
+    name = "ExpiryDate_t"
+    type = "datetime"
+  }
+
+  schema {
+    name = "Id_s"
+    type = "string"
+  }
+
+  schema {
+    name = "ProvisioningState_s"
+    type = "string"
+  }
+
+  schema {
+    name = "DisplayName_s"
+    type = "string"
+  }
+}
+
 resource "time_static" "monthly_start" {
   count   = var.reservations.enabled ? 1 : 0
   rfc3339 = timeadd(timestamp(), "24h")
@@ -112,6 +150,7 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "reservationexpiry" {
   }
 
   depends_on = [
-    azurerm_role_assignment.this
+    azurerm_role_assignment.this,
+    azurerm_log_analytics_workspace_table.reservations
   ]
 }
