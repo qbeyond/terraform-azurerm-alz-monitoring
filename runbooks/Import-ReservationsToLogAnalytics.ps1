@@ -83,14 +83,7 @@ if (-not $Reservations) {
     return
 }
 
-$body = $Reservations | Select-Object `
-    @{Name='BenefitStartTime_t';Expression={$_.BenefitStartTime}},
-    @{Name='Term_s';Expression={$_.Term}},
-    @{Name='ExpiryDate_t';Expression={$_.ExpiryDate}},
-    @{Name='Id_s';Expression={$_.Id}},
-    @{Name='ProvisioningState_s';Expression={$_.ProvisioningState}},
-    @{Name='DisplayName_s';Expression={$_.DisplayName}} |
-    ConvertTo-Json -Depth 5
+$body = $Reservations | ConvertTo-Json -Depth 5
 
 # Write reservations to Log Analytics
 Write-Output "Start collection Backup Data from the last 24 hours.."

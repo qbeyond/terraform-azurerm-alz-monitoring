@@ -26,55 +26,6 @@ resource "azurerm_automation_runbook" "reservations_to_law" {
   ]
 }
 
-resource "azapi_resource" "reservations_table" {
-  name                      = "Reservations_CL"
-  parent_id                 = var.log_analytics_workspace.id
-  type                      = "Microsoft.OperationalInsights/workspaces/tables@2022-10-01"
-  tags                      = var.tags
-  schema_validation_enabled = false
-
-  body = jsonencode({
-    properties = {
-      schema = {
-        name = "Reservations_CL"
-        columns = [
-          {
-            name = "TimeGenerated"
-            type = "datetime"
-          },
-          {
-            name = "BenefitStartTime_t"
-            type = "datetime"
-          },
-          {
-            name = "Term_s"
-            type = "string"
-          },
-          {
-            name = "ExpiryDate_t"
-            type = "datetime"
-          },
-          {
-            name = "Id_s"
-            type = "string"
-          },
-          {
-            name = "ProvisioningState_s"
-            type = "string"
-          },
-          {
-            name = "DisplayName_s"
-            type = "string"
-          }
-        ]
-      }
-
-      retentionInDays      = 30
-      totalRetentionInDays = 30
-    }
-  })
-}
-
 resource "time_static" "monthly_start" {
   count   = var.reservations.enabled ? 1 : 0
   rfc3339 = timeadd(timestamp(), "24h")
@@ -132,6 +83,8 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "reservationexpiry" {
   resource_group_name = var.log_analytics_workspace.resource_group_name
   tags                = var.tags
 
+  skip_query_validation = true
+
   scopes      = [var.log_analytics_workspace.id]
   description = "Retrieves reservations in the tenant that are about to expire"
   enabled     = true
@@ -161,7 +114,6 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "reservationexpiry" {
   }
 
   depends_on = [
-    azurerm_role_assignment.this,
-    azapi_resource.reservations_table
+    azurerm_role_assignment.this
   ]
 }
