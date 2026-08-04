@@ -4,6 +4,16 @@ All notable changes to this module will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this module adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.4.0] - 2026-08-04
+
+When enabling the new reservations monitoring, you must manually assign the
+"Reservations Reader" role to the managed identity of the automation account.
+
+### Added
+
+- Added variable `features` which lets you en-/disable bundles of alert rules (currently only "default" and "mssql")
+- Added optional email alerting for reservations via `reservations.enabled = true`
+
 ## [7.3.1] - 2026-07-21
 
 ### Fixed

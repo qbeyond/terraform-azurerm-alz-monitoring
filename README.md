@@ -152,7 +152,27 @@ module "monitor" {
 AddonAzureBackupJobs
 | summarize arg_max(TimeGenerated,*) by JobUniqueId
 | where JobStatus == "Failed"
-```  
+```
+
+### Monitoring reservations
+
+NOTE: Requires you to manually assign the "Reservations Reader" role to the managed
+identity of the automation account.
+
+Some customers reserve certain cloud resources for a prolonged amount of time.
+When these reservations expire, they must be evaluated and renewed.
+Setting the following variable will deploy monitoring resources for reservations
+and send alerts via email at the beginning of each month.
+```hcl
+module "monitor" {
+  ...
+  reservations = {
+    enabled = true
+    emails = ["email1@qbeyond.de", "email2@qbeyond.de"]
+  }
+}
+```
+
 ## Requirements
 
 | Name | Version |
