@@ -64,7 +64,7 @@ resource "azurerm_monitor_action_group" "reservationsexpiry" {
   count               = var.reservations.enabled ? 1 : 0
   name                = "ag-${var.customer_code}-prd-reservationsexpiry"
   resource_group_name = var.log_analytics_workspace.resource_group_name
-  short_name          = "reservationsexpiry"
+  short_name          = "reservations"
   tags                = var.tags
 
   dynamic "email_receiver" {

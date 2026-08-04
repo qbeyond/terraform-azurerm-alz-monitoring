@@ -43,8 +43,12 @@ module "monitor" {
   }
 
   automation_account = azurerm_automation_account.example
-  secret             = "impressum"
-  secret_integration = "integration"
+
+  secret             = "test"
+  secret_integration = "test"
+  secret_forwarder   = "test"
+  secret_forwarder_2 = "test"
+
   tags = {
     "MyTagName" = "MyTagValue"
   }
