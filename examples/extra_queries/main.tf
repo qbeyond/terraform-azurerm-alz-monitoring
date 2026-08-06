@@ -33,17 +33,20 @@ module "monitor" {
     service_uri_integration = "https://qbeyond.de/WebhookIntegration?code={{secret}}}&clientid=fctkey-cust-int-eventpipeline-01"
   }
   automation_account = azurerm_automation_account.example
-  secret             = "impressum"
-  secret_integration = "integration"
+
+  secret             = "test"
+  secret_integration = "test"
+  secret_forwarder   = "test"
+  secret_forwarder_2 = "test"
 
   additional_queries = {
     "alr-prd-diskspace-bkp-law-logsea-warn-01" : {
-      query_path  = "${path.module}/queries/failed_jobs.kusto"
-      description = "Example of monitoring for failed backup jobs"
-      time_window = "PT15M"
-      frequency   = "PT15M"
-      severity    = 2
-      enabled     = false
+      query_path            = "${path.module}/queries/failed_jobs.kusto"
+      description           = "Example of monitoring for failed backup jobs"
+      time_window           = "PT15M"
+      frequency             = "PT15M"
+      severity              = 2
+      enabled               = false
       skip_query_validation = false
       target_resource_types = [
         "Microsoft.Storage/storageAccounts",
@@ -56,11 +59,11 @@ module "monitor" {
       }
     }
     "alr-prd-CustLogText-winux-law-logsea-warn-01" : {
-      enabled     = false
+      enabled      = false
       display_name = "Test"
     }
   }
-  
+
   active_services = {
     active_directory = true
     managed_os       = true

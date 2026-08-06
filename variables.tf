@@ -36,7 +36,7 @@ variable "additional_queries" {
     severity                  = optional(number)
     skip_query_validation     = optional(bool)
     target_resource_types     = optional(list(string))
-    include_failing_periods   = optional(object({
+    include_failing_periods = optional(object({
       minimum_failing_periods_to_trigger_alert = number
       number_of_evaluation_periods             = number
     }))
@@ -50,8 +50,8 @@ variable "additional_queries" {
   validation {
     condition = alltrue([
       for key, val in var.additional_queries :
-        contains(keys(local.default_queries), key) ||
-        try(val.query_path, null) != null
+      contains(keys(local.default_queries), key) ||
+      try(val.query_path, null) != null
     ])
     error_message = "Custom alert rules must include query_path."
   }
@@ -626,4 +626,25 @@ variable "management_group_id" {
   description = "ALZ Management group ID"
   type        = string
   default     = "alz"
+}
+
+variable "features" {
+  description = "Optional monitoring features (disabled by default)"
+  type = object({
+    default = optional(bool, true)
+    mssql   = optional(bool, false)
+
+  })
+  default = {}
+}
+
+# NOTE: Optionally deploying reservations monitoring requires you to
+# manually give the Automation Account "Reservation Reader" permissions in the tenant.
+variable "reservations" {
+  type = object({
+    enabled = bool
+    emails  = list(string)
+  })
+  description = ""
+  default     = { enabled = false, emails = [] }
 }

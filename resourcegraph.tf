@@ -27,7 +27,7 @@ resource "azurerm_automation_runbook" "resourcegraph_query" {
   log_progress            = "true"
   description             = "This runbook imports results from defined azure resource graph query to log analytics workspace."
   runbook_type            = "PowerShell"
-  content                 = file("${path.module}/resourcegraph/Import-ResourceGraphToLogAnalytics.ps1")
+  content                 = file("${path.module}/runbooks/Import-ResourceGraphToLogAnalytics.ps1")
   tags                    = var.tags
 }
 
@@ -70,7 +70,7 @@ resource "azurerm_automation_job_schedule" "resourcegraph_query" {
   runbook_name            = azurerm_automation_runbook.resourcegraph_query.name
 
   parameters = {
-    query                    = file("${path.module}/resourcegraph/resource.kusto")
+    query                    = file("${path.module}/queries/resourcegraph.kusto")
     managementgroupidtocheck = var.root_management_group_id
     logtype                  = "MonitoringResources"
     customerid               = var.log_analytics_workspace.workspace_id
