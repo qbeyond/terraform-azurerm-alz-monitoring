@@ -86,12 +86,13 @@ resource "azurerm_monitor_scheduled_query_rules_alert_v2" "reservationexpiry" {
   skip_query_validation = true
 
   scopes      = [var.log_analytics_workspace.id]
-  description = "Retrieves reservations in the tenant that are about to expire"
+  description = "The following Azure Resource reservations are about to expire. Please consult with the customer whether those reservations need to be renewed."
   enabled     = true
   severity    = 2
 
-  evaluation_frequency = "P1D"
-  window_duration      = "P2D"
+  evaluation_frequency    = "PT12H"
+  window_duration         = "P2D"
+  auto_mitigation_enabled = true
 
   action {
     action_groups = [azurerm_monitor_action_group.reservationexpiry[0].id]
