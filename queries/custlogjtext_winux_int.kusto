@@ -1,0 +1,33 @@
+MonitoringScriptsTEXT_CL
+| where TimeGenerated > ago(24h)
+| summarize arg_max(TimeGenerated, *) by tolower(extract(@"affected_object:([^;]+);", 1, RawData))
+| project _ResourceId, RawData
+| extend state                  = coalesce(extract(@"state:([^;]*)", 1, RawData), "not defined")
+| extend affected_object        = coalesce(extract(@"affected_object:([^;]*)", 1, RawData), "not defined")
+| extend monitor_package        = coalesce(extract(@"monitor_package:([^;]*)", 1, RawData), "not defined")
+| extend monitor_name           = coalesce(extract(@"monitor_name:([^;]*)", 1, RawData), "not defined")
+| extend monitor_description    = coalesce(extract(@"monitor_description:([^;]*)", 1, RawData), "not defined")
+| extend script_name            = coalesce(extract(@"script_name:([^;]*)", 1, RawData), "not defined")
+| extend script_version         = coalesce(extract(@"script_version:([^;]*)", 1, RawData), "not defined")
+| extend threshold              = coalesce(extract(@"threshold:([^;]*)", 1, RawData), "not defined")
+| extend value                  = coalesce(extract(@"value:([^;]*)", 1, RawData), "not defined")
+| extend affected_entity        = coalesce(extract(@"affected_entity:([^;]*)", 1, RawData), "not defined")
+| extend additional_information = coalesce(extract(@"additional_information:([^;]*)", 1, RawData), "not defined")
+// now() is always UTC in Kusto — set fresh here, never carried over from source rows
+| project
+    _ResourceId,
+    RawData = strcat(
+        "TimeGenerated:", now(), ";",
+        "_ResourceId:", _ResourceId, ";",
+        "state:", state, ";",
+        "affected_object:", affected_object, ";",
+        "monitor_package:", monitor_package, ";",
+        "monitor_name:", monitor_name, ";",
+        "monitor_description:", monitor_description, ";",
+        "script_name:", script_name, ";",
+        "script_version:", script_version, ";",
+        "threshold:", threshold, ";",
+        "value:", value, ";",
+        "affected_entity:", affected_entity, ";",
+        "additional_information:", additional_information
+    )
