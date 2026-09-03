@@ -98,6 +98,19 @@ locals {
       time_window    = "PT15M"
       frequency      = "PT5M"
     }
+
+    "alr-int-CustLogText-winux-law-logsea-warn-01" : {
+      description    = "Alert for custom text monitoring logs"
+      query_path     = "${local.path}/custlogtext_winux_int.kusto"
+      time_window    = "PT15M"
+      frequency      = "PT5M"
+      non_productive = true
+
+      failing_periods = {
+        number_of_evaluation_periods = 1
+        min_failing_periods_to_alert = 1
+      }
+    }
   }
 
   empty_query_object = {
