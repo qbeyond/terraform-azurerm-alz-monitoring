@@ -99,7 +99,7 @@ locals {
       frequency      = "PT5M"
     }
 
-    "alr-int-CustLogText-winux-law-logsea-warn-01" : {
+    "alr-int-CustLogText-winux-law-logsea-warn-02" : {
       description    = "Alert for custom text monitoring logs"
       query_path     = "${local.path}/custlogtext_winux_int.kusto"
       time_window    = "PT15M"
