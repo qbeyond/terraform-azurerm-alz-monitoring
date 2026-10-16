@@ -18,7 +18,7 @@ locals {
       description = "Alert when Heartbeat of unix machines Stopped"
       query_path  = "${local.path}/unix_heartbeat.kusto"
       time_window = "P2D"
-      frequency   = "PT1M"
+      frequency   = "PT5M"
     }
     "alr-prd-Diskspace-ux-law-metric-warn-crit-01" : {
       description = "Alert when filesystem of unix runs out of space"
